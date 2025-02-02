@@ -26,7 +26,7 @@ const Navbar = () => {
 					<span className='="text-xs text-gray-500 text-right'>Admin</span>
 				</div>
 				<Image
-					src="/avatar.png"
+					src="/naj.jpg"
 					alt=""
 					width={36}
 					height={36}

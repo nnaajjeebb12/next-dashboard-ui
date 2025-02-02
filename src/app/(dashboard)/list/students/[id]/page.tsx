@@ -1,5 +1,6 @@
 import Announcements from '@/components/Announcements';
 import BigCalendar from '@/components/BigCalendar';
+import FormModal from '@/components/FormModal';
 import Performance from '@/components/Performance';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,7 +16,7 @@ const SingleStudentPage = () => {
 					<div className="bg-najSky py-6 px-4 rounded-md flex-1 flex gap-4">
 						<div className="w-1/3">
 							<Image
-								src="https://media.discordapp.net/attachments/1280605411476770837/1334385189480300574/13e4d0fc3678c9795c5c900f70e7318f_0.jpg?ex=679e50cc&is=679cff4c&hm=2ec156622b842f59447fa1a1626f0c1560a5905be94f0aa9eeb29f52c1754e69&=&format=webp&width=684&height=1217"
+								src="https://scontent.fmnl13-2.fna.fbcdn.net/v/t39.30808-6/317928724_6016268691751514_4122983082771521543_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFPVw9EWuZFKgdcFtaTb7YnDblLIy6YTIMNuUsjLphMg6P9m-AYewtLc3FDetc4pRuWtiGZmJh-dMfYvb_BTeUL&_nc_ohc=fjgA1YlMTzkQ7kNvgFxS1jp&_nc_zt=23&_nc_ht=scontent.fmnl13-2.fna&_nc_gid=A6FTQt4o9nqCCwQ0waI3i84&oh=00_AYBpIa3NQ20vgiwg6QiTQnLyHq3dN0qejuocvgdVRGUKDQ&oe=67A368FA"
 								alt=""
 								width={144}
 								height={144}
@@ -23,7 +24,27 @@ const SingleStudentPage = () => {
 							/>
 						</div>
 						<div className="w-2/3 flex flex-col justify-between gap-4">
-							<h1 className="text-xl font-semibold">Justine Alcantara</h1>
+							<div className="flex items-center gap-4">
+								<h1 className="text-xl font-semibold">Naj Lopez</h1>
+								<FormModal
+									table="student"
+									type="update"
+									data={{
+										id: 1,
+										username: 'najeeblopez',
+										email: 'najeeblopez@gmail.com',
+										password: 'password',
+										firstName: 'Najeeb',
+										lastName: 'Lopez',
+										phoneNumber: '09212130968',
+										address: 'Somewhere in the Philippines',
+										bloodType: 'A+',
+										dateOfBirth: '01/01/2000',
+										sex: 'male',
+										img: 'https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=1200',
+									}}
+								/>
+							</div>
 							<p className="text-sm text-gray-500">
 								Lorem ipsum dolor sit amet consectetur adipisicing elit.
 							</p>
@@ -56,7 +77,7 @@ const SingleStudentPage = () => {
 										height={14}
 										className=""
 									/>
-									<span>justine@gmail.com</span>
+									<span>najeeblopez@gmail.com</span>
 								</div>
 								<div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
 									<Image
@@ -125,7 +146,7 @@ const SingleStudentPage = () => {
 								className="w-6 h-6"
 							/>
 							<div className="">
-								<h1 className="text-xl font-semibold">12A</h1>
+								<h1 className="text-xl font-semibold">12-Rizal</h1>
 								<span className="text-sm text-gray-400">Section</span>
 							</div>
 						</div>

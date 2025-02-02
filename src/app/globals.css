@@ -80,7 +80,7 @@
 	width: 95% !important;
 }
 
-.rbc-event:nth-child(4n + 1) {
+/* .rbc-event:nth-child(4n + 1) {
 	background-color: #e2f8ff !important;
 }
 
@@ -94,4 +94,20 @@
 
 .rbc-event:nth-child(4n + 4) {
 	background-color: #fdf2fb !important;
+} */
+
+.rbc-event:nth-child(4n + 1) {
+	background-color: #8ca3e8 !important;
+}
+
+.rbc-event:nth-child(4n + 2) {
+	background-color: #98c184 !important;
+}
+
+.rbc-event:nth-child(4n + 3) {
+	background-color: #d6d9ea !important;
+}
+
+.rbc-event:nth-child(4n + 4) {
+	background-color: #e7dfc4 !important;
 }

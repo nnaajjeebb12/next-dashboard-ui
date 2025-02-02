@@ -25,8 +25,23 @@ export default function DashboardLayout({
 				<Link
 					href="/"
 					className="flex items-center justify-center lg:justify-start gap-2">
-					<Image src="/logo.png" alt="logo" width={32} height={32} />
-					<span className="hidden lg:block font-bold">Naj School</span>
+					<Image
+						src="/edited-DrJuanLogo.png"
+						alt="logo"
+						width={32}
+						height={32}
+					/>
+					<div className="">
+						<span className="hidden lg:block font-bold">
+							Dr. Juan A. Pastor
+						</span>
+						<span className="hidden lg:block font-bold">
+							I N T E G R A T E D
+						</span>
+						<span className="hidden lg:block font-bold">
+							National High School
+						</span>
+					</div>
 				</Link>
 				<Menu />
 			</div>

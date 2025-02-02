@@ -31,15 +31,15 @@ const SingleTeacherPage = () => {
 									type="update"
 									data={{
 										id: 1,
-										username: 'deanguerrero',
-										email: 'deanguerrero@gmail.com',
+										username: 'najeeblopez',
+										email: 'najeeblopez@gmail.com',
 										password: 'password',
-										firstName: 'Dean',
-										lastName: 'Guerrero',
-										phoneNumber: '+1 234 567 89',
-										address: '1234 Main St, Anytown, USA',
+										firstName: 'Najeeb',
+										lastName: 'Lopez',
+										phoneNumber: '09212130968',
+										address: 'Somewhere in the Philippines',
 										bloodType: 'A+',
-										dateOfBirth: '2000-01-01',
+										dateOfBirth: '01/01/2000',
 										sex: 'male',
 										img: 'https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=1200',
 									}}
@@ -119,7 +119,7 @@ const SingleTeacherPage = () => {
 							/>
 							<div className="">
 								<h1 className="text-xl font-semibold">2</h1>
-								<span className="text-sm text-gray-400">Branches</span>
+								<span className="text-sm text-gray-400">Sections</span>
 							</div>
 						</div>
 						{/* LESSONS CARD */}
@@ -180,7 +180,7 @@ const SingleTeacherPage = () => {
 						</Link>
 					</div>
 				</div>
-				<Performance />
+				{/* <Performance /> */}
 				<Announcements />
 			</div>
 		</div>
