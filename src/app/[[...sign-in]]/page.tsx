@@ -10,7 +10,20 @@ const LoginPage = () => {
 				<SignIn.Step
 					name="start"
 					className="bg-white p-12 rounded-md shadow-2xl flex flex-col gap-2">
-					<h1>Dr. Juan A. </h1>
+					<h1>Dr. Juan A. Pastor</h1>
+					<h2>Sign in to your account</h2>
+					<Clerk.GlobalError />
+					<Clerk.Field name="identifier">
+						<Clerk.Label>Username</Clerk.Label>
+						<Clerk.Input type="text" required />
+						<Clerk.FieldError />
+					</Clerk.Field>
+					<Clerk.Field name="password">
+						<Clerk.Label>password</Clerk.Label>
+						<Clerk.Input type="password" required />
+						<Clerk.FieldError />
+					</Clerk.Field>
+					<SignIn.Action submit>Sign In</SignIn.Action>
 				</SignIn.Step>
 			</SignIn.Root>
 		</div>
