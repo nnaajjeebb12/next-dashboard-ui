@@ -9,8 +9,8 @@ import '/src/app/globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-	title: 'School Management System',
-	description: 'Thesis School Management System',
+	title: 'Dr. Juan A. Pastor',
+	description: 'Thesis Dr. Juan A. Pastor',
 };
 
 export default function DashboardLayout({
