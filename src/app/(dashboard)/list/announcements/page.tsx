@@ -17,22 +17,12 @@ const columns = [
 		accessor: 'title',
 	},
 	{
-		header: 'Section',
+		header: 'Class',
 		accessor: 'class',
 	},
 	{
 		header: 'Date',
 		accessor: 'date',
-		className: 'hidden md:table-cell',
-	},
-	{
-		header: 'Start Time',
-		accessor: 'startTime',
-		className: 'hidden md:table-cell',
-	},
-	{
-		header: 'End Time',
-		accessor: 'endTime',
 		className: 'hidden md:table-cell',
 	},
 	{
