@@ -11,7 +11,6 @@ const LoginPage = () => {
 	const { isSignedIn, user, isLoaded } = useUser();
 
 	const router = useRouter();
-	console.log(user);
 
 	useEffect(() => {
 		const role = user?.publicMetadata.role;
