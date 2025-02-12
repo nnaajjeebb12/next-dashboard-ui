@@ -188,7 +188,6 @@ model Announcement {
 enum UserSex {
   MALE
   FEMALE
-  OTHER
 }
 
 enum Day {
