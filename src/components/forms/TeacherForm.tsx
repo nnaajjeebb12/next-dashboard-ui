@@ -42,7 +42,7 @@ const TeacherForm = ({
 		resolver: zodResolver(schema),
 	});
 
-	const onSubmit = handleSubmit((date) => {
+	const onSubmit = handleSubmit((data) => {
 		console.log({ data });
 	});
 	return (
