@@ -36,8 +36,8 @@ export const teacherSchema = z.object({
 		.email({ message: 'Invalid email address!' })
 		.optional()
 		.or(z.literal('')),
-	phoneNumber: z.string().optional(),
-	address: z.string().optional(),
+	phone: z.string().optional(),
+	address: z.string().min(1, { message: 'Address is required' }),
 	img: z.string().optional(),
 	bloodType: z.string().min(1, { message: 'Blood Type is required!' }),
 	birthday: z.coerce.date({ message: 'Birthday is required!' }),

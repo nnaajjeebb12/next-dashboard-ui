@@ -15,6 +15,7 @@ const nextConfig = {
 			{ hostname: 'scontent.fmnl13-7.fna.fbcdn.net' },
 			{ hostname: 'scontent.fmnl13-8.fna.fbcdn.net' },
 			{ hostname: 'media.discordapp.net' },
+			{ hostname: 'res.cloudinary.com' },
 		],
 	},
 };

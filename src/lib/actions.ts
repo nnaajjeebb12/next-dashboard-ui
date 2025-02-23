@@ -1,5 +1,6 @@
 'use server';
 
+import { clerkClient } from '@clerk/nextjs/server';
 import { error } from 'console';
 import { revalidatePath } from 'next/cache';
 import {
@@ -140,8 +141,35 @@ export const createTeacher = async (
 	data: TeacherSchema
 ) => {
 	try {
+		const client = await clerkClient();
+
+		const user = await client.users.createUser({
+			username: data.username,
+			password: data.password,
+			firstName: data.name,
+			lastName: data.surname,
+			publicMetadata: { role: 'teacher' },
+		});
+
 		await prisma.teacher.create({
-			data,
+			data: {
+				id: user.id,
+				username: data.username,
+				name: data.name,
+				surname: data.surname,
+				email: data.email || null,
+				phone: data.phone || null,
+				address: data.address,
+				img: data.img || null,
+				bloodType: data.bloodType,
+				sex: data.sex,
+				birthday: data.birthday,
+				subjects: {
+					connect: data.subjects?.map((subjectId: string) => ({
+						id: parseInt(subjectId),
+					})),
+				},
+			},
 		});
 
 		// revalidatePath("/list/teacher");

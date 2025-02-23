@@ -3,9 +3,10 @@
 import { createTeacher, updateTeacher } from '@/lib/actions';
 import { teacherSchema, TeacherSchema } from '@/lib/formValidationSchemas';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CldUploadWidget } from 'next-cloudinary';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Dispatch, SetStateAction, useEffect } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -31,6 +32,8 @@ const TeacherForm = ({
 		resolver: zodResolver(teacherSchema),
 	});
 
+	const [img, setImg] = useState<any>();
+
 	const [state, formAction] = useFormState(
 		type === 'create' ? createTeacher : updateTeacher,
 		{
@@ -41,7 +44,7 @@ const TeacherForm = ({
 
 	const onSubmit = handleSubmit((data) => {
 		console.log(data);
-		formAction(data);
+		formAction({ ...data, img: img?.secure_url });
 	});
 
 	const router = useRouter();
@@ -111,10 +114,10 @@ const TeacherForm = ({
 				/>
 				<InputField
 					label="Phone Number"
-					name="phoneNumber"
-					defaultValue={data?.phoneNumber}
+					name="phone"
+					defaultValue={data?.phone}
 					register={register}
-					error={errors.phoneNumber}
+					error={errors.phone}
 				/>
 				<InputField
 					label="Address"
@@ -145,8 +148,8 @@ const TeacherForm = ({
 						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
 						{...register('sex')}
 						defaultValue={data?.sex}>
-						<option value="male">Male</option>
-						<option value="female">Female</option>
+						<option value="MALE">Male</option>
+						<option value="FEMALE">Female</option>
 					</select>
 					{errors.sex?.message && (
 						<p className=" text-xs text-red-400">
@@ -173,27 +176,36 @@ const TeacherForm = ({
 						</p>
 					)}
 				</div>
-				<div className="flex flex-col gap-2 w-full md:w-1/4 justify-center">
-					<label
-						className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
-						htmlFor="img">
-						<Image
-							src="/upload.png"
-							alt=""
-							width={28}
-							height={28}
-							className=""
-						/>
-						<span className="">Upload a photo</span>
-					</label>
-					<input type="file" id="img" {...register('img')} className="hidden" />
-					{errors.img?.message && (
-						<p className=" text-xs text-red-400">
-							{errors.img.message.toString()}
-						</p>
-					)}
-				</div>
+				<CldUploadWidget
+					uploadPreset="school"
+					onSuccess={(result, { widget }) => {
+						setImg(result.info);
+						widget.close();
+						console.log(result);
+					}}>
+					{({ open }) => {
+						return (
+							<div
+								className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
+								onClick={() => open()}>
+								<Image
+									src="/upload.png"
+									alt=""
+									width={28}
+									height={28}
+									className=""
+								/>
+								<span className="">Upload a photo</span>
+							</div>
+						);
+					}}
+				</CldUploadWidget>
 			</div>
+
+			{state.error && (
+				<span className="text-red-500">Something went wrong!</span>
+			)}
+
 			<button className="bg-blue-400 text-white p-2 rounded-md">
 				{type === 'create' ? 'Create' : 'Update'}
 			</button>
