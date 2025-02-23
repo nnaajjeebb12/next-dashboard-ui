@@ -80,7 +80,7 @@ export const createClass = async (
 ) => {
 	try {
 		await prisma.class.create({
-			data: {},
+			data,
 		});
 
 		// revalidatePath("/list/class");
@@ -100,7 +100,7 @@ export const updateClass = async (
 			where: {
 				id: data.id,
 			},
-			data: {},
+			data,
 		});
 
 		// revalidatePath('/list/class');
