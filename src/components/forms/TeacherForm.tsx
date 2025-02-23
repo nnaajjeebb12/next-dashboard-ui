@@ -133,7 +133,6 @@ const TeacherForm = ({
 						defaultValue={data?.sex}>
 						<option value="male">Male</option>
 						<option value="female">Female</option>
-						<option value="other">Other</option>
 					</select>
 					{errors.sex?.message && (
 						<p className=" text-xs text-red-400">

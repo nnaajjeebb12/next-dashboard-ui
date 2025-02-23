@@ -1,4 +1,4 @@
-import FormModal from '@/components/FormModal';
+import FormContainer from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
 import TableSearch from '@/components/TableSearch';
@@ -46,8 +46,8 @@ const SubjectListpage = async ({
 				<div className="flex items-center gap-2">
 					{role === 'admin' && (
 						<>
-							<FormModal table="subject" type="update" data={item} />
-							<FormModal table="subject" type="delete" id={item.id} />
+							<FormContainer table="subject" type="update" data={item} />
+							<FormContainer table="subject" type="delete" id={item.id} />
 						</>
 					)}
 				</div>
@@ -66,8 +66,24 @@ const SubjectListpage = async ({
 		for (const [key, value] of Object.entries(queryParams)) {
 			if (value !== undefined)
 				switch (key) {
+					// case 'search':
+					// 	query.name = { contains: value, mode: 'insensitive' };
+					// 	break;
+					// default:
+					// 	break;
 					case 'search':
-						query.name = { contains: value, mode: 'insensitive' };
+						query.OR = [
+							{
+								name: { contains: value, mode: 'insensitive' },
+							},
+							{
+								teachers: {
+									some: {
+										name: { contains: value, mode: 'insensitive' },
+									},
+								},
+							},
+						];
 						break;
 					default:
 						break;
@@ -101,7 +117,9 @@ const SubjectListpage = async ({
 						<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
 							<Image src="/sort.png" alt="" width={14} height={14} />
 						</button>
-						{role === 'admin' && <FormModal table="subject" type="create" />}
+						{role === 'admin' && (
+							<FormContainer table="subject" type="create" />
+						)}
 					</div>
 				</div>
 			</div>
