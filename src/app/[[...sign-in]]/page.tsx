@@ -20,7 +20,7 @@ const LoginPage = () => {
 		}
 	}, [user, router]);
 	return (
-		<div className="h-screen flex items-center justify-center bg-najDepEdLavander rounded-lg">
+		<div className="h-screen flex items-center justify-center bg-najDepEdLavander rounded-lg ">
 			<SignIn.Root>
 				<SignIn.Step
 					name="start"

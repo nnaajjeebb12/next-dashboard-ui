@@ -34,7 +34,7 @@ const TeacherListpage = async ({
 			className: 'hidden md:table-cell',
 		},
 		{
-			header: 'Supervising Class',
+			header: 'Supervising Section',
 			accessor: 'classes',
 			className: 'hidden md:table-cell',
 		},
@@ -119,7 +119,10 @@ const TeacherListpage = async ({
 						};
 						break;
 					case 'search':
-						query.name = { contains: value, mode: 'insensitive' };
+						query.OR = [
+							{ name: { contains: value, mode: 'insensitive' } },
+							{ username: { contains: value, mode: 'insensitive' } },
+						];
 						break;
 					default:
 						break;

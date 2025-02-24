@@ -184,12 +184,43 @@ export const updateTeacher = async (
 	currentState: CurrentState,
 	data: TeacherSchema
 ) => {
+	if (!data.id) {
+		return { success: false, error: true };
+	}
 	try {
+		const client = await clerkClient();
+
+		const user = await client.users.updateUser(data.id, {
+			username: data.username,
+			...(data.password !== '' && { password: data.password }),
+			firstName: data.name,
+			lastName: data.surname,
+			publicMetadata: { role: 'teacher' },
+		});
+
 		await prisma.teacher.update({
 			where: {
 				id: data.id,
 			},
-			data,
+			data: {
+				...(data.password !== '' && { password: data.password }),
+				username: data.username,
+				name: data.name,
+				surname: data.surname,
+				email: data.email || null,
+				phone: data.phone || null,
+				address: data.address,
+				// img: data.img !== undefined ? data.img : null,
+				...(data.img !== '' && { img: data.img }),
+				bloodType: data.bloodType,
+				sex: data.sex,
+				birthday: data.birthday,
+				subjects: {
+					connect: data.subjects?.map((subjectId: string) => ({
+						id: parseInt(subjectId),
+					})),
+				},
+			},
 		});
 
 		// revalidatePath('/list/teacher');
