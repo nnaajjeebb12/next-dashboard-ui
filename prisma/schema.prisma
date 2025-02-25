@@ -39,6 +39,8 @@ model Student {
   attendances Attendance[]
   results     Result[]
   birthday    DateTime
+  strandId    String
+  Strand      Strand       @relation(fields: [strandId], references: [id])
 }
 
 model Teacher {
@@ -92,7 +94,6 @@ model Class {
   grade         Grade          @relation(fields: [gradeId], references: [id])
   events        Event[]
   announcements Announcement[]
-  // strand        String?
 }
 
 model Subject {
@@ -186,6 +187,11 @@ model Announcement {
   class   Class? @relation(fields: [classId], references: [id])
 }
 
+model Strand {
+  id       String    @id
+  students Student[]
+}
+
 enum UserSex {
   MALE
   FEMALE
@@ -199,4 +205,12 @@ enum Day {
   FRIDAY
   SATURDAY
   SUNDAY
+}
+
+enum studentStrand {
+  STEM
+  HUMSS
+  ABM
+  GAS
+  TVL
 }

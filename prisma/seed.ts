@@ -1,4 +1,4 @@
-import { Day, PrismaClient, UserSex } from '@prisma/client';
+import { Day, PrismaClient, studentStrand, UserSex } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
@@ -32,6 +32,16 @@ async function main() {
 				name: `${i}A`,
 				gradeId: i,
 				capacity: Math.floor(Math.random() * (20 - 15 + 1)) + 15,
+			},
+		});
+	}
+
+	// STRAND
+	const strandTypes = ['STEM', 'HUMSS', 'ABM', 'GAS', 'TVL'];
+	for (const strand of strandTypes) {
+		await prisma.strand.create({
+			data: {
+				id: strand,
 			},
 		});
 	}
@@ -129,6 +139,7 @@ async function main() {
 				birthday: new Date(
 					new Date().setFullYear(new Date().getFullYear() - 10)
 				),
+				strandId: strandTypes[i % strandTypes.length],
 			},
 		});
 	}

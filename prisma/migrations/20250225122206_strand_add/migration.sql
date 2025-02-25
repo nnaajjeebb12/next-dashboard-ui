@@ -1,8 +1,11 @@
 -- CreateEnum
-CREATE TYPE "UserSex" AS ENUM ('MALE', 'FEMALE', 'OTHER');
+CREATE TYPE "UserSex" AS ENUM ('MALE', 'FEMALE');
 
 -- CreateEnum
 CREATE TYPE "Day" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
+
+-- CreateEnum
+CREATE TYPE "studentStrand" AS ENUM ('STEM', 'HUMSS', 'ABM', 'GAS', 'TVL');
 
 -- CreateTable
 CREATE TABLE "Admin" (
@@ -23,12 +26,14 @@ CREATE TABLE "Student" (
     "address" TEXT NOT NULL,
     "img" TEXT,
     "bloodType" TEXT NOT NULL,
+    "strand" TEXT NOT NULL,
     "sex" "UserSex" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "parentId" TEXT NOT NULL,
     "classId" INTEGER NOT NULL,
     "gradeId" INTEGER NOT NULL,
     "birthday" TIMESTAMP(3) NOT NULL,
+    "strandId" INTEGER,
 
     CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
 );
@@ -174,6 +179,14 @@ CREATE TABLE "Announcement" (
 );
 
 -- CreateTable
+CREATE TABLE "Strand" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "Strand_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_SubjectToTeacher" (
     "A" INTEGER NOT NULL,
     "B" TEXT NOT NULL,
@@ -221,6 +234,9 @@ CREATE UNIQUE INDEX "Class_name_key" ON "Class"("name");
 CREATE UNIQUE INDEX "Subject_name_key" ON "Subject"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Strand_name_key" ON "Strand"("name");
+
+-- CreateIndex
 CREATE INDEX "_SubjectToTeacher_B_index" ON "_SubjectToTeacher"("B");
 
 -- AddForeignKey
@@ -231,6 +247,9 @@ ALTER TABLE "Student" ADD CONSTRAINT "Student_classId_fkey" FOREIGN KEY ("classI
 
 -- AddForeignKey
 ALTER TABLE "Student" ADD CONSTRAINT "Student_gradeId_fkey" FOREIGN KEY ("gradeId") REFERENCES "Grade"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Student" ADD CONSTRAINT "Student_strandId_fkey" FOREIGN KEY ("strandId") REFERENCES "Strand"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Class" ADD CONSTRAINT "Class_supervisorId_fkey" FOREIGN KEY ("supervisorId") REFERENCES "Teacher"("id") ON DELETE SET NULL ON UPDATE CASCADE;
