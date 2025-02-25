@@ -43,7 +43,6 @@ const TeacherForm = ({
 	);
 
 	const onSubmit = handleSubmit((data) => {
-		console.log(data);
 		formAction({ ...data, img: img?.secure_url });
 	});
 
@@ -191,7 +190,6 @@ const TeacherForm = ({
 					onSuccess={(result, { widget }) => {
 						setImg(result.info);
 						widget.close();
-						console.log(result);
 					}}>
 					{({ open }) => {
 						return (

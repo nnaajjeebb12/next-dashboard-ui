@@ -145,10 +145,10 @@ export const createTeacher = async (
 	currentState: CurrentState,
 	data: TeacherSchema
 ) => {
+	let clerkUser;
+	const client = await clerkClient();
 	try {
-		const client = await clerkClient();
-
-		const user = await client.users.createUser({
+		clerkUser = await client.users.createUser({
 			username: data.username,
 			password: data.password,
 			firstName: data.name,
@@ -158,7 +158,7 @@ export const createTeacher = async (
 
 		await prisma.teacher.create({
 			data: {
-				id: user.id,
+				id: clerkUser.id,
 				username: data.username,
 				name: data.name,
 				surname: data.surname,
@@ -181,6 +181,17 @@ export const createTeacher = async (
 		return { success: true, error: false };
 	} catch (err) {
 		console.log(err);
+		console.log('clerkid = ' + clerkUser?.id);
+		if (clerkUser) {
+			try {
+				await client.users.deleteUser(clerkUser.id);
+			} catch (deleteErr) {
+				console.log(
+					'Failed to delete Clerk user after teacher creation failure:',
+					deleteErr
+				);
+			}
+		}
 		return { success: false, error: true };
 	}
 };
