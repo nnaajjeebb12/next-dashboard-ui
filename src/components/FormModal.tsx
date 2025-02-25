@@ -1,6 +1,11 @@
 'use client';
 
-import { deleteClass, deleteSubject, deleteTeacher } from '@/lib/actions';
+import {
+	deleteClass,
+	deleteStrand,
+	deleteSubject,
+	deleteTeacher,
+} from '@/lib/actions';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -22,6 +27,7 @@ const deleteActionMap = {
 	attendance: deleteSubject,
 	event: deleteSubject,
 	announcement: deleteSubject,
+	strand: deleteStrand,
 };
 
 // import StudentForm from './forms/StudentForm';
@@ -44,6 +50,10 @@ const ClassForm = dynamic(() => import('./forms/ClassForm'), {
 });
 
 const EventForm = dynamic(() => import('./forms/EventForm'), {
+	loading: () => <h1>Loading...</h1>,
+});
+
+const StrandForm = dynamic(() => import('./forms/StrandForm'), {
 	loading: () => <h1>Loading...</h1>,
 });
 
@@ -73,6 +83,14 @@ const forms: {
 	),
 	teacher: (setOpen, type, data, relatedData) => (
 		<TeacherForm
+			type={type}
+			data={data}
+			setOpen={setOpen}
+			relatedData={relatedData}
+		/>
+	),
+	strand: (setOpen, type, data, relatedData) => (
+		<StrandForm
 			type={type}
 			data={data}
 			setOpen={setOpen}

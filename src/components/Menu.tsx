@@ -90,6 +90,12 @@ const menuItems = [
 				href: '/list/announcements',
 				visible: ['admin', 'teacher', 'student', 'parent'],
 			},
+			{
+				icon: '/strand_edited.png',
+				label: 'Strand',
+				href: '/list/strand',
+				visible: ['admin', 'teacher'],
+			},
 		],
 	},
 	{

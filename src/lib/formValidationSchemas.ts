@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+// SUBJECT
 export const subjectSchema = z.object({
 	id: z.coerce.number().optional(),
 	name: z.string().min(1, { message: 'Subject name is required!' }),
@@ -8,6 +9,7 @@ export const subjectSchema = z.object({
 
 export type SubjectSchema = z.infer<typeof subjectSchema>;
 
+// CLASS
 export const classSchema = z.object({
 	id: z.coerce.number().optional(),
 	name: z.string().min(1, { message: 'Supervisor name is required!' }),
@@ -20,6 +22,7 @@ export const classSchema = z.object({
 
 export type ClassSchema = z.infer<typeof classSchema>;
 
+// TEACHER
 export const teacherSchema = z.object({
 	id: z.string().optional(),
 	username: z
@@ -48,3 +51,11 @@ export const teacherSchema = z.object({
 });
 
 export type TeacherSchema = z.infer<typeof teacherSchema>;
+
+// STRAND
+export const strandSchema = z.object({
+	id: z.string().min(2, { message: 'Strand is required' }),
+	students: z.array(z.string()),
+});
+
+export type StrandSchema = z.infer<typeof strandSchema>;

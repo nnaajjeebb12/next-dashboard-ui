@@ -1,10 +1,12 @@
 'use server';
 
 import { clerkClient } from '@clerk/nextjs/server';
+import { Strand } from '@prisma/client';
 import { error } from 'console';
 import { revalidatePath } from 'next/cache';
 import {
 	ClassSchema,
+	StrandSchema,
 	SubjectSchema,
 	TeacherSchema,
 } from './formValidationSchemas';
@@ -12,6 +14,7 @@ import prisma from './prisma';
 
 type CurrentState = { success: boolean; error: boolean };
 
+// SUBJECT
 export const createSubject = async (
 	currentState: CurrentState,
 	data: SubjectSchema
@@ -79,6 +82,7 @@ export const deleteSubject = async (
 	}
 };
 
+// CLASS
 export const createClass = async (
 	currentState: CurrentState,
 	data: ClassSchema
@@ -136,6 +140,7 @@ export const deleteClass = async (
 	}
 };
 
+// TEACHER
 export const createTeacher = async (
 	currentState: CurrentState,
 	data: TeacherSchema
@@ -244,6 +249,73 @@ export const deleteTeacher = async (
 		});
 
 		// revalidatePath('/list/teacher');
+		return { success: true, error: false };
+	} catch (err) {
+		console.log(err);
+		return { success: false, error: true };
+	}
+};
+
+// STRAND
+export const createStrand = async (
+	currentState: CurrentState,
+	data: StrandSchema
+) => {
+	try {
+		await prisma.strand.create({
+			data: {
+				id: data.id,
+				students: {
+					connect: data.students.map((studentId) => ({ id: studentId })),
+				},
+			},
+		});
+
+		// revalidatePath("/list/strand");
+		return { success: true, error: false };
+	} catch (err) {
+		console.log(err);
+		return { success: false, error: true };
+	}
+};
+
+export const updateStrand = async (
+	currentState: CurrentState,
+	data: StrandSchema
+) => {
+	try {
+		await prisma.strand.update({
+			where: {
+				id: data.id,
+			},
+			data: {
+				students: {
+					set: data.students.map((studentId) => ({ id: studentId })),
+				},
+			},
+		});
+
+		// revalidatePath('/list/class');
+		return { success: true, error: false };
+	} catch (err) {
+		console.log(err);
+		return { success: false, error: true };
+	}
+};
+
+export const deleteStrand = async (
+	currentState: CurrentState,
+	data: FormData
+) => {
+	const id = data.get('id') as string;
+	try {
+		await prisma.class.delete({
+			where: {
+				id: parseInt(id),
+			},
+		});
+
+		// revalidatePath('/list/class');
 		return { success: true, error: false };
 	} catch (err) {
 		console.log(err);
