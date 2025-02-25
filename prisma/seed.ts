@@ -37,13 +37,16 @@ async function main() {
 	}
 
 	// STRAND
-	const strandTypes = ['STEM', 'HUMSS', 'ABM', 'GAS', 'TVL'];
+	const strandTypes = [
+		{ name: 'STEM' },
+		{ name: 'HUMSS' },
+		{ name: 'ABM' },
+		{ name: 'GAS' },
+		{ name: 'TVL' },
+	];
+
 	for (const strand of strandTypes) {
-		await prisma.strand.create({
-			data: {
-				id: strand,
-			},
-		});
+		await prisma.strand.create({ data: strand });
 	}
 
 	// SUBJECT
@@ -139,7 +142,7 @@ async function main() {
 				birthday: new Date(
 					new Date().setFullYear(new Date().getFullYear() - 10)
 				),
-				strandId: strandTypes[i % strandTypes.length],
+				strandId: (i % 5) + 1,
 			},
 		});
 	}

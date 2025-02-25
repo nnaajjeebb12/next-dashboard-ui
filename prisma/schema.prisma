@@ -39,7 +39,7 @@ model Student {
   attendances Attendance[]
   results     Result[]
   birthday    DateTime
-  strandId    String
+  strandId    Int
   Strand      Strand       @relation(fields: [strandId], references: [id])
 }
 
@@ -188,7 +188,8 @@ model Announcement {
 }
 
 model Strand {
-  id       String    @id
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
   students Student[]
 }
 

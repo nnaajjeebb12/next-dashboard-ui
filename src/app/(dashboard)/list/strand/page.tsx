@@ -32,12 +32,11 @@ const StrandListpage = async ({
 			accessor: 'action',
 		},
 	];
-
 	const renderRow = (item: StrandList) => (
 		<tr
 			key={item.id}
 			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
-			<td className="flex items-center gap-4 p-4">{item.id}</td>
+			<td className="flex items-center gap-4 p-4">{item.name}</td>
 			<td className="hidden md:table-cell">
 				{item.students.map((student) => student.name).join(', ')}
 			</td>
@@ -73,7 +72,7 @@ const StrandListpage = async ({
 					case 'search':
 						query.OR = [
 							{
-								id: { contains: value, mode: 'insensitive' },
+								name: { contains: value, mode: 'insensitive' },
 							},
 							{
 								students: {

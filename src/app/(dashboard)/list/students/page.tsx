@@ -5,11 +5,11 @@ import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
 import { getRole, getUserId } from '@/lib/utils';
-import { Class, Prisma, Student } from '@prisma/client';
+import { Class, Prisma, Strand, Student } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
 
-type StudentList = Student & { class: Class };
+type StudentList = Student & { class: Class } & { Strand: Strand };
 
 const StudentListpage = async ({
 	searchParams,
@@ -67,7 +67,7 @@ const StudentListpage = async ({
 				/>
 				<div className="flex flex-col">
 					<h3 className="font-semibold">{item.name}</h3>
-					<p className="text-xs text-gray-500">{item.class.name}</p>
+					<p className="text-xs text-gray-500">{item.Strand.name}</p>
 				</div>
 			</td>
 			<td className="hidden md:table-cell">{item.username}</td>
@@ -122,6 +122,7 @@ const StudentListpage = async ({
 		prisma.student.findMany({
 			where: query,
 			include: {
+				Strand: true,
 				class: true,
 			},
 			take: ITEM_PER_PAGE,

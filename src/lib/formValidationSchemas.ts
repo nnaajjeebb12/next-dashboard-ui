@@ -54,8 +54,8 @@ export type TeacherSchema = z.infer<typeof teacherSchema>;
 
 // STRAND
 export const strandSchema = z.object({
-	id: z.string().min(2, { message: 'Strand is required' }),
-	students: z.array(z.string()),
+	id: z.coerce.number().optional(),
+	name: z.string().min(2, { message: 'Strand is required' }),
 });
 
 export type StrandSchema = z.infer<typeof strandSchema>;

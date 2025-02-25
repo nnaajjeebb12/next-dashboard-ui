@@ -264,10 +264,7 @@ export const createStrand = async (
 	try {
 		await prisma.strand.create({
 			data: {
-				id: data.id,
-				students: {
-					connect: data.students.map((studentId) => ({ id: studentId })),
-				},
+				name: data.name,
 			},
 		});
 
@@ -289,9 +286,7 @@ export const updateStrand = async (
 				id: data.id,
 			},
 			data: {
-				students: {
-					set: data.students.map((studentId) => ({ id: studentId })),
-				},
+				name: data.name,
 			},
 		});
 
