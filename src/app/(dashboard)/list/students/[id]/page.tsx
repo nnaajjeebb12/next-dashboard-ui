@@ -1,11 +1,40 @@
 import Announcements from '@/components/Announcements';
 import BigCalendar from '@/components/BigCalendar';
+import BigCalendarContainer from '@/components/BigCalendarContainer';
 import FormModal from '@/components/FormModal';
 import Performance from '@/components/Performance';
+import StudentAttendanceCard from '@/components/StudentAttendanceCard';
+import prisma from '@/lib/prisma';
+import { getRole, getUserId } from '@/lib/utils';
+import { Class, Strand, Student } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
-const SingleStudentPage = () => {
+const SingleStudentPage = async ({
+	params: { id },
+}: {
+	params: { id: string };
+}) => {
+	const role = await getRole();
+	const userId = await getUserId();
+
+	const student:
+		| (Student & {
+				class: Class & { _count: { lessons: number } };
+		  } & { Strand: Strand })
+		| null = await prisma.student.findUnique({
+		where: { id },
+		include: {
+			class: { include: { _count: { select: { lessons: true } } } },
+			Strand: true,
+		},
+	});
+
+	if (!student) {
+		return notFound();
+	}
 	return (
 		<div className="flex-1 p-4 flex flex-col gap-4 xl:flex-row">
 			{/* LEFT */}
@@ -16,7 +45,7 @@ const SingleStudentPage = () => {
 					<div className="bg-najSky py-6 px-4 rounded-md flex-1 flex gap-4">
 						<div className="w-1/3">
 							<Image
-								src="https://scontent.fmnl13-2.fna.fbcdn.net/v/t39.30808-6/317928724_6016268691751514_4122983082771521543_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFPVw9EWuZFKgdcFtaTb7YnDblLIy6YTIMNuUsjLphMg6P9m-AYewtLc3FDetc4pRuWtiGZmJh-dMfYvb_BTeUL&_nc_ohc=fjgA1YlMTzkQ7kNvgFxS1jp&_nc_zt=23&_nc_ht=scontent.fmnl13-2.fna&_nc_gid=A6FTQt4o9nqCCwQ0waI3i84&oh=00_AYBpIa3NQ20vgiwg6QiTQnLyHq3dN0qejuocvgdVRGUKDQ&oe=67A368FA"
+								src={student.img || '/noAvatar.png'}
 								alt=""
 								width={144}
 								height={144}
@@ -25,7 +54,9 @@ const SingleStudentPage = () => {
 						</div>
 						<div className="w-2/3 flex flex-col justify-between gap-4">
 							<div className="flex items-center gap-4">
-								<h1 className="text-xl font-semibold">Naj Lopez</h1>
+								<h1 className="text-xl font-semibold">
+									{student.name + ' ' + student.surname}
+								</h1>
 								<FormModal
 									table="student"
 									type="update"
@@ -57,7 +88,7 @@ const SingleStudentPage = () => {
 										height={14}
 										className=""
 									/>
-									<span>A+</span>
+									<span>{student.bloodType}</span>
 								</div>
 								<div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
 									<Image
@@ -67,7 +98,9 @@ const SingleStudentPage = () => {
 										height={14}
 										className=""
 									/>
-									<span>January 2025</span>
+									<span>
+										{new Intl.DateTimeFormat('en-US').format(student.birthday)}
+									</span>
 								</div>
 								<div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
 									<Image
@@ -77,7 +110,7 @@ const SingleStudentPage = () => {
 										height={14}
 										className=""
 									/>
-									<span>najeeblopez@gmail.com</span>
+									<span>{student.email || '-'}</span>
 								</div>
 								<div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
 									<Image
@@ -87,7 +120,7 @@ const SingleStudentPage = () => {
 										height={14}
 										className=""
 									/>
-									<span>09212130968</span>
+									<span>{student.phone || '-'}</span>
 								</div>
 							</div>
 						</div>
@@ -103,10 +136,9 @@ const SingleStudentPage = () => {
 								height={24}
 								className="w-6 h-6"
 							/>
-							<div className="">
-								<h1 className="text-xl font-semibold">90%</h1>
-								<span className="text-sm text-gray-400">Attendance</span>
-							</div>
+							<Suspense fallback="loading...">
+								<StudentAttendanceCard id={student.id} />
+							</Suspense>
 						</div>
 						{/* BRANCHES CARD */}
 						<div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
@@ -118,8 +150,8 @@ const SingleStudentPage = () => {
 								className="w-6 h-6"
 							/>
 							<div className="">
-								<h1 className="text-xl font-semibold">12th</h1>
-								<span className="text-sm text-gray-400">Grade</span>
+								<h1 className="text-xl font-semibold">{student.Strand.name}</h1>
+								<span className="text-sm text-gray-400">Strand</span>
 							</div>
 						</div>
 						{/* LESSONS CARD */}
@@ -132,7 +164,9 @@ const SingleStudentPage = () => {
 								className="w-6 h-6"
 							/>
 							<div className="">
-								<h1 className="text-xl font-semibold">18</h1>
+								<h1 className="text-xl font-semibold">
+									{student.class._count.lessons}
+								</h1>
 								<span className="text-sm text-gray-400">Lessons</span>
 							</div>
 						</div>
@@ -146,7 +180,9 @@ const SingleStudentPage = () => {
 								className="w-6 h-6"
 							/>
 							<div className="">
-								<h1 className="text-xl font-semibold">12-Rizal</h1>
+								<h1 className="text-xl font-semibold">
+									{student.class.gradeId + '-' + student.class.name}
+								</h1>
 								<span className="text-sm text-gray-400">Section</span>
 							</div>
 						</div>
@@ -155,7 +191,7 @@ const SingleStudentPage = () => {
 				{/* BOTTOM */}
 				<div className="mt-4 bg-white rounded-md p-4 h-[800px]">
 					<h1>Student&apos;s Schedule</h1>
-					<BigCalendar />
+					<BigCalendarContainer type="classId" id={student.class.id} />
 				</div>
 			</div>
 			{/* RIGHT */}

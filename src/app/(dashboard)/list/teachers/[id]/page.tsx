@@ -15,6 +15,8 @@ const SingleTeacherPage = async ({
 }: {
 	params: { id: string };
 }) => {
+	const role = await getRole();
+	const userId = await getUserId();
 	const teacher:
 		| (Teacher & {
 				_count: { subjects: number; lessons: number; classes: number };
@@ -32,13 +34,10 @@ const SingleTeacherPage = async ({
 		},
 	});
 
-	const role = await getRole();
-	const userId = await getUserId();
-
 	if (!teacher) {
 		return notFound();
 	}
-	console.log(teacher);
+
 	return (
 		<div className="flex-1 p-4 flex flex-col gap-4 xl:flex-row">
 			{/* LEFT */}
@@ -183,7 +182,7 @@ const SingleTeacherPage = async ({
 				{/* BOTTOM */}
 				<div className="mt-4 bg-white rounded-md p-4 h-[800px]">
 					<h1>Teacher&apos;s Schedule</h1>
-					<BigCalendarContainer type="teacherId" id={userId!} />
+					<BigCalendarContainer type="teacherId" id={teacher.id} />
 				</div>
 			</div>
 			{/* RIGHT */}

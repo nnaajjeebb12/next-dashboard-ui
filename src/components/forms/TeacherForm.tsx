@@ -96,6 +96,29 @@ const TeacherForm = ({
 			<span className="text-xs text-gray-400 font-medium">
 				Personal Information
 			</span>
+			<CldUploadWidget
+				uploadPreset="school"
+				onSuccess={(result, { widget }) => {
+					setImg(result.info);
+					widget.close();
+				}}>
+				{({ open }) => {
+					return (
+						<div
+							className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
+							onClick={() => open()}>
+							<Image
+								src="/upload.png"
+								alt=""
+								width={28}
+								height={28}
+								className=""
+							/>
+							<span className="">Upload a profile photo</span>
+						</div>
+					);
+				}}
+			</CldUploadWidget>
 			<div className="flex justify-between flex-wrap gap-4">
 				<InputField
 					label="First Name"
@@ -185,29 +208,6 @@ const TeacherForm = ({
 						</p>
 					)}
 				</div>
-				<CldUploadWidget
-					uploadPreset="school"
-					onSuccess={(result, { widget }) => {
-						setImg(result.info);
-						widget.close();
-					}}>
-					{({ open }) => {
-						return (
-							<div
-								className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
-								onClick={() => open()}>
-								<Image
-									src="/upload.png"
-									alt=""
-									width={28}
-									height={28}
-									className=""
-								/>
-								<span className="">Upload a photo</span>
-							</div>
-						);
-					}}
-				</CldUploadWidget>
 			</div>
 
 			{state.error && (

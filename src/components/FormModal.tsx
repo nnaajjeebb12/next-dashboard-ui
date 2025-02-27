@@ -3,6 +3,7 @@
 import {
 	deleteClass,
 	deleteStrand,
+	deleteStudent,
 	deleteSubject,
 	deleteTeacher,
 } from '@/lib/actions';
@@ -16,7 +17,7 @@ import { FormContainerProps } from './FormContainer';
 
 const deleteActionMap = {
 	subject: deleteSubject,
-	student: deleteSubject,
+	student: deleteStudent,
 	class: deleteClass,
 	teacher: deleteTeacher,
 	parent: deleteSubject,
@@ -97,14 +98,14 @@ const forms: {
 			relatedData={relatedData}
 		/>
 	),
-	// student: (setOpen, type, data, relatedData) => (
-	// 	<StudentForm
-	// 		type={type}
-	// 		data={data}
-	// 		setOpen={setOpen}
-	// 		relatedData={relatedData}
-	// 	/>
-	// ),
+	student: (setOpen, type, data, relatedData) => (
+		<StudentForm
+			type={type}
+			data={data}
+			setOpen={setOpen}
+			relatedData={relatedData}
+		/>
+	),
 };
 
 const FormModal = ({
@@ -134,7 +135,7 @@ const FormModal = ({
 
 		useEffect(() => {
 			if (state.success) {
-				toast.success(`Subject has been deleted!`);
+				toast.success(`${table} has been deleted!`);
 				setOpen(false);
 				router.refresh();
 			}
