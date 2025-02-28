@@ -1,6 +1,7 @@
 import Announcements from '@/components/Announcements';
 import BigCalendar from '@/components/BigCalendar';
 import BigCalendarContainer from '@/components/BigCalendarContainer';
+import FormContainer from '@/components/FormContainer';
 import FormModal from '@/components/FormModal';
 import Performance from '@/components/Performance';
 import StudentAttendanceCard from '@/components/StudentAttendanceCard';
@@ -57,24 +58,9 @@ const SingleStudentPage = async ({
 								<h1 className="text-xl font-semibold">
 									{student.name + ' ' + student.surname}
 								</h1>
-								<FormModal
-									table="student"
-									type="update"
-									data={{
-										id: 1,
-										username: 'najeeblopez',
-										email: 'najeeblopez@gmail.com',
-										password: 'password',
-										firstName: 'Najeeb',
-										lastName: 'Lopez',
-										phoneNumber: '09212130968',
-										address: 'Somewhere in the Philippines',
-										bloodType: 'A+',
-										dateOfBirth: '01/01/2000',
-										sex: 'male',
-										img: 'https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=1200',
-									}}
-								/>
+								{role === 'admin' && (
+									<FormContainer table="student" type="update" data={student} />
+								)}
 							</div>
 							<p className="text-sm text-gray-500">
 								Lorem ipsum dolor sit amet consectetur adipisicing elit.

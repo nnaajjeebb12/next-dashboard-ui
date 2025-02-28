@@ -58,6 +58,10 @@ const StrandForm = dynamic(() => import('./forms/StrandForm'), {
 	loading: () => <h1>Loading...</h1>,
 });
 
+const ExamForm = dynamic(() => import('./forms/ExamForm'), {
+	loading: () => <h1>Loading...</h1>,
+});
+
 const forms: {
 	[key: string]: (
 		setOpen: Dispatch<SetStateAction<boolean>>,
