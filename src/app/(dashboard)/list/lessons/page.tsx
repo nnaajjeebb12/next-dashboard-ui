@@ -1,4 +1,4 @@
-import FormModal from '@/components/FormModal';
+import FormContainer from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
 import TableSearch from '@/components/TableSearch';
@@ -22,16 +22,35 @@ const LessonListpage = async ({
 	const currentUserId = await getUserId();
 	const columns = [
 		{
-			header: 'Subject Name',
+			header: 'Lesson Name',
 			accessor: 'name',
 		},
 		{
-			header: 'Class',
+			header: 'Subject Name',
+			accessor: 'subject',
+		},
+		{
+			header: 'Section Name',
 			accessor: 'class',
 		},
 		{
 			header: 'Teacher Name',
 			accessor: 'teacher',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Day',
+			accessor: 'day',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Start Time',
+			accessor: 'startTime',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'End Time',
+			accessor: 'endTime',
 			className: 'hidden md:table-cell',
 		},
 		...(role === 'admin'
@@ -48,17 +67,33 @@ const LessonListpage = async ({
 		<tr
 			key={item.id}
 			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
-			<td className="flex items-center gap-4 p-4">{item.subject.name}</td>
+			<td className="flex items-center gap-4 p-4">{item.name}</td>
+			<td>{item.subject.name}</td>
 			<td>{item.class.name}</td>
 			<td className="hidden md:table-cell">
 				{item.teacher.name + ' ' + item.teacher.surname}
+			</td>
+			<td className="hidden md:table-cell">{item.day}</td>
+			<td className="hidden lg:table-cell">
+				{new Intl.DateTimeFormat('en-US', {
+					hour: '2-digit',
+					minute: '2-digit',
+					hour12: true, // or false for 24-hour format
+				}).format(item.startTime)}
+			</td>
+			<td className="hidden lg:table-cell">
+				{new Intl.DateTimeFormat('en-US', {
+					hour: '2-digit',
+					minute: '2-digit',
+					hour12: true, // or false for 24-hour format
+				}).format(item.endTime)}
 			</td>
 			<td>
 				<div className="flex items-center gap-2">
 					{role === 'admin' && (
 						<>
-							<FormModal table="lesson" type="update" data={item} />
-							<FormModal table="lesson" type="delete" id={item.id} />
+							<FormContainer table="lesson" type="update" data={item} />
+							<FormContainer table="lesson" type="delete" id={item.id} />
 						</>
 					)}
 				</div>
@@ -85,8 +120,16 @@ const LessonListpage = async ({
 						break;
 					case 'search':
 						query.OR = [
+							{ name: { contains: value, mode: 'insensitive' } },
 							{ subject: { name: { contains: value, mode: 'insensitive' } } },
-							{ teacher: { name: { contains: value, mode: 'insensitive' } } },
+							{
+								teacher: {
+									OR: [
+										{ name: { contains: value, mode: 'insensitive' } },
+										{ surname: { contains: value, mode: 'insensitive' } },
+									],
+								},
+							},
 						];
 						break;
 					default:
@@ -123,7 +166,7 @@ const LessonListpage = async ({
 						<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
 							<Image src="/sort.png" alt="" width={14} height={14} />
 						</button>
-						{role === 'admin' && <FormModal table="lesson" type="create" />}
+						{role === 'admin' && <FormContainer table="lesson" type="create" />}
 					</div>
 				</div>
 			</div>

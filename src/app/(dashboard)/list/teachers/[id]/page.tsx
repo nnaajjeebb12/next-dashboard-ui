@@ -64,9 +64,6 @@ const SingleTeacherPage = async ({
 									<FormContainer table="teacher" type="update" data={teacher} />
 								)}
 							</div>
-							<p className="text-sm text-gray-500">
-								Lorem ipsum dolor sit amet consectetur adipisicing elit.
-							</p>
 							<div className="flex items-center justify-between gap-2 flex-wrap text-xs font-medium">
 								<div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
 									<Image
@@ -111,6 +108,9 @@ const SingleTeacherPage = async ({
 									<span>{teacher.phone || '-'}</span>
 								</div>
 							</div>
+							{/* <p className="text-sm text-gray-500">
+								Lorem ipsum dolor sit amet consectetur adipisicing elit.
+							</p> */}
 						</div>
 					</div>
 					{/* SMALL CARD */}
@@ -192,27 +192,27 @@ const SingleTeacherPage = async ({
 					<div className="mt-4 flex gap-4 flex-wrap text-xs to-gray-500">
 						<Link
 							className="p-3 rounded-md bg-najSkyLight"
-							href={`/list/classes?supervisorId=${'teacher2'}`}>
+							href={`/list/sections?supervisorId=${teacher.id}`}>
 							Teacher&apos;s Classes
 						</Link>
-						<Link
+						{/* <Link
 							className="p-3 rounded-md bg-najPurpleLight"
-							href={`/list/students?teacherId=${'teacher2'}`}>
+							href={`/list/students?teacherId=${teacher.id}`}>
 							Teacher&apos;s Students
-						</Link>
+						</Link> */}
 						<Link
 							className="p-3 rounded-md bg-najYellowLight"
-							href={`/list/lessons?teacherId=${'teacher2'}`}>
+							href={`/list/lessons?teacherId=${teacher.id}`}>
 							Teacher&apos;s Lessons
 						</Link>
 						<Link
 							className="p-3 rounded-md bg-pink-50"
-							href={`/list/exams?teacherId=${'teacher2'}`}>
+							href={`/list/exams?teacherId=${teacher.id}`}>
 							Teacher&apos;s Exams
 						</Link>
 						<Link
 							className="p-3 rounded-md bg-najSkyLight"
-							href={`/list/assignments?teacherId=${'teacher2'}`}>
+							href={`/list/assignments?teacherId=${teacher.id}`}>
 							Teacher&apos;s Assignments
 						</Link>
 					</div>

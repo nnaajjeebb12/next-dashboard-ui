@@ -27,7 +27,11 @@ const ExamListpage = async ({
 	const currentUserId = await getUserId();
 	const columns = [
 		{
-			header: 'Subject Name',
+			header: 'Exam Name',
+			accessor: 'title',
+		},
+		{
+			header: 'Subject',
 			accessor: 'name',
 		},
 		{
@@ -44,6 +48,16 @@ const ExamListpage = async ({
 			accessor: 'date',
 			className: 'hidden md:table-cell',
 		},
+		{
+			header: 'Start Time',
+			accessor: 'time',
+			className: 'hidden lg:table-cell',
+		},
+		{
+			header: 'End Time',
+			accessor: 'time',
+			className: 'hidden lg:table-cell',
+		},
 		...(role === 'admin' || role === 'teacher'
 			? [
 					{
@@ -59,14 +73,30 @@ const ExamListpage = async ({
 			key={item.id}
 			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
 			<td className="flex items-center gap-4 p-4">
-				{item.lesson.subject.name}
+				{item.title}
+				{/* {item.lesson.subject.name} */}
 			</td>
+			<td>{item.lesson.subject.name}</td>
 			<td>{item.lesson.class.name}</td>
 			<td className="hidden md:table-cell">
 				{item.lesson.teacher.name + ' ' + item.lesson.teacher.surname}
 			</td>
 			<td className="hidden md:table-cell">
 				{new Intl.DateTimeFormat('en-US').format(item.startTime)}
+			</td>
+			<td className="hidden lg:table-cell">
+				{new Intl.DateTimeFormat('en-US', {
+					hour: '2-digit',
+					minute: '2-digit',
+					hour12: true, // or false for 24-hour format
+				}).format(item.startTime)}
+			</td>
+			<td className="hidden lg:table-cell">
+				{new Intl.DateTimeFormat('en-US', {
+					hour: '2-digit',
+					minute: '2-digit',
+					hour12: true, // or false for 24-hour format
+				}).format(item.endTime)}
 			</td>
 			<td>
 				<div className="flex items-center gap-2">

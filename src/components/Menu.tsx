@@ -38,8 +38,8 @@ const menuItems = [
 			},
 			{
 				icon: '/class.png',
-				label: 'Classes',
-				href: '/list/classes',
+				label: 'Sections',
+				href: '/list/sections',
 				visible: ['admin', 'teacher'],
 			},
 			{

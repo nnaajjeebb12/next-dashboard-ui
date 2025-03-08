@@ -9,7 +9,7 @@
 }
 
 .react-calendar__navigation__label__labelText {
-	font-weight: 600 !important;
+	font-weight: 600;
 }
 
 .react-calendar__tile--active {
@@ -23,7 +23,7 @@
 
 .rbc-toolbar-label {
 	text-align: right !important;
-	padding: 0px, 20px !important;
+	padding: 0px 20px !important;
 }
 
 .rbc-btn-group:last-child {
@@ -36,12 +36,13 @@
 	margin-left: 2px !important;
 }
 
+.rbc-toolbar button.rbc-active {
+	background-color: #dbdafe !important;
+	box-shadow: none !important;
+}
+
 .rbc-active button.rbc.rbc-btn-group:last-child {
 	font-size: 13px !important;
-}
-.rbc-toolbar button.rbc-active {
-	border-color: #dbdafe !important;
-	box-shadow: none !important;
 }
 
 .rbc-time-view {
@@ -110,4 +111,9 @@
 
 .rbc-event:nth-child(4n + 4) {
 	background-color: #e7dfc4 !important;
+}
+
+.rbc-event-label {
+	color: gray !important;
+	margin-bottom: 5px;
 }
