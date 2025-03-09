@@ -701,7 +701,7 @@ export const createAssignment = async (
 			},
 		});
 
-		// revalidatePath("/list/exams");
+		// revalidatePath("/list/assignment");
 		return { success: true, error: false };
 	} catch (err) {
 		console.log(err);
@@ -711,7 +711,7 @@ export const createAssignment = async (
 
 export const updateAssignment = async (
 	currentState: CurrentState,
-	data: ExamSchema
+	data: AssignmentSchema
 ) => {
 	const role = await getRole();
 	const userId = await getUserId();
@@ -728,18 +728,18 @@ export const updateAssignment = async (
 				return { success: false, error: true };
 			}
 		}
-		await prisma.exam.update({
+		await prisma.assignment.update({
 			where: {
 				id: data.id,
 			},
 			data: {
 				title: data.title,
-				startTime: data.startTime,
-				endTime: data.endTime,
+				startDate: data.startDate,
+				dueDate: data.dueDate,
 				lessonId: data.lessonId,
 			},
 		});
-		// revalidatePath('/list/subjects');
+		// revalidatePath('/list/assignments');
 		return { success: true, error: false };
 	} catch (err) {
 		console.log(err);
@@ -757,7 +757,7 @@ export const deleteAssignment = async (
 	const userId = await getUserId();
 
 	try {
-		await prisma.exam.delete({
+		await prisma.assignment.delete({
 			where: {
 				id: parseInt(id),
 				...(role === 'teacher' ? { lesson: { teacherId: userId! } } : {}),

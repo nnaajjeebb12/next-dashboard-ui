@@ -25,6 +25,9 @@ export type FormContainerProps = {
 const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
 	let relatedData = {};
 
+	const role = await getRole();
+	const userId = await getUserId();
+
 	if (type !== 'delete') {
 		switch (table) {
 			case 'subject':
@@ -71,9 +74,6 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
 				};
 				break;
 			case 'exam':
-				const role = await getRole();
-				const userId = await getUserId();
-
 				const examLessons = await prisma.lesson.findMany({
 					where: {
 						...(role === 'teacher' ? { teacherId: userId! } : {}),
@@ -98,6 +98,17 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
 					subjects: lessonSubjects,
 					sections: lessonSections,
 					teachers: lessonTeachers,
+				};
+				break;
+			case 'assignment':
+				const assignmentLessons = await prisma.lesson.findMany({
+					where: {
+						...(role === 'teacher' ? { teacherId: userId! } : {}),
+					},
+					select: { id: true, name: true },
+				});
+				relatedData = {
+					lessons: assignmentLessons,
 				};
 				break;
 			default:

@@ -24,7 +24,7 @@ const BigCalendarContainer = async ({
 	}));
 
 	const schedule = adjustScheduleToCurrentWeek(data);
-	console.log(schedule);
+	// console.log(schedule);
 
 	return (
 		<div className="">

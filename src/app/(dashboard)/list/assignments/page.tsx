@@ -1,4 +1,4 @@
-import FormModal from '@/components/FormModal';
+import FormContainer from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
 import TableSearch from '@/components/TableSearch';
@@ -28,6 +28,10 @@ const AssignmentListpage = async ({
 		{
 			header: 'Subject Name',
 			accessor: 'name',
+		},
+		{
+			header: 'Assignment Name',
+			accessor: 'title',
 		},
 		{
 			header: 'Class',
@@ -60,6 +64,8 @@ const AssignmentListpage = async ({
 			<td className="flex items-center gap-4 p-4">
 				{item.lesson.subject.name}
 			</td>
+
+			<td className="hidden md:table-cell">{item.title}</td>
 			<td>{item.lesson.class.name}</td>
 			<td className="hidden md:table-cell">
 				{item.lesson.teacher.name + ' ' + item.lesson.teacher.surname}
@@ -71,8 +77,8 @@ const AssignmentListpage = async ({
 				<div className="flex items-center gap-2">
 					{(role === 'admin' || role === 'teacher') && (
 						<>
-							<FormModal table="assignment" type="update" data={item} />
-							<FormModal table="assignment" type="delete" id={item.id} />
+							<FormContainer table="assignment" type="update" data={item} />
+							<FormContainer table="assignment" type="delete" id={item.id} />
 						</>
 					)}
 				</div>
@@ -174,10 +180,10 @@ const AssignmentListpage = async ({
 							<Image src="/sort.png" alt="" width={14} height={14} />
 						</button>
 						{role === 'admin' && (
-							<FormModal table="announcement" type="create" />
+							<FormContainer table="assignment" type="create" />
 						)}
 						{role === 'teacher' && (
-							<FormModal table="announcement" type="create" />
+							<FormContainer table="assignment" type="create" />
 						)}
 					</div>
 				</div>
