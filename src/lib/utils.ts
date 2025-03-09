@@ -14,10 +14,20 @@ export async function getUserId() {
 const getLatestMonday = (): Date => {
 	const today = new Date();
 	const dayOfWeek = today.getDay();
-	const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-	const latestMonday = new Date(today);
-	latestMonday.setDate(today.getDate() - daysSinceMonday);
-	return latestMonday;
+
+	// Create a new Date object to avoid modifying the original
+	const monday = new Date(today);
+
+	if (dayOfWeek === 0) {
+		// If today is Sunday, get tomorrow (the upcoming Monday)
+		monday.setDate(today.getDate() + 1);
+	} else {
+		// Otherwise, get the most recent Monday
+		const daysSinceMonday = dayOfWeek - 1;
+		monday.setDate(today.getDate() - daysSinceMonday);
+	}
+
+	return monday;
 };
 
 export const adjustScheduleToCurrentWeek = (

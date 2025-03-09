@@ -29,6 +29,11 @@ const StudentListpage = async ({
 			className: 'hidden md:table-cell',
 		},
 		{
+			header: 'Section',
+			accessor: 'section',
+			className: 'hidden md:table-cell',
+		},
+		{
 			header: 'Grade',
 			accessor: 'grade',
 			className: 'hidden md:table-cell',
@@ -71,6 +76,7 @@ const StudentListpage = async ({
 				</div>
 			</td>
 			<td className="hidden md:table-cell">{item.username}</td>
+			<td className="hidden md:table-cell">{item.class.name}</td>
 			<td className="hidden md:table-cell">{item.class.gradeId}</td>
 			<td className="hidden md:table-cell">{item.phone}</td>
 			<td className="hidden md:table-cell">{item.address}</td>
