@@ -152,9 +152,6 @@ const TeacherListpage = async ({
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
 						<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
-							<Image src="/filter.png" alt="" width={14} height={14} />
-						</button>
-						<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
 							<Image src="/sort.png" alt="" width={14} height={14} />
 						</button>
 						{role === 'admin' && (

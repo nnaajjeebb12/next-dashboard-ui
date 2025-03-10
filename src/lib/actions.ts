@@ -6,6 +6,7 @@ import { error } from 'console';
 import { revalidatePath } from 'next/cache';
 import {
 	AssignmentSchema,
+	AttendanceSchema,
 	ClassSchema,
 	ExamSchema,
 	LessonSchema,
@@ -765,6 +766,118 @@ export const deleteAssignment = async (
 		});
 
 		// revalidatePath('/list/exams');
+		return { success: true, error: false };
+	} catch (err) {
+		console.log(err);
+		return { success: false, error: true };
+	}
+};
+
+// ATTENDANCE
+export const createAttendance = async (
+	currentState: CurrentState,
+	data: AttendanceSchema
+) => {
+	const role = await getRole();
+	const userId = await getUserId();
+	try {
+		if (role === 'teacher') {
+			const teacherLesson = await prisma.lesson.findFirst({
+				where: {
+					teacherId: userId!,
+					id: data.lessonId,
+				},
+			});
+
+			if (!teacherLesson) {
+				return { success: false, error: true };
+			}
+		}
+
+		await prisma.attendance.create({
+			data: {
+				studentId: data.studentId,
+				lessonId: data.lessonId,
+				date: data.date,
+				present: data.present,
+			},
+		});
+
+		// revalidatePath("/list/attendance");
+		return { success: true, error: false };
+	} catch (err) {
+		console.log(err);
+		return { success: false, error: true };
+	}
+};
+
+export const updateAttendance = async (
+	currentState: CurrentState,
+	data: AttendanceSchema
+) => {
+	const role = await getRole();
+	const userId = await getUserId();
+	try {
+		if (role === 'teacher') {
+			const teacherLesson = await prisma.lesson.findFirst({
+				where: {
+					teacherId: userId!,
+					id: data.lessonId,
+				},
+			});
+
+			if (!teacherLesson) {
+				return { success: false, error: true };
+			}
+		}
+		await prisma.attendance.update({
+			where: {
+				id: data.id,
+			},
+			data: {
+				studentId: data.studentId,
+				lessonId: data.lessonId,
+				date: data.date,
+				present: data.present,
+			},
+		});
+		// revalidatePath('/list/attendance');
+		return { success: true, error: false };
+	} catch (err) {
+		console.log(err);
+		return { success: false, error: true };
+	}
+};
+
+export const deleteAttendance = async (
+	currentState: CurrentState,
+	data: FormData
+) => {
+	const id = data.get('id') as string;
+
+	const role = await getRole();
+	const userId = await getUserId();
+
+	try {
+		if (role === 'teacher') {
+			// First check if the teacher has permission to delete this attendance
+			const attendance = await prisma.attendance.findUnique({
+				where: { id: parseInt(id) },
+				include: { lesson: true },
+			});
+
+			if (!attendance || attendance.lesson.teacherId !== userId) {
+				return { success: false, error: true };
+			}
+		}
+
+		await prisma.attendance.delete({
+			where: {
+				id: parseInt(id),
+			},
+		});
+
+		revalidatePath('/list/attendance');
 		return { success: true, error: false };
 	} catch (err) {
 		console.log(err);
