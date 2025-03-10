@@ -12,9 +12,9 @@ const Announcements = async () => {
 		student: {
 			students: { some: { id: userId! } },
 		},
-		parent: {
-			students: { some: { parentId: userId! } },
-		},
+		// parent: {
+		// 	students: { some: { parentId: userId! } },
+		// },
 	};
 
 	const data = await prisma.announcement.findMany({

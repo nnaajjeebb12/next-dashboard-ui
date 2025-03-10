@@ -338,7 +338,7 @@ export const createStudent = async (
 				birthday: data.birthday,
 				gradeId: data.gradeId,
 				classId: data.classId,
-				parentId: data.parentId,
+				// parentId: data.parentId,
 				// Connect to the strand using its ID
 				strandId: data.strandId,
 			},
@@ -400,7 +400,7 @@ export const updateStudent = async (
 				birthday: data.birthday,
 				gradeId: data.gradeId,
 				classId: data.classId,
-				parentId: data.parentId,
+				// parentId: data.parentId,
 				// Connect to the strand using its ID
 				strandId: data.strandId,
 			},

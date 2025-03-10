@@ -132,15 +132,15 @@ const AssignmentListpage = async ({
 				},
 			};
 			break;
-		case 'parent':
-			query.lesson.class = {
-				students: {
-					some: {
-						parentId: currentUserId!,
-					},
-				},
-			};
-			break;
+		// case 'parent':
+		// 	query.lesson.class = {
+		// 		students: {
+		// 			some: {
+		// 				parentId: currentUserId!,
+		// 			},
+		// 		},
+		// 	};
+		// 	break;
 		default:
 			break;
 	}

@@ -30,8 +30,6 @@ model Student {
   bloodType   String
   sex         UserSex
   createdAt   DateTime     @default(now())
-  parentId    String
-  parent      Parent       @relation(fields: [parentId], references: [id])
   classId     Int
   class       Class        @relation(fields: [classId], references: [id])
   gradeId     Int
@@ -41,6 +39,8 @@ model Student {
   birthday    DateTime
   strandId    Int
   Strand      Strand       @relation(fields: [strandId], references: [id])
+  // Parent      Parent?      @relation(fields: [parentId], references: [id])
+  // parentId    String?
 }
 
 model Teacher {
@@ -62,15 +62,15 @@ model Teacher {
 }
 
 model Parent {
-  id        String    @id
-  username  String    @unique
+  id        String   @id
+  username  String   @unique
   name      String
   surname   String
-  email     String?   @unique
-  phone     String    @unique
+  email     String?  @unique
+  phone     String   @unique
   address   String
-  createdAt DateTime  @default(now())
-  students  Student[]
+  createdAt DateTime @default(now())
+  // students  Student[]
 }
 
 model Grade {
