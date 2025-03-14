@@ -41,6 +41,7 @@ const AssignmentForm = ({
 		{
 			success: false,
 			error: false,
+			message: '',
 		}
 	);
 

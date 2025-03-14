@@ -38,6 +38,7 @@ const SubjectForm = ({
 		{
 			success: false,
 			error: false,
+			message: '',
 		}
 	);
 

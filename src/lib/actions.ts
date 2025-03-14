@@ -944,7 +944,7 @@ export const createResult = async (
 			});
 
 			if (!teacherClass) {
-				return { success: true, error: false, message: '' };
+				return { success: false, error: true, message: 'Incorrect class' };
 			}
 		}
 		await prisma.result.create({

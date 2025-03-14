@@ -38,6 +38,7 @@ const ClassForm = ({
 		{
 			success: false,
 			error: false,
+			message: '',
 		}
 	);
 

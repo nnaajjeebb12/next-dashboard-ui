@@ -85,6 +85,7 @@ const LessonForm = ({
 		{
 			success: false,
 			error: false,
+			message: '',
 		}
 	);
 

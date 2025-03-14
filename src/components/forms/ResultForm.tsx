@@ -38,6 +38,7 @@ const ResultForm = ({
 		{
 			success: false,
 			error: false,
+			message: '',
 		}
 	);
 

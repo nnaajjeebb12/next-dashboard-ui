@@ -38,6 +38,7 @@ const ExamForm = ({
 		{
 			success: false,
 			error: false,
+			message: '',
 		}
 	);
 

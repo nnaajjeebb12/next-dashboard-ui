@@ -45,6 +45,7 @@ const StudentForm = ({
 		{
 			success: false,
 			error: false,
+			message: '',
 		}
 	);
 

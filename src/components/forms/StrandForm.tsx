@@ -38,6 +38,7 @@ const StrandForm = ({
 		{
 			success: false,
 			error: false,
+			message: '',
 		}
 	);
 
