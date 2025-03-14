@@ -128,8 +128,8 @@ model Exam {
   endTime   DateTime
 
   lessonId Int
-  lesson   Lesson   @relation(fields: [lessonId], references: [id])
-  results  Result[]
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+  // results  Result[]
 }
 
 model Assignment {
@@ -139,20 +139,18 @@ model Assignment {
   dueDate   DateTime
 
   lessonId Int
-  lesson   Lesson   @relation(fields: [lessonId], references: [id])
-  results  Result[]
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+  // results  Result[]
 }
 
 model Result {
-  id    Int @id @default(autoincrement())
-  score Int
-
-  examId       Int?
-  exam         Exam?       @relation(fields: [examId], references: [id])
-  assignmentId Int?
-  assignment   Assignment? @relation(fields: [assignmentId], references: [id])
-  studentId    String
-  student      Student     @relation(fields: [studentId], references: [id])
+  id        Int     @id @default(autoincrement())
+  q1        Int?
+  q2        Int?
+  q3        Int?
+  q4        Int?
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
 }
 
 model Attendance {

@@ -6,6 +6,7 @@ import {
 	deleteClass,
 	deleteExam,
 	deleteLesson,
+	deleteResult,
 	deleteStrand,
 	deleteStudent,
 	deleteSubject,
@@ -28,7 +29,7 @@ const deleteActionMap = {
 	lesson: deleteLesson,
 	exam: deleteExam,
 	assignment: deleteAssignment,
-	result: deleteSubject,
+	result: deleteResult,
 	attendance: deleteAttendance,
 	event: deleteSubject,
 	announcement: deleteSubject,
@@ -78,84 +79,107 @@ const AttendanceForm = dynamic(() => import('./forms/AttendanceForm'), {
 	loading: () => <h1>Loading...</h1>,
 });
 
+const ResultForm = dynamic(() => import('./forms/ResultForm'), {
+	loading: () => <h1>Loading...</h1>,
+});
+
 const forms: {
 	[key: string]: (
 		setOpen: Dispatch<SetStateAction<boolean>>,
 		type: 'create' | 'update',
 		data?: any,
-		relatedData?: any
+		relatedData?: any,
+		userRole?: string
 	) => JSX.Element;
 } = {
-	subject: (setOpen, type, data, relatedData) => (
+	subject: (setOpen, type, data, relatedData, userRole) => (
 		<SubjectForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
+			userRole={userRole}
 		/>
 	),
-	class: (setOpen, type, data, relatedData) => (
+	class: (setOpen, type, data, relatedData, userRole) => (
 		<ClassForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
+			userRole={userRole}
 		/>
 	),
-	teacher: (setOpen, type, data, relatedData) => (
+	teacher: (setOpen, type, data, relatedData, userRole) => (
 		<TeacherForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
+			userRole={userRole}
 		/>
 	),
-	strand: (setOpen, type, data, relatedData) => (
+	strand: (setOpen, type, data, relatedData, userRole) => (
 		<StrandForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
+			userRole={userRole}
 		/>
 	),
-	student: (setOpen, type, data, relatedData) => (
+	student: (setOpen, type, data, relatedData, userRole) => (
 		<StudentForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
+			userRole={userRole}
 		/>
 	),
-	exam: (setOpen, type, data, relatedData) => (
+	exam: (setOpen, type, data, relatedData, userRole) => (
 		<ExamForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
+			userRole={userRole}
 		/>
 	),
-	lesson: (setOpen, type, data, relatedData) => (
+	lesson: (setOpen, type, data, relatedData, userRole) => (
 		<LessonForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
+			userRole={userRole}
 		/>
 	),
-	assignment: (setOpen, type, data, relatedData) => (
+	assignment: (setOpen, type, data, relatedData, userRole) => (
 		<AssignmentForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
+			userRole={userRole}
 		/>
 	),
-	attendance: (setOpen, type, data, relatedData) => (
+	attendance: (setOpen, type, data, relatedData, userRole) => (
 		<AttendanceForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
+			userRole={userRole}
+		/>
+	),
+	result: (setOpen, type, data, relatedData, userRole) => (
+		<ResultForm
+			type={type}
+			data={data}
+			setOpen={setOpen}
+			relatedData={relatedData}
+			userRole={userRole}
 		/>
 	),
 };
@@ -166,6 +190,7 @@ const FormModal = ({
 	data,
 	id,
 	relatedData,
+	userRole,
 }: FormContainerProps & { relatedData?: any }) => {
 	const size = type === 'create' ? 'w-8 h-8' : 'w-7 h-7';
 	const bgColor =
@@ -181,6 +206,7 @@ const FormModal = ({
 		const [state, formAction] = useFormState(deleteActionMap[table], {
 			success: false,
 			error: false,
+			message: '',
 		});
 
 		const router = useRouter();
@@ -204,7 +230,7 @@ const FormModal = ({
 				</button>
 			</form>
 		) : type === 'create' || type === 'update' ? (
-			forms[table](setOpen, type, data, relatedData)
+			forms[table](setOpen, type, data, relatedData, userRole)
 		) : (
 			'Form not found!'
 		);

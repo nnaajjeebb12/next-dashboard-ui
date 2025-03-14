@@ -5,6 +5,7 @@ import {
 	AttendanceSchema,
 	attendanceSchema,
 } from '@/lib/formValidationSchemas';
+import { formatDateForInput } from '@/lib/settings';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { Dispatch, SetStateAction, useEffect } from 'react';
@@ -13,67 +14,72 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import InputField from '../InputField';
 
-type AttendanceFormProps = {
-	type: 'create' | 'update';
-	data?: any;
-	setOpen: Dispatch<SetStateAction<boolean>>;
-	relatedData?: {
-		students?: { id: string; name: string; surname: string }[];
-		lessons?: { id: number; name: string }[];
-	};
-};
+// type AttendanceFormProps = {
+// 	type: 'create' | 'update';
+// 	data?: any;
+// 	setOpen: Dispatch<SetStateAction<boolean>>;
+// 	relatedData?: {
+// 		students?: { id: string; name: string; surname: string }[];
+// 		lessons?: { id: number; name: string }[];
+// 	};
+// };
 
 const AttendanceForm = ({
 	type,
 	data,
 	setOpen,
 	relatedData,
-}: AttendanceFormProps) => {
-	const router = useRouter();
-
+	userRole,
+}: {
+	type: 'create' | 'update';
+	data?: any;
+	setOpen: Dispatch<SetStateAction<boolean>>;
+	relatedData?: any;
+	userRole?: string;
+}) => {
 	const {
 		register,
 		handleSubmit,
-		reset,
 		formState: { errors },
 	} = useForm<AttendanceSchema>({
 		resolver: zodResolver(attendanceSchema),
-		defaultValues: data ?? {
-			present: false,
-		},
 	});
 
-	const initialState = { success: false, error: false };
+	// AFTER REACT 19 IT'LL BE USEACTIONSTATE
+
 	const [state, formAction] = useFormState(
 		type === 'create' ? createAttendance : updateAttendance,
-		initialState
+		{
+			success: false,
+			error: false,
+			message: '',
+		}
 	);
+
+	const onSubmit = handleSubmit((data) => {
+		console.log(data);
+		formAction(data);
+	});
+
+	const router = useRouter();
+	const isTeacherEditing = type === 'update' && userRole === 'teacher';
 
 	useEffect(() => {
 		if (state.success) {
 			toast.success(
-				`Attendance ${type === 'create' ? 'recorded' : 'updated'} successfully!`
+				`Attendance has been ${type === 'create' ? 'created' : 'updated'}!`
 			);
-			reset();
 			setOpen(false);
 			router.refresh();
+		} else if (state.error && state.message) {
+			toast.error(state.message);
 		}
+	}, [state]);
 
-		if (state.error) {
-			toast.error('Something went wrong!');
-		}
-	}, [state, reset, router, setOpen, type]);
-
-	const onSubmit = (data: AttendanceSchema) => {
-		const formData = new FormData();
-		for (const [key, value] of Object.entries(data)) {
-			formData.append(key, value.toString());
-		}
-		formAction(data);
-	};
+	const { students, lessons } = relatedData;
 
 	return (
-		<form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
+		<form className="flex flex-col gap-8" onSubmit={onSubmit}>
 			<h1 className="text-xl font-semibold">
 				{type === 'create'
 					? 'Create a new attendance'
@@ -83,22 +89,28 @@ const AttendanceForm = ({
 				<InputField
 					label="Date"
 					name="date"
-					defaultValue={data?.date}
+					defaultValue={formatDateForInput(data?.date)}
 					register={register}
 					error={errors?.date}
 					type="date"
+					hidden={isTeacherEditing}
 				/>
-				<div className="flex flex-col gap-2 w-full md:w-1/3">
+				<div
+					className={
+						isTeacherEditing ? 'hidden' : 'flex flex-col gap-2 w-full md:w-1/3'
+					}>
 					<label className="text-xs text-gray-500">Student</label>
 					<select
-						id="studentId"
+						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
 						{...register('studentId')}
-						className="border border-gray-300 p-2 rounded-md">
-						{relatedData?.students?.map((student) => (
-							<option key={student.id} value={student.id}>
-								{student.name} {student.surname}
-							</option>
-						))}
+						defaultValue={data?.studentId}>
+						{students.map(
+							(student: { id: string; name: string; surname: string }) => (
+								<option value={student.id} key={student.id}>
+									{student.name + ' ' + student.surname}
+								</option>
+							)
+						)}
 					</select>
 					{errors.studentId?.message && (
 						<p className="text-xs text-red-400">
@@ -107,22 +119,25 @@ const AttendanceForm = ({
 					)}
 				</div>
 
-				<div className="flex flex-col gap-2 w-full md:w-1/3">
+				<div
+					className={
+						isTeacherEditing ? 'hidden' : 'flex flex-col gap-2 w-full md:w-1/3'
+					}>
 					<label className="text-xs text-gray-500">Lesson</label>
 					<select
-						id="lessonId"
+						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+						hidden={isTeacherEditing}
 						{...register('lessonId')}
-						className="border border-gray-300 p-2 rounded-md">
-						<option value="">Select Lesson</option>
-						{relatedData?.lessons?.map((lesson) => (
-							<option key={lesson.id} value={lesson.id}>
+						defaultValue={data?.lessonId}>
+						{lessons.map((lesson: { id: string; name: string }) => (
+							<option value={lesson.id} key={lesson.id}>
 								{lesson.name}
 							</option>
 						))}
 					</select>
-					{errors.studentId?.message && (
+					{errors.lessonId?.message && (
 						<p className="text-xs text-red-400">
-							{errors.studentId.message.toString()}
+							{errors.lessonId.message.toString()}
 						</p>
 					)}
 				</div>

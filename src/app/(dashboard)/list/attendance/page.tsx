@@ -5,6 +5,7 @@ import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
 import { getRole, getUserId } from '@/lib/utils';
+import { Attendance, Lesson, Student } from '@prisma/client';
 import Image from 'next/image';
 
 type AttendanceRecord = {
@@ -20,6 +21,8 @@ type AttendanceRecord = {
 		teacherId: string;
 	};
 };
+
+type AttendanceList = Attendance & { student: Student } & { lesson: Lesson };
 
 const AttendanceListPage = async ({
 	searchParams,
@@ -56,42 +59,54 @@ const AttendanceListPage = async ({
 			: []),
 	];
 
-	const renderRow = (record: AttendanceRecord) => (
+	const renderRow = (item: AttendanceList) => (
 		<tr
-			key={record.id}
+			key={item.id}
 			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
-			<td className="p-4">
-				{record.student.name} {record.student.surname}
+			<td className="flex items-center gap-4 p-4">
+				<Image
+					src={item.student.img || '/noAvatar.png'}
+					alt=""
+					width={40}
+					height={40}
+					className="md:hidden xl:block  w-10 h-10 rounded-full object-cover"
+				/>
+				<div className="flex flex-col">
+					{item.student.name + ' ' + item.student.surname}
+				</div>
 			</td>
-			<td className="p-4">{record.lesson.name}</td>
-			<td className="p-4">
+			<td>{item.lesson.name}</td>
+			<td>
 				{new Intl.DateTimeFormat('en-US', {
 					year: 'numeric',
 					month: 'long',
 					day: 'numeric',
-				}).format(new Date(record.date))}
+				}).format(new Date(item.date))}
 			</td>
-			<td className="p-4">
+			<td>
 				<span
-					className={`inline-block px-2 py-1 rounded-full text-xs ${
-						record.present
+					className={`px-2 py-1 rounded-full text-xs ${
+						item.present
 							? 'bg-green-100 text-green-800'
 							: 'bg-red-100 text-red-800'
 					}`}>
-					{record.present ? 'Present' : 'Absent'}
+					{item.present ? 'Present' : 'Absent'}
 				</span>
 			</td>
-			{(role === 'admin' || role === 'teacher') && (
-				<td className="p-4 flex justify-center gap-2">
-					<FormContainer
-						table="attendance"
-						type="update"
-						data={record}
-						id={record.id}
-					/>
-					<FormContainer table="attendance" type="delete" id={record.id} />
-				</td>
-			)}
+			<div className="flex items-center gap-2">
+				{(role === 'admin' || role === 'teacher') && (
+					<>
+						<FormContainer
+							table="attendance"
+							type="update"
+							data={item}
+							id={item.id}
+							userRole={role}
+						/>
+						<FormContainer table="attendance" type="delete" id={item.id} />
+					</>
+				)}
+			</div>
 		</tr>
 	);
 

@@ -1,24 +1,20 @@
-import FormModal from '@/components/FormModal';
+import FormContainer from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
 import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
 import { getRole, getUserId } from '@/lib/utils';
-import { Prisma } from '@prisma/client';
+import { Class, Prisma, Result, Strand, Student } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
 
-type ResultList = {
-	id: number;
-	title: string;
-	studentName: string;
-	studentSurname: string;
-	teacherName: string;
-	teacherSurname: string;
-	score: number;
-	className: string;
-	startTime: Date;
+// Define the type with full relations
+type ResultList = Result & {
+	student: Student & {
+		class: Class;
+		Strand: Strand;
+	};
 };
 
 const ResultListpage = async ({
@@ -30,31 +26,45 @@ const ResultListpage = async ({
 	const currentUserId = await getUserId();
 	const columns = [
 		{
-			header: 'Title',
-			accessor: 'title',
-		},
-		{
 			header: 'Student',
 			accessor: 'student',
-		},
-		{
-			header: 'Score',
-			accessor: 'score',
-			className: 'hidden md:table-cell',
-		},
-		{
-			header: 'Teacher Name',
-			accessor: 'teacher',
-			className: 'hidden md:table-cell',
 		},
 		{
 			header: 'Class',
 			accessor: 'class',
 		},
 		{
-			header: 'Date',
-			accessor: 'date',
+			header: 'Strand',
+			accessor: 'strand',
 			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Q1',
+			accessor: 'q1',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Q2',
+			accessor: 'q2',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Q3',
+			accessor: 'q3',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Q4',
+			accessor: 'q4',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Total Score',
+			accessor: 'totalScore',
+		},
+		{
+			header: 'Assesment',
+			accessor: 'assesment',
 		},
 		...(role === 'admin' || role === 'teacher'
 			? [
@@ -66,32 +76,79 @@ const ResultListpage = async ({
 			: []),
 	];
 
-	const renderRow = (item: ResultList) => (
-		<tr
-			key={item.id}
-			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
-			<td className="flex items-center gap-4 p-4">{item.title}</td>
-			<td>{item.studentName + ' ' + item.studentSurname}</td>
-			<td className="hidden md:table-cell">{item.score}</td>
-			<td className="hidden md:table-cell">
-				{item.teacherName + ' ' + item.teacherSurname}
-			</td>
-			<td className="hidden md:table-cell">{item.className}</td>
-			<td className="hidden md:table-cell">
-				{new Intl.DateTimeFormat('en-US').format(item.startTime)}
-			</td>
-			<td>
-				<div className="flex items-center gap-2">
-					{(role === 'admin' || role === 'teacher') && (
-						<>
-							<FormModal table="result" type="update" data={item} />
-							<FormModal table="result" type="delete" id={item.id} />
-						</>
-					)}
-				</div>
-			</td>
-		</tr>
-	);
+	const renderRow = (item: ResultList) => {
+		// Calculate total score from available quarters
+		const scores = [item.q1, item.q2, item.q3, item.q4].filter(
+			(score) => score !== null
+		) as number[];
+		const totalScore =
+			scores.length > 0
+				? scores.reduce((sum, score) => sum + score, 0) / scores.length
+				: 0;
+		// Check if all quarters have values
+		const allQuartersComplete =
+			item.q1 !== null &&
+			item.q2 !== null &&
+			item.q3 !== null &&
+			item.q4 !== null;
+
+		// Determine score assessment and style
+		let scoreAssessment = 'School year not yet finished';
+		let assessmentStyle = '';
+
+		if (allQuartersComplete) {
+			if (totalScore >= 75) {
+				scoreAssessment = 'Passed';
+				assessmentStyle = 'rounded-full bg-green-100 text-green-800 px-2 py-1';
+			} else {
+				scoreAssessment = 'Failed';
+				assessmentStyle = 'rounded-full bg-red-100 text-red-800 px-2 py-1';
+			}
+		}
+
+		return (
+			<tr
+				key={item.id}
+				className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
+				<td className="flex items-center gap-4 p-4">
+					<Image
+						src={item.student.img || '/noAvatar.png'}
+						alt=""
+						width={40}
+						height={40}
+						className="md:hidden xl:block  w-10 h-10 rounded-full object-cover"
+					/>
+					<div className="flex flex-col">
+						{item.student.name + ' ' + item.student.surname}
+					</div>
+				</td>
+				<td>{item.student.class.name}</td>
+				<td className="hidden md:table-cell">{item.student.Strand.name}</td>
+				<td className="hidden md:table-cell">{item.q1 || '-'}</td>
+				<td className="hidden md:table-cell">{item.q2 || '-'}</td>
+				<td className="hidden md:table-cell">{item.q3 || '-'}</td>
+				<td className="hidden md:table-cell">{item.q4 || '-'}</td>
+				<td>{Math.round(totalScore * 10) / 10}</td>
+				<td>
+					<span className={assessmentStyle}>{scoreAssessment}</span>
+				</td>
+				<td>
+					<div className="flex items-center gap-2">
+						{(role === 'admin' || role === 'teacher') && (
+							<>
+								<FormContainer table="result" type="update" data={item} />
+							</>
+						)}
+						{role === 'admin' && (
+							<>
+								<FormContainer table="result" type="delete" id={item.id} />
+							</>
+						)}
+					</div>
+				</td>
+			</tr>
+		);
+	};
 
 	const { page, ...queryParams } = searchParams;
 
@@ -109,8 +166,10 @@ const ResultListpage = async ({
 						break;
 					case 'search':
 						query.OR = [
-							{ exam: { title: { contains: value, mode: 'insensitive' } } },
 							{ student: { name: { contains: value, mode: 'insensitive' } } },
+							{
+								student: { surname: { contains: value, mode: 'insensitive' } },
+							},
 						];
 						break;
 					default:
@@ -120,25 +179,23 @@ const ResultListpage = async ({
 	}
 
 	// ROLE CONDITIONS
-
 	switch (role) {
 		case 'admin':
 			break;
 		case 'teacher':
-			query.OR = [
-				{ exam: { lesson: { teacherId: currentUserId! } } },
-				{ assignment: { lesson: { teacherId: currentUserId! } } },
-			];
+			// For teachers, only show results for their students
+			query.student = {
+				OR: [
+					// Students in classes where the teacher is the supervisor
+					{ class: { supervisorId: currentUserId! } },
+					// Students in classes where the teacher teaches at least one lesson
+					{ class: { lessons: { some: { teacherId: currentUserId! } } } },
+				],
+			};
 			break;
 		case 'student':
 			query.studentId = currentUserId!;
 			break;
-		// case 'parent':
-		// 	query.student = {
-		// 		parentId: currentUserId!,
-		// 	};
-		// 	break;
-
 		default:
 			break;
 	}
@@ -147,25 +204,10 @@ const ResultListpage = async ({
 		prisma.result.findMany({
 			where: query,
 			include: {
-				student: { select: { name: true, surname: true } },
-				exam: {
+				student: {
 					include: {
-						lesson: {
-							select: {
-								class: { select: { name: true } },
-								teacher: { select: { name: true, surname: true } },
-							},
-						},
-					},
-				},
-				assignment: {
-					include: {
-						lesson: {
-							select: {
-								class: { select: { name: true } },
-								teacher: { select: { name: true, surname: true } },
-							},
-						},
+						class: true,
+						Strand: true,
 					},
 				},
 			},
@@ -175,26 +217,6 @@ const ResultListpage = async ({
 		prisma.result.count({ where: query }),
 	]);
 
-	const data = dataRes.map((item) => {
-		const assessment = item.exam || item.assignment;
-
-		if (!assessment) return null;
-
-		const isExam = 'startTime' in assessment;
-
-		return {
-			id: item.id,
-			title: assessment.title,
-			studentName: item.student.name,
-			studentSurname: item.student.surname,
-			teacherName: assessment.lesson.teacher.name,
-			teacherSurname: assessment.lesson.teacher.surname,
-			score: item.score,
-			className: assessment.lesson.class.name,
-			startTime: isExam ? assessment.startTime : assessment.startDate,
-		};
-	});
-
 	return (
 		<div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
 			{/* TOP */}
@@ -203,21 +225,18 @@ const ResultListpage = async ({
 				<div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
-						{/* <button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
-							<Image src="/filter.png" alt="" width={14} height={14} />
-						</button> */}
 						<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
 							<Image src="/sort.png" alt="" width={14} height={14} />
 						</button>
 						{(role === 'admin' || role === 'teacher') && (
-							<FormModal table="parent" type="create" />
+							<FormContainer table="result" type="create" />
 						)}
 					</div>
 				</div>
 			</div>
 
 			{/* LIST */}
-			<Table columns={columns} renderRow={renderRow} data={data} />
+			<Table columns={columns} renderRow={renderRow} data={dataRes} />
 			{/* PAGINATION */}
 			<Pagination page={p} count={count} />
 		</div>

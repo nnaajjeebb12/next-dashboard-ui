@@ -142,3 +142,15 @@ export const attendanceSchema = z.object({
 });
 
 export type AttendanceSchema = z.infer<typeof attendanceSchema>;
+
+// RESULTS
+export const resultSchema = z.object({
+	id: z.coerce.number().optional(),
+	q1: z.coerce.number().min(0).max(100).optional(),
+	q2: z.coerce.number().min(0).max(100).optional(),
+	q3: z.coerce.number().min(0).max(100).optional(),
+	q4: z.coerce.number().min(0).max(100).optional(),
+	studentId: z.string().min(1, { message: 'Student is required' }),
+});
+
+export type ResultSchema = z.infer<typeof resultSchema>;

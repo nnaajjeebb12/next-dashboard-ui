@@ -10,6 +10,7 @@ import {
 	ClassSchema,
 	ExamSchema,
 	LessonSchema,
+	ResultSchema,
 	StrandSchema,
 	StudentSchema,
 	SubjectSchema,
@@ -18,7 +19,12 @@ import {
 import prisma from './prisma';
 import { getRole, getUserId } from './utils';
 
-type CurrentState = { success: boolean; error: boolean };
+type CurrentState = {
+	success: boolean;
+	error: boolean;
+	message?: string;
+};
+
 async function urlToFile(
 	url: string,
 	fileName: string,
@@ -45,10 +51,10 @@ export const createSubject = async (
 		});
 
 		// revalidatePath("/list/subjects");
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: 'Error creating subject' };
 	}
 };
 
@@ -70,10 +76,14 @@ export const updateSubject = async (
 		});
 
 		// revalidatePath('/list/subjects');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return {
+			success: false,
+			error: true,
+			message: 'Error updating the subject',
+		};
 	}
 };
 
@@ -90,10 +100,14 @@ export const deleteSubject = async (
 		});
 
 		// revalidatePath('/list/subjects');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return {
+			success: false,
+			error: true,
+			message: 'Error deleting the subject',
+		};
 	}
 };
 
@@ -108,10 +122,14 @@ export const createClass = async (
 		});
 
 		// revalidatePath("/list/class");
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return {
+			success: false,
+			error: true,
+			message: 'Error creating the section',
+		};
 	}
 };
 
@@ -128,10 +146,10 @@ export const updateClass = async (
 		});
 
 		// revalidatePath('/list/class');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: 'Error updating section' };
 	}
 };
 
@@ -148,10 +166,14 @@ export const deleteClass = async (
 		});
 
 		// revalidatePath('/list/class');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return {
+			success: true,
+			error: false,
+			message: 'Error deleting the section',
+		};
 	}
 };
 
@@ -205,7 +227,7 @@ export const createTeacher = async (
 		});
 
 		// revalidatePath("/list/teacher");
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
 		console.log('clerkid = ' + clerkUser?.id);
@@ -219,7 +241,7 @@ export const createTeacher = async (
 				);
 			}
 		}
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -228,7 +250,7 @@ export const updateTeacher = async (
 	data: TeacherSchema
 ) => {
 	if (!data.id) {
-		return { success: false, error: true };
+		return { success: true, error: false, message: '' };
 	}
 	try {
 		const client = await clerkClient();
@@ -267,10 +289,10 @@ export const updateTeacher = async (
 		});
 
 		// revalidatePath('/list/teacher');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -290,10 +312,10 @@ export const deleteTeacher = async (
 		});
 
 		// revalidatePath('/list/teacher');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -312,7 +334,7 @@ export const createStudent = async (
 		});
 
 		if (classItem && classItem.capacity === classItem._count.students) {
-			return { success: false, error: true };
+			return { success: true, error: false, message: '' };
 		}
 
 		clerkUser = await client.users.createUser({
@@ -345,7 +367,7 @@ export const createStudent = async (
 		});
 
 		// revalidatePath("/list/student");
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
 		console.log('clerkid = ' + clerkUser?.id);
@@ -359,7 +381,7 @@ export const createStudent = async (
 				);
 			}
 		}
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -368,7 +390,7 @@ export const updateStudent = async (
 	data: StudentSchema
 ) => {
 	if (!data.id) {
-		return { success: false, error: true };
+		return { success: true, error: false, message: '' };
 	}
 	try {
 		const client = await clerkClient();
@@ -407,10 +429,10 @@ export const updateStudent = async (
 		});
 
 		// revalidatePath('/list/student');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -430,10 +452,10 @@ export const deleteStudent = async (
 		});
 
 		// revalidatePath('/list/student');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -450,10 +472,10 @@ export const createStrand = async (
 		});
 
 		// revalidatePath("/list/strand");
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -472,10 +494,10 @@ export const updateStrand = async (
 		});
 
 		// revalidatePath('/list/class');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -492,10 +514,10 @@ export const deleteStrand = async (
 		});
 
 		// revalidatePath('/list/class');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -516,7 +538,7 @@ export const createExam = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: false, error: true };
+				return { success: true, error: false, message: '' };
 			}
 		}
 		await prisma.exam.create({
@@ -529,10 +551,10 @@ export const createExam = async (
 		});
 
 		// revalidatePath("/list/exams");
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -552,7 +574,7 @@ export const updateExam = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: false, error: true };
+				return { success: true, error: false, message: '' };
 			}
 		}
 		await prisma.exam.update({
@@ -567,10 +589,10 @@ export const updateExam = async (
 			},
 		});
 		// revalidatePath('/list/subjects');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -592,10 +614,10 @@ export const deleteExam = async (
 		});
 
 		// revalidatePath('/list/exams');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -618,10 +640,10 @@ export const createLesson = async (
 		});
 
 		// revalidatePath("/list/lessons");
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -645,10 +667,10 @@ export const updateLesson = async (
 			},
 		});
 		// revalidatePath('/list/Lessons');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -666,10 +688,10 @@ export const deleteLesson = async (
 		});
 
 		// revalidatePath('/list/exams');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -690,7 +712,7 @@ export const createAssignment = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: false, error: true };
+				return { success: true, error: false, message: '' };
 			}
 		}
 		await prisma.assignment.create({
@@ -703,10 +725,10 @@ export const createAssignment = async (
 		});
 
 		// revalidatePath("/list/assignment");
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -726,7 +748,7 @@ export const updateAssignment = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: false, error: true };
+				return { success: true, error: false, message: '' };
 			}
 		}
 		await prisma.assignment.update({
@@ -741,10 +763,10 @@ export const updateAssignment = async (
 			},
 		});
 		// revalidatePath('/list/assignments');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -766,10 +788,10 @@ export const deleteAssignment = async (
 		});
 
 		// revalidatePath('/list/exams');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -790,8 +812,25 @@ export const createAttendance = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: false, error: true };
+				return { success: true, error: false, message: '' };
 			}
+		}
+
+		// Check for duplicate attendance
+		const existingAttendance = await prisma.attendance.findFirst({
+			where: {
+				studentId: data.studentId,
+				lessonId: data.lessonId,
+				date: data.date,
+			},
+		});
+
+		if (existingAttendance) {
+			return {
+				success: false,
+				error: true,
+				message: 'Attendance for this date already exist.',
+			};
 		}
 
 		await prisma.attendance.create({
@@ -804,10 +843,10 @@ export const createAttendance = async (
 		});
 
 		// revalidatePath("/list/attendance");
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -827,7 +866,11 @@ export const updateAttendance = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: false, error: true };
+				return {
+					success: false,
+					error: true,
+					message: 'Teacher has no lesson',
+				};
 			}
 		}
 		await prisma.attendance.update({
@@ -842,10 +885,10 @@ export const updateAttendance = async (
 			},
 		});
 		// revalidatePath('/list/attendance');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
 	}
 };
 
@@ -867,7 +910,7 @@ export const deleteAttendance = async (
 			});
 
 			if (!attendance || attendance.lesson.teacherId !== userId) {
-				return { success: false, error: true };
+				return { success: true, error: false, message: '' };
 			}
 		}
 
@@ -878,7 +921,7 @@ export const deleteAttendance = async (
 		});
 
 		revalidatePath('/list/attendance');
-		return { success: true, error: false };
+		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
 		return { success: false, error: true, message: '' };

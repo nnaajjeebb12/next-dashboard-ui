@@ -16,11 +16,13 @@ const LessonForm = ({
 	data,
 	setOpen,
 	relatedData,
+	userRole,
 }: {
 	type: 'create' | 'update';
 	data?: any;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 	relatedData?: any;
+	userRole?: string;
 }) => {
 	const [dayOfWeek, setDayOfWeek] = useState<Day>(data?.day || 'MONDAY');
 
