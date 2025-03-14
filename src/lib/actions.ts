@@ -881,6 +881,102 @@ export const deleteAttendance = async (
 		return { success: true, error: false };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true };
+		return { success: false, error: true, message: '' };
+	}
+};
+
+// Exam
+export const createResult = async (
+	currentState: CurrentState,
+	data: ResultSchema
+) => {
+	const role = await getRole();
+	const userId = await getUserId();
+	try {
+		if (role === 'teacher') {
+			const teacherClass = await prisma.class.findFirst({
+				where: {
+					supervisorId: userId!,
+				},
+			});
+
+			if (!teacherClass) {
+				return { success: true, error: false, message: '' };
+			}
+		}
+		await prisma.result.create({
+			data: {
+				q1: data.q1,
+				q2: data.q2,
+				q3: data.q3,
+				q4: data.q4,
+				studentId: data.studentId,
+			},
+		});
+
+		// revalidatePath("/list/results");
+		return { success: true, error: false, message: '' };
+	} catch (err) {
+		console.log(err);
+		return { success: false, error: true, message: '' };
+	}
+};
+
+export const updateResult = async (
+	currentState: CurrentState,
+	data: ResultSchema
+) => {
+	const role = await getRole();
+	const userId = await getUserId();
+	try {
+		if (role === 'teacher') {
+			const teacherLesson = await prisma.class.findFirst({
+				where: {
+					supervisorId: userId!,
+				},
+			});
+
+			if (!teacherLesson) {
+				return { success: true, error: false, message: '' };
+			}
+		}
+		await prisma.result.update({
+			where: {
+				id: data.id,
+			},
+			data: {
+				q1: data.q1,
+				q2: data.q2,
+				q3: data.q3,
+				q4: data.q4,
+				studentId: data.studentId,
+			},
+		});
+		// revalidatePath('/list/results');
+		return { success: true, error: false, message: '' };
+	} catch (err) {
+		console.log(err);
+		return { success: false, error: true, message: '' };
+	}
+};
+
+export const deleteResult = async (
+	currentState: CurrentState,
+	data: FormData
+) => {
+	const id = data.get('id') as string;
+
+	try {
+		await prisma.result.delete({
+			where: {
+				id: parseInt(id),
+			},
+		});
+
+		// revalidatePath('/list/results');
+		return { success: true, error: false, message: '' };
+	} catch (err) {
+		console.log(err);
+		return { success: false, error: true, message: '' };
 	}
 };
