@@ -89,97 +89,108 @@ const forms: {
 		type: 'create' | 'update',
 		data?: any,
 		relatedData?: any,
-		userRole?: string
+		userRole?: string,
+		currentUserId?: number | string
 	) => JSX.Element;
 } = {
-	subject: (setOpen, type, data, relatedData, userRole) => (
+	subject: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<SubjectForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
 			userRole={userRole}
+			currentUserId={currentUserId}
 		/>
 	),
-	class: (setOpen, type, data, relatedData, userRole) => (
+	class: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<ClassForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
 			userRole={userRole}
+			currentUserId={currentUserId}
 		/>
 	),
-	teacher: (setOpen, type, data, relatedData, userRole) => (
+	teacher: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<TeacherForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
 			userRole={userRole}
+			currentUserId={currentUserId}
 		/>
 	),
-	strand: (setOpen, type, data, relatedData, userRole) => (
+	strand: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<StrandForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
 			userRole={userRole}
+			currentUserId={currentUserId}
 		/>
 	),
-	student: (setOpen, type, data, relatedData, userRole) => (
+	student: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<StudentForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
 			userRole={userRole}
+			currentUserId={currentUserId}
 		/>
 	),
-	exam: (setOpen, type, data, relatedData, userRole) => (
+	exam: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<ExamForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
 			userRole={userRole}
+			currentUserId={currentUserId}
 		/>
 	),
-	lesson: (setOpen, type, data, relatedData, userRole) => (
+	lesson: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<LessonForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
 			userRole={userRole}
+			currentUserId={currentUserId}
 		/>
 	),
-	assignment: (setOpen, type, data, relatedData, userRole) => (
+	assignment: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<AssignmentForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
 			userRole={userRole}
+			currentUserId={currentUserId}
 		/>
 	),
-	attendance: (setOpen, type, data, relatedData, userRole) => (
+	attendance: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<AttendanceForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
 			userRole={userRole}
+			currentUserId={currentUserId}
 		/>
 	),
-	result: (setOpen, type, data, relatedData, userRole) => (
+	result: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<ResultForm
 			type={type}
 			data={data}
 			setOpen={setOpen}
 			relatedData={relatedData}
 			userRole={userRole}
+			currentUserId={currentUserId}
 		/>
 	),
 };
@@ -191,6 +202,7 @@ const FormModal = ({
 	id,
 	relatedData,
 	userRole,
+	currentUserId,
 }: FormContainerProps & { relatedData?: any }) => {
 	const size = type === 'create' ? 'w-8 h-8' : 'w-7 h-7';
 	const bgColor =
@@ -230,7 +242,7 @@ const FormModal = ({
 				</button>
 			</form>
 		) : type === 'create' || type === 'update' ? (
-			forms[table](setOpen, type, data, relatedData, userRole)
+			forms[table](setOpen, type, data, relatedData, userRole, currentUserId)
 		) : (
 			'Form not found!'
 		);

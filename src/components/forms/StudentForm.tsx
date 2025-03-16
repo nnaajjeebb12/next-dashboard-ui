@@ -23,12 +23,14 @@ const StudentForm = ({
 	setOpen,
 	relatedData,
 	userRole,
+	currentUserId,
 }: {
 	type: 'create' | 'update';
 	data?: any;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 	relatedData?: any;
 	userRole?: string;
+	currentUserId?: number | string;
 }) => {
 	const {
 		register,

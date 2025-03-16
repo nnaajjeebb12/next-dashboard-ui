@@ -98,10 +98,6 @@ const ParentListpage = async ({
 
 	const [data, count] = await prisma.$transaction([
 		prisma.parent.findMany({
-			where: query,
-			include: {
-				students: true,
-			},
 			take: ITEM_PER_PAGE,
 			skip: ITEM_PER_PAGE * (p - 1),
 		}),

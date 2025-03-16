@@ -170,8 +170,8 @@ export const deleteClass = async (
 	} catch (err) {
 		console.log(err);
 		return {
-			success: true,
-			error: false,
+			success: false,
+			error: true,
 			message: 'Error deleting the section',
 		};
 	}
@@ -241,7 +241,11 @@ export const createTeacher = async (
 				);
 			}
 		}
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error creating the teacher',
+		};
 	}
 };
 
@@ -250,7 +254,7 @@ export const updateTeacher = async (
 	data: TeacherSchema
 ) => {
 	if (!data.id) {
-		return { success: true, error: false, message: '' };
+		return { success: false, error: true, message: 'Error fetching data' };
 	}
 	try {
 		const client = await clerkClient();
@@ -292,7 +296,11 @@ export const updateTeacher = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error updating the Teacher',
+		};
 	}
 };
 
@@ -315,7 +323,11 @@ export const deleteTeacher = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error deleting the Teacher',
+		};
 	}
 };
 
@@ -334,7 +346,11 @@ export const createStudent = async (
 		});
 
 		if (classItem && classItem.capacity === classItem._count.students) {
-			return { success: true, error: false, message: '' };
+			return {
+				success: false,
+				error: true,
+				message: 'Full capacity for this section',
+			};
 		}
 
 		clerkUser = await client.users.createUser({
@@ -381,7 +397,7 @@ export const createStudent = async (
 				);
 			}
 		}
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error creating student' };
 	}
 };
 
@@ -390,7 +406,7 @@ export const updateStudent = async (
 	data: StudentSchema
 ) => {
 	if (!data.id) {
-		return { success: true, error: false, message: '' };
+		return { success: false, error: true, message: 'Error fetching data' };
 	}
 	try {
 		const client = await clerkClient();
@@ -432,7 +448,11 @@ export const updateStudent = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error updating the student',
+		};
 	}
 };
 
@@ -455,7 +475,11 @@ export const deleteStudent = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error deleting the student',
+		};
 	}
 };
 
@@ -475,7 +499,11 @@ export const createStrand = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error creating the strand',
+		};
 	}
 };
 
@@ -497,7 +525,7 @@ export const updateStrand = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error updating strand' };
 	}
 };
 
@@ -517,7 +545,7 @@ export const deleteStrand = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error deleting strand' };
 	}
 };
 
@@ -538,7 +566,11 @@ export const createExam = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: true, error: false, message: '' };
+				return {
+					success: false,
+					error: true,
+					message: 'Cannot create exam for this teacher',
+				};
 			}
 		}
 		await prisma.exam.create({
@@ -554,7 +586,7 @@ export const createExam = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error creating exam' };
 	}
 };
 
@@ -574,7 +606,7 @@ export const updateExam = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: true, error: false, message: '' };
+				return { success: false, error: true, message: 'Error updating exam' };
 			}
 		}
 		await prisma.exam.update({
@@ -592,7 +624,7 @@ export const updateExam = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error updating exam' };
 	}
 };
 
@@ -617,7 +649,7 @@ export const deleteExam = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error deleting exam' };
 	}
 };
 
@@ -643,7 +675,7 @@ export const createLesson = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error creating lesson' };
 	}
 };
 
@@ -670,7 +702,7 @@ export const updateLesson = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error updating lesson' };
 	}
 };
 
@@ -691,7 +723,7 @@ export const deleteLesson = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error deleting lesson' };
 	}
 };
 
@@ -712,7 +744,11 @@ export const createAssignment = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: true, error: false, message: '' };
+				return {
+					success: false,
+					error: true,
+					message: 'Cannot create assignment for this teacher',
+				};
 			}
 		}
 		await prisma.assignment.create({
@@ -728,7 +764,11 @@ export const createAssignment = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error creating assignment',
+		};
 	}
 };
 
@@ -748,7 +788,11 @@ export const updateAssignment = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: true, error: false, message: '' };
+				return {
+					success: false,
+					error: true,
+					message: 'Cannot update assignment for this teacher',
+				};
 			}
 		}
 		await prisma.assignment.update({
@@ -766,7 +810,11 @@ export const updateAssignment = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error updating assignment',
+		};
 	}
 };
 
@@ -791,7 +839,11 @@ export const deleteAssignment = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error deleting assignment',
+		};
 	}
 };
 
@@ -812,7 +864,7 @@ export const createAttendance = async (
 			});
 
 			if (!teacherLesson) {
-				return { success: true, error: false, message: '' };
+				return { success: false, error: true, message: 'Incorrect lesson' };
 			}
 		}
 
@@ -846,7 +898,11 @@ export const createAttendance = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error creating attendance',
+		};
 	}
 };
 
@@ -888,7 +944,11 @@ export const updateAttendance = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return {
+			success: false,
+			error: true,
+			message: 'Error updating attendance',
+		};
 	}
 };
 
@@ -910,7 +970,11 @@ export const deleteAttendance = async (
 			});
 
 			if (!attendance || attendance.lesson.teacherId !== userId) {
-				return { success: true, error: false, message: '' };
+				return {
+					success: false,
+					error: true,
+					message: 'Record not found',
+				};
 			}
 		}
 
@@ -940,12 +1004,29 @@ export const createResult = async (
 			const teacherClass = await prisma.class.findFirst({
 				where: {
 					supervisorId: userId!,
+					id: data.lessonId,
 				},
 			});
 
 			if (!teacherClass) {
 				return { success: false, error: true, message: 'Incorrect class' };
 			}
+		}
+
+		// Check for duplicate result
+		const existingResult = await prisma.result.findFirst({
+			where: {
+				studentId: data.studentId,
+				lessonId: data.lessonId,
+			},
+		});
+
+		if (existingResult) {
+			return {
+				success: false,
+				error: true,
+				message: 'Result for this student already exists',
+			};
 		}
 		await prisma.result.create({
 			data: {
@@ -954,6 +1035,7 @@ export const createResult = async (
 				q3: data.q3,
 				q4: data.q4,
 				studentId: data.studentId,
+				lessonId: data.lessonId,
 			},
 		});
 
@@ -961,7 +1043,7 @@ export const createResult = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error creating result' };
 	}
 };
 
@@ -976,11 +1058,12 @@ export const updateResult = async (
 			const teacherLesson = await prisma.class.findFirst({
 				where: {
 					supervisorId: userId!,
+					id: data.lessonId,
 				},
 			});
 
 			if (!teacherLesson) {
-				return { success: true, error: false, message: '' };
+				return { success: false, error: true, message: 'Incorrect class' };
 			}
 		}
 		await prisma.result.update({
@@ -993,13 +1076,14 @@ export const updateResult = async (
 				q3: data.q3,
 				q4: data.q4,
 				studentId: data.studentId,
+				lessonId: data.lessonId,
 			},
 		});
 		// revalidatePath('/list/results');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error updating result' };
 	}
 };
 
@@ -1020,6 +1104,6 @@ export const deleteResult = async (
 		return { success: true, error: false, message: '' };
 	} catch (err) {
 		console.log(err);
-		return { success: false, error: true, message: '' };
+		return { success: false, error: true, message: 'Error updating result' };
 	}
 };

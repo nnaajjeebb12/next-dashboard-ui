@@ -5,7 +5,7 @@ import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
 import { getRole, getUserId } from '@/lib/utils';
-import { Class, Prisma, Result, Strand, Student } from '@prisma/client';
+import { Class, Lesson, Prisma, Result, Strand, Student } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -13,6 +13,7 @@ import Link from 'next/link';
 type ResultList = Result & {
 	student: Student & {
 		class: Class;
+		lesson: Lesson;
 		Strand: Strand;
 	};
 };
@@ -30,8 +31,8 @@ const ResultListpage = async ({
 			accessor: 'student',
 		},
 		{
-			header: 'Class',
-			accessor: 'class',
+			header: 'Section',
+			accessor: 'section',
 		},
 		{
 			header: 'Strand',
