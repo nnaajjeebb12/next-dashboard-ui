@@ -22,6 +22,7 @@ export const routeAccessMap: RouteAccessMap = {
 	'/list/events': ['admin', 'teacher', 'student', 'parent'],
 	'/list/announcements': ['admin', 'teacher', 'student', 'parent'],
 	'/list/strand': ['admin', 'teacher'],
+	'/list/pdfExport': ['admin', 'teacher'],
 };
 
 export const formatDateForInput = (dateString: string | undefined) => {

@@ -96,6 +96,12 @@ const menuItems = [
 				href: '/list/strand',
 				visible: ['admin', 'teacher'],
 			},
+			{
+				icon: '/lesson.png',
+				label: 'Export Report',
+				href: '/list/pdfExport',
+				visible: ['admin', 'teacher'],
+			},
 		],
 	},
 	{
