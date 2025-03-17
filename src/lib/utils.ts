@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { start } from 'repl';
+import prisma from './prisma';
 
 export async function getRole() {
 	const { sessionClaims } = await auth();

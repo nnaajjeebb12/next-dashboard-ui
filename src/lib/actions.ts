@@ -1000,18 +1000,18 @@ export const createResult = async (
 	const role = await getRole();
 	const userId = await getUserId();
 	try {
-		if (role === 'teacher') {
-			const teacherClass = await prisma.class.findFirst({
-				where: {
-					supervisorId: userId!,
-					id: data.lessonId,
-				},
-			});
+		// if (role === 'teacher') {
+		// 	const teacherClass = await prisma.class.findFirst({
+		// 		where: {
+		// 			supervisorId: userId!,
+		// 			id: data.lessonId,
+		// 		},
+		// 	});
 
-			if (!teacherClass) {
-				return { success: false, error: true, message: 'Incorrect class' };
-			}
-		}
+		// 	if (!teacherClass) {
+		// 		return { success: false, error: true, message: 'Incorrect class' };
+		// 	}
+		// }
 
 		// Check for duplicate result
 		const existingResult = await prisma.result.findFirst({
@@ -1054,18 +1054,6 @@ export const updateResult = async (
 	const role = await getRole();
 	const userId = await getUserId();
 	try {
-		if (role === 'teacher') {
-			const teacherLesson = await prisma.class.findFirst({
-				where: {
-					supervisorId: userId!,
-					id: data.lessonId,
-				},
-			});
-
-			if (!teacherLesson) {
-				return { success: false, error: true, message: 'Incorrect class' };
-			}
-		}
 		await prisma.result.update({
 			where: {
 				id: data.id,
@@ -1107,3 +1095,41 @@ export const deleteResult = async (
 		return { success: false, error: true, message: 'Error updating result' };
 	}
 };
+
+// In your data fetching function (likely in actions.js or similar)
+export async function getRelatedDataForResultForm(teacherId: string) {
+	// Get students under this teacher's classes
+	const teacherClasses = await prisma.class.findMany({
+		where: {
+			supervisorId: teacherId,
+		},
+	});
+
+	const classIds = teacherClasses.map((c) => c.id);
+
+	const students = await prisma.student.findMany({
+		where: {
+			classId: {
+				in: classIds,
+			},
+		},
+		select: {
+			id: true,
+			name: true,
+			surname: true,
+		},
+	});
+
+	// Get lessons taught by this teacher
+	const lessons = await prisma.lesson.findMany({
+		where: {
+			teacherId: teacherId,
+		},
+		select: {
+			id: true,
+			name: true,
+		},
+	});
+
+	return { students, lessons };
+}

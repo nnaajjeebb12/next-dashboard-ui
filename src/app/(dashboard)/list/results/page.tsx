@@ -13,10 +13,12 @@ import Link from 'next/link';
 type ResultList = Result & {
 	student: Student & {
 		class: Class;
-		lesson: Lesson;
 		Strand: Strand;
 	};
+	Lesson?: Lesson; // Lesson is optional since lessonId is optional
 };
+
+// type ResultList = Result & {student: Student} & {class: Class} & {lesson: Lesson} & {Strand: Strand}
 
 const ResultListpage = async ({
 	searchParams,
@@ -33,6 +35,10 @@ const ResultListpage = async ({
 		{
 			header: 'Section',
 			accessor: 'section',
+		},
+		{
+			header: 'Subject',
+			accessor: 'subject',
 		},
 		{
 			header: 'Strand',
@@ -124,6 +130,7 @@ const ResultListpage = async ({
 					</div>
 				</td>
 				<td>{item.student.class.name}</td>
+				<td className="hidden md:table-cell">{item.Lesson?.name || '-'}</td>
 				<td className="hidden md:table-cell">{item.student.Strand.name}</td>
 				<td className="hidden md:table-cell">{item.q1 || '-'}</td>
 				<td className="hidden md:table-cell">{item.q2 || '-'}</td>
@@ -211,6 +218,7 @@ const ResultListpage = async ({
 						Strand: true,
 					},
 				},
+				Lesson: true, // include Lesson relation
 			},
 			take: ITEM_PER_PAGE,
 			skip: ITEM_PER_PAGE * (p - 1),

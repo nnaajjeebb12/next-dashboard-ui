@@ -138,16 +138,90 @@ const FormContainer = async ({
 					lessons: attendanceLessons,
 				};
 				break;
+			// case 'result':
+			// 	const resultStudents = await prisma.student.findMany({
+			// 		select: { id: true, name: true, surname: true },
+			// 	});
+			// 	const resultLessons = await prisma.lesson.findMany({
+			// 		where: {
+			// 			...(role === 'teacher' ? { teacherId: userId! } : {}),
+			// 		},
+			// 		select: { id: true, name: true },
+			// 	});
+			// 	relatedData = {
+			// 		students: resultStudents,
+			// 		lessons: resultLessons,
+			// 	};
+			// 	break;
 			case 'result':
-				const resultStudents = await prisma.student.findMany({
-					select: { id: true, name: true, surname: true },
-				});
-				const resultLessons = await prisma.lesson.findMany({
-					where: {
-						...(role === 'teacher' ? { teacherId: userId! } : {}),
-					},
-					select: { id: true, name: true },
-				});
+				// Filter students and lessons based on teacher role
+				let resultStudents = [];
+				let resultLessons = [];
+
+				if (role === 'teacher') {
+					// First, get the classes taught by this teacher
+					const teacherClasses = await prisma.class.findMany({
+						where: {
+							supervisorId: userId,
+						},
+						select: {
+							id: true,
+						},
+					});
+
+					const classIds = teacherClasses.map((c) => c.id);
+
+					// Then get students belonging to these classes
+					resultStudents = await prisma.student.findMany({
+						select: {
+							id: true,
+							name: true,
+							surname: true,
+							classId: true,
+							class: {
+								select: {
+									lessons: {
+										select: {
+											id: true,
+											name: true,
+										},
+									},
+								},
+							},
+						},
+					});
+
+					// Get lessons taught by this teacher
+					resultLessons = await prisma.lesson.findMany({
+						where: {
+							teacherId: userId,
+						},
+						select: {
+							id: true,
+							name: true,
+							classId: true, // Include classId for frontend filtering
+						},
+					});
+				} else {
+					// For admin or other roles, get all students and lessons
+					resultStudents = await prisma.student.findMany({
+						select: {
+							id: true,
+							name: true,
+							surname: true,
+							classId: true,
+						},
+					});
+
+					resultLessons = await prisma.lesson.findMany({
+						select: {
+							id: true,
+							name: true,
+							classId: true,
+						},
+					});
+				}
+
 				relatedData = {
 					students: resultStudents,
 					lessons: resultLessons,
