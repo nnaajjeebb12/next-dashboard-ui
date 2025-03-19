@@ -5,7 +5,7 @@ import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
 import { getRole, getUserId } from '@/lib/utils';
-import { Attendance, Lesson, Student } from '@prisma/client';
+import { Attendance, Prisma, Student } from '@prisma/client';
 import Image from 'next/image';
 
 type AttendanceRecord = {
@@ -16,13 +16,9 @@ type AttendanceRecord = {
 		name: string;
 		surname: string;
 	};
-	lesson: {
-		name: string;
-		teacherId: string;
-	};
 };
 
-type AttendanceList = Attendance & { student: Student } & { lesson: Lesson };
+type AttendanceList = Attendance & { student: Student };
 
 const AttendanceListPage = async ({
 	searchParams,
@@ -36,10 +32,6 @@ const AttendanceListPage = async ({
 		{
 			header: 'Student',
 			accessor: 'student',
-		},
-		{
-			header: 'Lesson',
-			accessor: 'lesson',
 		},
 		{
 			header: 'Date',
@@ -75,7 +67,7 @@ const AttendanceListPage = async ({
 					{item.student.name + ' ' + item.student.surname}
 				</div>
 			</td>
-			<td>{item.lesson.name}</td>
+
 			<td>
 				{new Intl.DateTimeFormat('en-US', {
 					year: 'numeric',
@@ -83,52 +75,91 @@ const AttendanceListPage = async ({
 					day: 'numeric',
 				}).format(new Date(item.date))}
 			</td>
+
 			<td>
 				<span
 					className={`px-2 py-1 rounded-full text-xs ${
-						item.present
+						item.status === '1'
 							? 'bg-green-100 text-green-800'
-							: 'bg-red-100 text-red-800'
+							: item.status === '0'
+							? 'bg-red-100 text-red-800'
+							: item.status === 'E'
+							? 'bg-yellow-100 text-yellow-800'
+							: item.status === 'H'
+							? 'bg-blue-100 text-blue-800'
+							: 'bg-gray-100 text-gray-800'
 					}`}>
-					{item.present ? 'Present' : 'Absent'}
+					{item.status === '1'
+						? 'Present'
+						: item.status === '0'
+						? 'Absent'
+						: item.status === 'E'
+						? 'Excused'
+						: item.status === 'H'
+						? 'Holiday'
+						: 'Unknown'}
 				</span>
 			</td>
-			<div className="flex items-center gap-2">
-				{(role === 'admin' || role === 'teacher') && (
-					<>
-						<FormContainer
-							table="attendance"
-							type="update"
-							data={item}
-							id={item.id}
-							userRole={role}
-						/>
-						<FormContainer table="attendance" type="delete" id={item.id} />
-					</>
-				)}
-			</div>
+			<td>
+				<div className="flex items-center gap-2">
+					{(role === 'admin' || role === 'teacher') && (
+						<>
+							<FormContainer
+								table="attendance"
+								type="update"
+								data={item}
+								id={item.id}
+								userRole={role}
+							/>
+							<FormContainer table="attendance" type="delete" id={item.id} />
+						</>
+					)}
+				</div>
+			</td>
 		</tr>
 	);
 
 	// Get current page from searchParams (defaults to page 1)
-	const { page } = searchParams;
+	const { page, ...queryParams } = searchParams;
 	const p = page ? parseInt(page) : 1;
 
-	// Build query conditions based on user role
-	let attendanceQuery = {};
-	if (role === 'teacher') {
-		attendanceQuery = { lesson: { teacherId: currentUserId! } };
-	} else if (role === 'student') {
-		attendanceQuery = { studentId: currentUserId! };
-	}
-	// Admin gets all records; add any additional role-based conditions as needed
+	// Initialize the query object
+	let query: Prisma.AttendanceWhereInput = {};
 
+	// Process query parameters
+	if (queryParams) {
+		for (const [key, value] of Object.entries(queryParams)) {
+			if (value !== undefined) {
+				switch (key) {
+					case 'search':
+						// Search by student name instead of studentId
+						query.student = {
+							name: { contains: value, mode: 'insensitive' },
+						};
+						break;
+					default:
+						break;
+				}
+			}
+		}
+	}
+
+	// Build query conditions based on user role
+	if (role === 'student') {
+		query = {
+			...query,
+			studentId: currentUserId!,
+		};
+	}
+	// Admin gets all records; no additional conditions needed
+
+	// Execute the database queries
 	const [data, count] = await prisma.$transaction([
 		prisma.attendance.findMany({
-			where: attendanceQuery,
+			where: query,
 			include: {
 				student: true,
-				lesson: true,
+				// Remove the lesson inclusion
 			},
 			orderBy: {
 				date: 'desc',
@@ -137,7 +168,7 @@ const AttendanceListPage = async ({
 			skip: ITEM_PER_PAGE * (p - 1),
 		}),
 		prisma.attendance.count({
-			where: attendanceQuery,
+			where: query,
 		}),
 	]);
 

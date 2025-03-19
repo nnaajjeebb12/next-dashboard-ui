@@ -855,24 +855,11 @@ export const createAttendance = async (
 	const role = await getRole();
 	const userId = await getUserId();
 	try {
-		if (role === 'teacher') {
-			const teacherLesson = await prisma.lesson.findFirst({
-				where: {
-					teacherId: userId!,
-					id: data.lessonId,
-				},
-			});
-
-			if (!teacherLesson) {
-				return { success: false, error: true, message: 'Incorrect lesson' };
-			}
-		}
-
 		// Check for duplicate attendance
 		const existingAttendance = await prisma.attendance.findFirst({
 			where: {
 				studentId: data.studentId,
-				lessonId: data.lessonId,
+				// lessonId: data.lessonId,
 				date: data.date,
 			},
 		});
@@ -888,9 +875,9 @@ export const createAttendance = async (
 		await prisma.attendance.create({
 			data: {
 				studentId: data.studentId,
-				lessonId: data.lessonId,
+				// lessonId: data.lessonId,
 				date: data.date,
-				present: data.present,
+				status: data.status,
 			},
 		});
 
@@ -913,31 +900,15 @@ export const updateAttendance = async (
 	const role = await getRole();
 	const userId = await getUserId();
 	try {
-		if (role === 'teacher') {
-			const teacherLesson = await prisma.lesson.findFirst({
-				where: {
-					teacherId: userId!,
-					id: data.lessonId,
-				},
-			});
-
-			if (!teacherLesson) {
-				return {
-					success: false,
-					error: true,
-					message: 'Teacher has no lesson',
-				};
-			}
-		}
 		await prisma.attendance.update({
 			where: {
 				id: data.id,
 			},
 			data: {
 				studentId: data.studentId,
-				lessonId: data.lessonId,
+				// lessonId: data.lessonId,
 				date: data.date,
-				present: data.present,
+				status: data.status,
 			},
 		});
 		// revalidatePath('/list/attendance');
@@ -966,16 +937,8 @@ export const deleteAttendance = async (
 			// First check if the teacher has permission to delete this attendance
 			const attendance = await prisma.attendance.findUnique({
 				where: { id: parseInt(id) },
-				include: { lesson: true },
+				// include: { lesson: true },
 			});
-
-			if (!attendance || attendance.lesson.teacherId !== userId) {
-				return {
-					success: false,
-					error: true,
-					message: 'Record not found',
-				};
-			}
 		}
 
 		await prisma.attendance.delete({

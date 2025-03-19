@@ -52,6 +52,20 @@ const AttendanceChart = ({
 					legendType="circle"
 					radius={[10, 10, 0, 0]}
 				/>
+				<Bar
+					dataKey="excused"
+					name="Excused (E)"
+					fill="#FFC107"
+					legendType="circle"
+					radius={[10, 10, 0, 0]}
+				/>
+				<Bar
+					dataKey="holiday"
+					name="Holiday (H)"
+					fill="#4CAF50"
+					legendType="circle"
+					radius={[10, 10, 0, 0]}
+				/>
 			</BarChart>
 		</ResponsiveContainer>
 	);

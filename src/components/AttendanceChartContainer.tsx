@@ -8,8 +8,7 @@ const AttendanceChartContainer = async () => {
 	const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
 
 	const lastMonday = new Date(today);
-
-	lastMonday.setDate(today.getDate() - daysSinceMonday);
+	lastMonday.setDate(today.getDate() - daysSinceMonday - 1);
 
 	const resData = await prisma.attendance.findMany({
 		where: {
@@ -19,22 +18,27 @@ const AttendanceChartContainer = async () => {
 		},
 		select: {
 			date: true,
-			present: true,
+			status: true,
 		},
 	});
 
-	// console.log(data)
-
 	const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
-	const attendanceMap: { [key: string]: { present: number; absent: number } } =
-		{
-			Mon: { present: 0, absent: 0 },
-			Tue: { present: 0, absent: 0 },
-			Wed: { present: 0, absent: 0 },
-			Thu: { present: 0, absent: 0 },
-			Fri: { present: 0, absent: 0 },
+	// Initialize attendance map with all status types
+	const attendanceMap: {
+		[key: string]: {
+			present: number;
+			absent: number;
+			excused: number;
+			holiday: number;
 		};
+	} = {
+		Mon: { present: 0, absent: 0, excused: 0, holiday: 0 },
+		Tue: { present: 0, absent: 0, excused: 0, holiday: 0 },
+		Wed: { present: 0, absent: 0, excused: 0, holiday: 0 },
+		Thu: { present: 0, absent: 0, excused: 0, holiday: 0 },
+		Fri: { present: 0, absent: 0, excused: 0, holiday: 0 },
+	};
 
 	resData.forEach((item) => {
 		const itemDate = new Date(item.date);
@@ -43,10 +47,27 @@ const AttendanceChartContainer = async () => {
 		if (dayOfWeek >= 1 && dayOfWeek <= 5) {
 			const dayName = daysOfWeek[dayOfWeek - 1];
 
-			if (item.present) {
-				attendanceMap[dayName].present += 1;
-			} else {
-				attendanceMap[dayName].absent += 1;
+			// Handle different status types
+			switch (item.status) {
+				case '1':
+					attendanceMap[dayName].present += 1;
+					break;
+				case '0':
+					attendanceMap[dayName].absent += 1;
+					break;
+				case 'E':
+					attendanceMap[dayName].excused += 1;
+					break;
+				case 'H':
+					attendanceMap[dayName].holiday += 1;
+					break;
+				default:
+					// For backward compatibility in case some records still use boolean
+					if (item.status) {
+						attendanceMap[dayName].present += 1;
+					} else {
+						attendanceMap[dayName].absent += 1;
+					}
 			}
 		}
 	});
@@ -55,6 +76,8 @@ const AttendanceChartContainer = async () => {
 		name: day,
 		present: attendanceMap[day].present,
 		absent: attendanceMap[day].absent,
+		excused: attendanceMap[day].excused,
+		holiday: attendanceMap[day].holiday,
 	}));
 
 	return (

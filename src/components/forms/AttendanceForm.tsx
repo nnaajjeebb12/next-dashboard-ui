@@ -14,16 +14,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import InputField from '../InputField';
 
-// type AttendanceFormProps = {
-// 	type: 'create' | 'update';
-// 	data?: any;
-// 	setOpen: Dispatch<SetStateAction<boolean>>;
-// 	relatedData?: {
-// 		students?: { id: string; name: string; surname: string }[];
-// 		lessons?: { id: number; name: string }[];
-// 	};
-// };
-
 const AttendanceForm = ({
 	type,
 	data,
@@ -78,7 +68,7 @@ const AttendanceForm = ({
 		}
 	}, [state]);
 
-	const { students, lessons } = relatedData;
+	const { students } = relatedData;
 
 	return (
 		<form className="flex flex-col gap-8" onSubmit={onSubmit}>
@@ -121,30 +111,73 @@ const AttendanceForm = ({
 					)}
 				</div>
 
-				<div
-					className={
-						isTeacherEditing ? 'hidden' : 'flex flex-col gap-2 w-full md:w-1/3'
-					}>
-					<label className="text-xs text-gray-500">Lesson</label>
-					<select
-						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-						hidden={isTeacherEditing}
-						{...register('lessonId')}
-						defaultValue={data?.lessonId}>
-						{lessons.map((lesson: { id: string; name: string }) => (
-							<option value={lesson.id} key={lesson.id}>
-								{lesson.name}
-							</option>
-						))}
-					</select>
-					{errors.lessonId?.message && (
-						<p className="text-xs text-red-400">
-							{errors.lessonId.message.toString()}
-						</p>
+				<div className="flex flex-col gap-2 w-full">
+					<label className="text-xs text-gray-500">Attendance Status</label>
+					<div className="flex flex-wrap gap-4">
+						<div className="flex items-center gap-1">
+							<input
+								id="status-present"
+								type="radio"
+								value="1"
+								{...register('status')}
+								className="w-4 h-4"
+								defaultChecked={!data || data?.status === '1'}
+							/>
+							<label htmlFor="status-present" className="text-sm">
+								Present
+							</label>
+						</div>
+
+						<div className="flex items-center gap-1">
+							<input
+								id="status-absent"
+								type="radio"
+								value="0"
+								{...register('status')}
+								className="w-4 h-4"
+								defaultChecked={data?.status === '0'}
+							/>
+							<label htmlFor="status-absent" className="text-sm">
+								Absent
+							</label>
+						</div>
+
+						<div className="flex items-center gap-1">
+							<input
+								id="status-excused"
+								type="radio"
+								value="E"
+								{...register('status')}
+								className="w-4 h-4"
+								defaultChecked={data?.status === 'E'}
+							/>
+							<label htmlFor="status-excused" className="text-sm">
+								Excused
+							</label>
+						</div>
+
+						<div className="flex items-center gap-1">
+							<input
+								id="status-holiday"
+								type="radio"
+								value="H"
+								{...register('status')}
+								className="w-4 h-4"
+								defaultChecked={data?.status === 'H'}
+							/>
+							<label htmlFor="status-holiday" className="text-sm">
+								Holiday
+							</label>
+						</div>
+					</div>
+					{errors.status && (
+						<span className="text-red-500 text-sm">
+							{errors.status.message?.toString()}
+						</span>
 					)}
 				</div>
 
-				<div className="flex items-center gap-2">
+				{/* <div className="flex items-center gap-2">
 					<label htmlFor="present" className="font-medium">
 						Present
 					</label>
@@ -159,7 +192,7 @@ const AttendanceForm = ({
 							{errors.present.message}
 						</span>
 					)}
-				</div>
+				</div> */}
 
 				{data && (
 					<InputField
