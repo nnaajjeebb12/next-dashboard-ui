@@ -204,6 +204,16 @@ const FormContainer = async ({
 							name: true,
 							surname: true,
 							classId: true,
+							class: {
+								select: {
+									lessons: {
+										select: {
+											id: true,
+											name: true,
+										},
+									},
+								},
+							},
 						},
 					});
 

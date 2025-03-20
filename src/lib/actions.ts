@@ -338,6 +338,7 @@ export const createStudent = async (
 ) => {
 	let clerkUser;
 	const client = await clerkClient();
+	console.log(data);
 
 	try {
 		const classItem = await prisma.class.findUnique({
@@ -353,6 +354,8 @@ export const createStudent = async (
 			};
 		}
 
+		const combinedAddress = `${data.address} ,${data.purok}, ${data.brgy}, ${data.city}, ${data.province}`;
+
 		clerkUser = await client.users.createUser({
 			username: data.username,
 			password: data.password,
@@ -364,12 +367,18 @@ export const createStudent = async (
 		await prisma.student.create({
 			data: {
 				id: clerkUser.id,
+				lrn: data.lrn,
 				username: data.username,
 				name: data.name,
+				middleName: data.middleName,
 				surname: data.surname,
 				email: data.email || null,
 				phone: data.phone || null,
-				address: data.address,
+				address: combinedAddress,
+				purok: data.purok,
+				brgy: data.brgy,
+				city: data.city,
+				province: data.province,
 				img: data.img || null,
 				bloodType: data.bloodType,
 				sex: data.sex,
@@ -379,6 +388,19 @@ export const createStudent = async (
 				// parentId: data.parentId,
 				// Connect to the strand using its ID
 				strandId: data.strandId,
+				religion: data.religion,
+				fatherName: data.fatherName,
+				fatherMiddleName: data.fatherMiddleName,
+				fatherSurname: data.fatherSurname,
+				motherName: data.motherName,
+				motherMiddleName: data.motherMiddleName,
+				motherSurname: data.motherSurname,
+				guardianName: data.guardianName,
+				guardianMiddleName: data.guardianMiddleName,
+				guardianSurname: data.guardianSurname,
+				guardianRelation: data.guardianRelation,
+				learningModal: data.learningModal,
+				remarks: data.remarks,
 			},
 		});
 
@@ -419,20 +441,27 @@ export const updateStudent = async (
 			publicMetadata: { role: 'student' },
 		});
 
+		const combinedAddress = `${data.purok}, ${data.brgy}, ${data.city}, ${data.province}`;
 		await prisma.student.update({
 			where: {
 				id: data.id,
 			},
 			data: {
 				...(data.password !== '' && { password: data.password }),
+				lrn: data.lrn,
 				username: data.username,
 				name: data.name,
+				middleName: data.middleName,
 				surname: data.surname,
 				email: data.email || null,
 				phone: data.phone || null,
-				address: data.address,
-				// img: data.img !== undefined ? data.img : null,
+				address: combinedAddress,
+				purok: data.purok,
+				brgy: data.brgy,
+				city: data.city,
+				province: data.province,
 				...(data.img !== '' && { img: data.img }),
+				// img: data.img || null,
 				bloodType: data.bloodType,
 				sex: data.sex,
 				birthday: data.birthday,
@@ -441,6 +470,19 @@ export const updateStudent = async (
 				// parentId: data.parentId,
 				// Connect to the strand using its ID
 				strandId: data.strandId,
+				religion: data.religion,
+				fatherName: data.fatherName,
+				fatherMiddleName: data.fatherMiddleName,
+				fatherSurname: data.fatherSurname,
+				motherName: data.motherName,
+				motherMiddleName: data.motherMiddleName,
+				motherSurname: data.motherSurname,
+				guardianName: data.guardianName,
+				guardianMiddleName: data.guardianMiddleName,
+				guardianSurname: data.guardianSurname,
+				guardianRelation: data.guardianRelation,
+				learningModal: data.learningModal,
+				remarks: data.remarks,
 			},
 		});
 
@@ -878,6 +920,7 @@ export const createAttendance = async (
 				// lessonId: data.lessonId,
 				date: data.date,
 				status: data.status,
+				semester: data.semester,
 			},
 		});
 
@@ -909,6 +952,7 @@ export const updateAttendance = async (
 				// lessonId: data.lessonId,
 				date: data.date,
 				status: data.status,
+				semester: data.semester,
 			},
 		});
 		// revalidatePath('/list/attendance');

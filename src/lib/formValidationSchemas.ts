@@ -55,6 +55,7 @@ export type TeacherSchema = z.infer<typeof teacherSchema>;
 // STUDENT
 export const studentSchema = z.object({
 	id: z.string().optional(),
+	lrn: z.string().min(12, { message: 'LRN must be atleast 12 characters' }),
 	username: z
 		.string()
 		.min(3, { message: 'Username must be at least 3 characters' })
@@ -65,6 +66,7 @@ export const studentSchema = z.object({
 		.optional()
 		.or(z.literal('')),
 	name: z.string().min(1, { message: 'First name is required!' }),
+	middleName: z.string().min(1, { message: 'Middle name is required!' }),
 	surname: z.string().min(1, { message: 'Last name is required!' }),
 	email: z
 		.string()
@@ -72,7 +74,11 @@ export const studentSchema = z.object({
 		.optional()
 		.or(z.literal('')),
 	phone: z.string().optional(),
-	address: z.string().min(1, { message: 'Address is required' }),
+	address: z.string().min(1, { message: 'House number required' }),
+	purok: z.string().min(1, { message: 'Street is required' }),
+	brgy: z.string().min(1, { message: 'Baranggay is required' }),
+	city: z.string().min(1, { message: 'City is required' }),
+	province: z.string().min(1, { message: 'Province is required' }),
 	img: z.string().optional(),
 	bloodType: z.string().min(1, { message: 'Blood Type is required!' }),
 	birthday: z.coerce.date({ message: 'Birthday is required!' }),
@@ -81,6 +87,19 @@ export const studentSchema = z.object({
 	classId: z.coerce.number().min(1, { message: 'Class is required' }),
 	// parentId: z.string().min(1, { message: 'Parent is required' }).optional(), // maybe remove this
 	strandId: z.coerce.number().min(1, { message: 'Class is required' }), // strand names
+	religion: z.string().optional(),
+	fatherName: z.string().optional(),
+	fatherMiddleName: z.string().optional(),
+	fatherSurname: z.string().optional(),
+	motherName: z.string().optional(),
+	motherMiddleName: z.string().optional(),
+	motherSurname: z.string().optional(),
+	guardianName: z.string().optional(),
+	guardianMiddleName: z.string().optional(),
+	guardianSurname: z.string().optional(),
+	guardianRelation: z.string().optional(),
+	learningModal: z.string().optional(),
+	remarks: z.string().optional(),
 });
 
 export type StudentSchema = z.infer<typeof studentSchema>;
@@ -151,6 +170,7 @@ export const attendanceSchema = z.object({
 		message:
 			'Status must be one of: Present (1), Absent (0), Excused (E), or Holiday (H)',
 	}),
+	semester: z.string().min(1, { message: 'Semester is required' }),
 });
 
 export type AttendanceSchema = z.infer<typeof attendanceSchema>;

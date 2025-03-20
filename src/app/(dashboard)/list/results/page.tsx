@@ -188,8 +188,6 @@ const ResultListpage = async ({
 
 	// ROLE CONDITIONS
 	switch (role) {
-		case 'admin':
-			break;
 		case 'teacher':
 			// For teachers, only show results for their students
 			query.student = {

@@ -110,7 +110,21 @@ const AttendanceForm = ({
 						</p>
 					)}
 				</div>
-
+				<div className="flex flex-col gap-2 w-full md:w-1/4">
+					<label className="text-xs text-gray-500">Semester</label>
+					<select
+						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+						{...register('semester')}
+						defaultValue={data?.semester}>
+						<option value="1st Semester">1st Semester</option>
+						<option value="2nd Semester">2nd Semester</option>
+					</select>
+					{errors.semester?.message && (
+						<p className=" text-xs text-red-400">
+							{errors.semester.message.toString()}
+						</p>
+					)}
+				</div>
 				<div className="flex flex-col gap-2 w-full">
 					<label className="text-xs text-gray-500">Attendance Status</label>
 					<div className="flex flex-wrap gap-4">

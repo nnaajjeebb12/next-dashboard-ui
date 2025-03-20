@@ -54,6 +54,7 @@ const ResultForm = ({
 	useEffect(() => {
 		if (type === 'create') {
 			if (studentId) {
+				console.log(students);
 				const student = students.find((s: any) => s.id === studentId);
 				if (student && student.class) {
 					const studentLessons = student.class.lessons;

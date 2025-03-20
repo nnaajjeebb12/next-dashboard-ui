@@ -62,9 +62,7 @@ const SingleStudentPage = async ({
 									<FormContainer table="student" type="update" data={student} />
 								)}
 							</div>
-							<p className="text-sm text-gray-500">
-								Lorem ipsum dolor sit amet consectetur adipisicing elit.
-							</p>
+							<p className="text-sm text-gray-500">{student.lrn}</p>
 							<div className="flex items-center justify-between gap-2 flex-wrap text-xs font-medium">
 								<div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
 									<Image
@@ -187,15 +185,15 @@ const SingleStudentPage = async ({
 					<div className="mt-4 flex gap-4 flex-wrap text-xs to-gray-500">
 						<Link
 							className="p-3 rounded-md bg-najSkyLight"
-							href={`/list/lessons?classId=${2}`}>
+							href={`/list/lessons?classId=${student.classId}`}>
 							Student&apos;s Lessons
 						</Link>
 						<Link
 							className="p-3 rounded-md bg-najPurpleLight"
-							href={`/list/teachers?classId=${2}`}>
+							href={`/list/teachers?classId=${student.classId}`}>
 							Student&apos;s Teachers
 						</Link>
-						<Link
+						{/* <Link
 							className="p-3 rounded-md bg-pink-50"
 							href={`/list/exams?classId=${2}`}>
 							Student&apos;s Exams
@@ -204,15 +202,15 @@ const SingleStudentPage = async ({
 							className="p-3 rounded-md bg-najSkyLight"
 							href={`/list/assignments?classId=${2}`}>
 							Student&apos;s Assignments
-						</Link>
+						</Link> */}
 						<Link
 							className="p-3 rounded-md bg-najYellowLight"
-							href={`/list/results?studentId=${'student2'}`}>
+							href={`/list/results?studentId=${student.id}`}>
 							Student&apos;s Results
 						</Link>
 					</div>
 				</div>
-				<Performance />
+				{/* <Performance /> */}
 				<Announcements />
 			</div>
 		</div>

@@ -16,6 +16,7 @@ type AttendanceRecord = {
 		name: string;
 		surname: string;
 	};
+	semester: string;
 };
 
 type AttendanceList = Attendance & { student: Student };
@@ -36,6 +37,10 @@ const AttendanceListPage = async ({
 		{
 			header: 'Date',
 			accessor: 'date',
+		},
+		{
+			header: 'Semester',
+			accessor: 'semester',
 		},
 		{
 			header: 'Status',
@@ -74,6 +79,10 @@ const AttendanceListPage = async ({
 					month: 'long',
 					day: 'numeric',
 				}).format(new Date(item.date))}
+			</td>
+
+			<td>
+				<div className="flex flex-col">{item.semester}</div>
 			</td>
 
 			<td>
@@ -132,10 +141,16 @@ const AttendanceListPage = async ({
 			if (value !== undefined) {
 				switch (key) {
 					case 'search':
-						// Search by student name instead of studentId
-						query.student = {
-							name: { contains: value, mode: 'insensitive' },
-						};
+						query.OR = [
+							{
+								student: {
+									name: { contains: value, mode: 'insensitive' },
+								},
+							},
+							{
+								semester: { contains: value, mode: 'insensitive' },
+							},
+						];
 						break;
 					default:
 						break;

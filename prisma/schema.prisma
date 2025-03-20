@@ -174,9 +174,10 @@ model Result {
 }
 
 model Attendance {
-  id     Int      @id @default(autoincrement())
-  date   DateTime
-  status String   @default("1")
+  id       Int      @id @default(autoincrement())
+  date     DateTime
+  status   String   @default("1")
+  semester String?
 
   studentId String
   student   Student @relation(fields: [studentId], references: [id])

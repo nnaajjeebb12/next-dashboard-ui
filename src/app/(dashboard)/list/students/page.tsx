@@ -29,6 +29,11 @@ const StudentListpage = async ({
 			className: 'hidden md:table-cell',
 		},
 		{
+			header: 'LRN',
+			accessor: 'lrn',
+			className: 'hidden md:table-cell',
+		},
+		{
 			header: 'Section',
 			accessor: 'section',
 			className: 'hidden md:table-cell',
@@ -76,6 +81,7 @@ const StudentListpage = async ({
 				</div>
 			</td>
 			<td className="hidden md:table-cell">{item.username}</td>
+			<td className="hidden md:table-cell">{item.lrn}</td>
 			<td className="hidden md:table-cell">{item.class.name}</td>
 			<td className="hidden md:table-cell">{item.class.gradeId}</td>
 			<td className="hidden md:table-cell">{item.phone}</td>
@@ -116,7 +122,11 @@ const StudentListpage = async ({
 						};
 						break;
 					case 'search':
-						query.name = { contains: value, mode: 'insensitive' };
+						query.OR = [
+							{ name: { contains: value, mode: 'insensitive' } },
+							{ lrn: { contains: value, mode: 'insensitive' } },
+						];
+						// query.name = { contains: value, mode: 'insensitive' };
 						break;
 					default:
 						break;
