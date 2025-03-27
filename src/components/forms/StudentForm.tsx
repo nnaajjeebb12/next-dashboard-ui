@@ -239,7 +239,7 @@ const StudentForm = ({
 				<InputField
 					label="House Number"
 					name="address"
-					defaultValue={data?.address}
+					defaultValue=""
 					register={register}
 					error={errors.address}
 				/>

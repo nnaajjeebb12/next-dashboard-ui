@@ -181,8 +181,6 @@ model Attendance {
 
   studentId String
   student   Student @relation(fields: [studentId], references: [id])
-  // lessonId  Int
-  // lesson    Lesson  @relation(fields: [lessonId], references: [id])
 }
 
 model Event {
