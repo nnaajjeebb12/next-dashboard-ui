@@ -2,7 +2,7 @@
 
 # Function to test PostgreSQL connection
 test_postgresql() {
-    psql "postgresql://myuser:mypassword@postgres:5432/school" -c '\q' 2>&1
+    psql "postgresql://najeeb12:Plutonium_239@postgres:5432/school" -c '\q' 2>&1
 }
 
 # Wait for PostgreSQL to be ready

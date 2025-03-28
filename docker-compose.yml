@@ -3,17 +3,17 @@ version: '1'
 services:
   postgres:
     image: postgres:17.4
-    container_name: postgres_db
+    container_name: postgres
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_USER: najeeb12
+      POSTGRES_PASSWORD: Plutonium_239
       POSTGRES_DB: school
     ports:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U myuser -d school']
+      test: ['CMD-SHELL', 'pg_isready -U najeeb12 -d school']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -24,7 +24,7 @@ services:
     ports:
       - 3000:3000
     environment:
-      DATABASE_URL: postgresql://myuser:mypassword@postgres:5432/school
+      DATABASE_URL: postgresql://najeeb12:Plutonium_239@postgres:5432/school
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_bGVhZGluZy1hbGllbi01MC5jbGVyay5hY2NvdW50cy5kZXYk
       CLERK_SECRET_KEY: sk_test_wGzQtoErzU2ec2tkBH10cjdSYECO6gk3sFiGuBUBIn
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: /
