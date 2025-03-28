@@ -19,9 +19,15 @@ services:
     ports:
       - 3000:3000
     environment:
-      DATABASE_URL: postgresql://myuser:mypassword@localhost:5432/school
+      DATABASE_URL: postgresql://myuser:mypassword@postgres:5432/school
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_bGVhZGluZy1hbGllbi01MC5jbGVyay5hY2NvdW50cy5kZXYk
+      CLERK_SECRET_KEY: sk_test_wGzQtoErzU2ec2tkBH10cjdSYECO6gk3sFiGuBUBIn
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: /
+      NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: vaghnlawrence
+      NEXT_PUBLIC_CLOUDINARY_API_KEY: 452922187849588
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:
