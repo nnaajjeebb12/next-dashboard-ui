@@ -6,7 +6,6 @@ import SF2Document from '@/components/school-forms/SF2Document';
 import SF5Document from '@/components/school-forms/SF5Document';
 import SF9Document from '@/components/school-forms/SF9Document';
 import { FormType, StudentResponse } from '@/components/school-forms/types';
-import { MONTHS } from '@/components/school-forms/utils';
 import {
 	Document,
 	Image,
@@ -787,8 +786,8 @@ const PdfExportPage = () => {
 	const [selectedSchoolYear, setSelectedSchoolYear] =
 		useState<string>('2023-2024');
 	const [selectedForm, setSelectedForm] = useState<FormType>(FormType.SF1);
-	const [selectedMonth, setSelectedMonth] = useState<(typeof MONTHS)[number]>(
-		MONTHS[0]
+	const [selectedMonth, setSelectedMonth] = useState<string>(
+		new Date().toLocaleString('default', { month: 'long' }).toUpperCase()
 	);
 
 	// Generate school year options (current year ± 5 years)
@@ -837,7 +836,9 @@ const PdfExportPage = () => {
 		setSelectedStrand('');
 		setSelectedClass('');
 		setSelectedSchoolYear('2023-2024');
-		setSelectedMonth(MONTHS[0]);
+		setSelectedMonth(
+			new Date().toLocaleString('default', { month: 'long' }).toUpperCase()
+		);
 	};
 
 	const handleStrandChange = async (
@@ -863,6 +864,22 @@ const PdfExportPage = () => {
 
 	// Add validation for form completion
 	const isFormComplete = selectedStrand && selectedClass && selectedSchoolYear;
+
+	// Add the months array
+	const months = [
+		'JANUARY',
+		'FEBRUARY',
+		'MARCH',
+		'APRIL',
+		'MAY',
+		'JUNE',
+		'JULY',
+		'AUGUST',
+		'SEPTEMBER',
+		'OCTOBER',
+		'NOVEMBER',
+		'DECEMBER',
+	];
 
 	if (loading) {
 		return <div>Loading students data...</div>;
@@ -1045,10 +1062,8 @@ const PdfExportPage = () => {
 								<select
 									className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
 									value={selectedMonth}
-									onChange={(e) =>
-										setSelectedMonth(e.target.value as (typeof MONTHS)[number])
-									}>
-									{MONTHS.map((month) => (
+									onChange={(e) => setSelectedMonth(e.target.value)}>
+									{months.map((month) => (
 										<option key={month} value={month}>
 											{month}
 										</option>

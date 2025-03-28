@@ -34,11 +34,8 @@ export const MONTHS = [
 ] as const;
 
 // Get number of days in a month
-export const getNumberOfDays = (
-	month: (typeof MONTHS)[number],
-	year: string
-) => {
-	const monthIndex = MONTHS.indexOf(month);
+export const getNumberOfDays = (month: string, year: string) => {
+	const monthIndex = MONTHS.indexOf(month as (typeof MONTHS)[number]);
 	const yearNumber = parseInt(year.split('-')[0]);
 	return new Date(yearNumber, monthIndex + 1, 0).getDate();
 };
