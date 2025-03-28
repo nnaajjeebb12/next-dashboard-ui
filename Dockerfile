@@ -1,5 +1,5 @@
 # Use Node.js as the base image
-FROM node:18-alpine
+FROM node:18
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -7,16 +7,15 @@ WORKDIR /app
 # Copy package.json and package-lock.json files
 COPY package*.json ./
 
-# Install dependencies including sharp
+# Install dependencies
 RUN npm install
 RUN npm install sharp
-
 
 # Copy the rest of the application code
 COPY . .
 
-# Generate Prisma Client
-RUN npx prisma generate
+# Generate Database
+RUN npx prisma migrate dev --name init
 
 # Build the Next.js application
 RUN npm run build
