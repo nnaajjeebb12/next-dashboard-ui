@@ -58,8 +58,10 @@ const ExamForm = ({
 			);
 			setOpen(false);
 			router.refresh();
+		} else if (state.error && state.message) {
+			toast.error(state.message);
 		}
-	}, [state]);
+	}, [state, type, setOpen, router]);
 	const { lessons } = relatedData;
 
 	return (

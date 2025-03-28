@@ -68,7 +68,7 @@ const StudentForm = ({
 		} else if (state.error && state.message) {
 			toast.error(state.message);
 		}
-	}, [state]);
+	}, [state, type, setOpen, router]);
 	const { grades, classes, strands } = relatedData;
 
 	return (

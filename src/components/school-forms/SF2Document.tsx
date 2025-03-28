@@ -493,8 +493,7 @@ const SF2Document = ({
 					<Image style={styles.logoContainer} src="/DrJuanLogo.png" />
 					<View style={styles.titleContainer}>
 						<Text style={styles.formTitle}>
-							School Form 2 Daily Attendance Report of Learners For Senior High
-							School (SF2-SHS)
+							School Form 2 Daily Attendance Report of Learners (SF2)
 						</Text>
 					</View>
 					<Image style={styles.logoContainer} src="/deped.png" />

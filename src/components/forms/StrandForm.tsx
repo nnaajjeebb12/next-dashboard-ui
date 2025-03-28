@@ -58,8 +58,10 @@ const StrandForm = ({
 			);
 			setOpen(false);
 			router.refresh();
+		} else if (state.error && state.message) {
+			toast.error(state.message);
 		}
-	}, [state]);
+	}, [state, type, setOpen, router]);
 
 	return (
 		<form className="flex flex-col gap-8" onSubmit={onSubmit}>

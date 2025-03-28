@@ -54,12 +54,14 @@ const ClassForm = ({
 	useEffect(() => {
 		if (state.success) {
 			toast.success(
-				`Subject has been ${type === 'create' ? 'created' : 'updated'}!`
+				`Class has been ${type === 'create' ? 'created' : 'updated'}!`
 			);
 			setOpen(false);
 			router.refresh();
+		} else if (state.error && state.message) {
+			toast.error(state.message);
 		}
-	}, [state]);
+	}, [state, type, setOpen, router]);
 	const { teachers, grades } = relatedData;
 
 	return (

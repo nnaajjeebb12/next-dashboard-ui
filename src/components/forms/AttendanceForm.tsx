@@ -66,7 +66,7 @@ const AttendanceForm = ({
 		} else if (state.error && state.message) {
 			toast.error(state.message);
 		}
-	}, [state]);
+	}, [state, type, setOpen, router]);
 
 	const { students } = relatedData;
 

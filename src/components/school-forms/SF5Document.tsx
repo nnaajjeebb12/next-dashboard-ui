@@ -57,8 +57,7 @@ const SF5Document = ({ data, selectedSchoolYear }: PDFDocumentProps) => {
 					<Image style={styles.logoContainer} src="/DrJuanLogo.png" />
 					<View style={styles.titleContainer}>
 						<Text style={styles.formTitle}>
-							School Form 5 Report on Promotion and Level of Proficiency
-							(SF5-SHS)
+							School Form 5 Report on Promotion and Level of Proficiency (SF5)
 						</Text>
 					</View>
 					<Image style={styles.logoContainer} src="/deped.png" />

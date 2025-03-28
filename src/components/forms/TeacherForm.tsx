@@ -60,8 +60,10 @@ const TeacherForm = ({
 			);
 			setOpen(false);
 			router.refresh();
+		} else if (state.error && state.message) {
+			toast.error(state.message);
 		}
-	}, [state]);
+	}, [state, type, setOpen, router]);
 	const { subjects } = relatedData;
 
 	return (

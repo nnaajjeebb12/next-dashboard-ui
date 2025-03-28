@@ -14,11 +14,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   app:
+    build: .
     container_name: school_app
     ports:
       - 3000:3000
     environment:
-      POSTGRES_USER: postgresql://myuser:mypassword@localhost:5432/school
+      DATABASE_URL: postgresql://myuser:mypassword@postgres:5432/school
     depends_on:
       - postgres
 
