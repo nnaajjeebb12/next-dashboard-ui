@@ -136,7 +136,6 @@ async function main() {
 				address: `Address${i}`,
 				bloodType: 'O-',
 				sex: i % 2 === 0 ? UserSex.MALE : UserSex.FEMALE,
-				parentId: `parentId${Math.ceil(i / 2) % 25 || 25}`,
 				gradeId: (i % 6) + 1,
 				classId: (i % 6) + 1,
 				birthday: new Date(
@@ -175,7 +174,6 @@ async function main() {
 	for (let i = 1; i <= 10; i++) {
 		await prisma.result.create({
 			data: {
-				score: 90,
 				studentId: `student${i}`,
 				...(i <= 5 ? { examId: i } : { assignmentId: i - 5 }),
 			},
@@ -187,9 +185,9 @@ async function main() {
 		await prisma.attendance.create({
 			data: {
 				date: new Date(),
-				present: true,
+				status: '1',
+				semester: '1st Semester',
 				studentId: `student${i}`,
-				lessonId: (i % 30) + 1,
 			},
 		});
 	}
