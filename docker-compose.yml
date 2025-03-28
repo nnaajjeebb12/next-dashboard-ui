@@ -21,3 +21,6 @@ services:
       POSTGRES_USER: postgresql://najeeb12:Plutonium_239@localhost:5432/school
     depends_on:
       - postgres
+
+volumes:
+  postgres_data:
