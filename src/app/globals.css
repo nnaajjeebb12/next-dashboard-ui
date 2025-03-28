@@ -9,10 +9,111 @@
 }
 
 .react-calendar__navigation__label__labelText {
-	font-weight: 600 !important;
+	font-weight: 600;
 }
 
 .react-calendar__tile--active {
 	background-color: #c3ebfa !important;
 	color: black !important;
+}
+
+.rbc-btn-group:first-child {
+	display: none !important;
+}
+
+.rbc-toolbar-label {
+	text-align: right !important;
+	padding: 0px 20px !important;
+}
+
+.rbc-btn-group:last-child {
+	font-size: 13px !important;
+}
+
+.rbc-btn-group:last-child button {
+	border: none !important;
+	background-color: #f1f0ff !important;
+	margin-left: 2px !important;
+}
+
+.rbc-toolbar button.rbc-active {
+	background-color: #dbdafe !important;
+	box-shadow: none !important;
+}
+
+.rbc-active button.rbc.rbc-btn-group:last-child {
+	font-size: 13px !important;
+}
+
+.rbc-time-view {
+	border-color: #eee !important;
+}
+
+.rbc-time-header-content {
+	display: none !important;
+}
+
+.rbc-time-content {
+	border: none !important;
+}
+
+.rbc-time-gutter.rbc-time-column {
+	font-size: 12px !important;
+}
+
+.rbc-time-gutter.rbc-time-column .rbc-timeslot-group {
+	padding: 0px, 2px !important;
+}
+
+.rbc-timeslot-group {
+	background-color: #f7fdff !important;
+}
+
+.rbc-rime-slot {
+	font-size: 14px !important;
+}
+
+.rbc-event {
+	border: none !important;
+	color: black !important;
+	padding: 10px !important;
+	margin: 10px !important;
+	width: 95% !important;
+}
+
+/* .rbc-event:nth-child(4n + 1) {
+	background-color: #e2f8ff !important;
+}
+
+.rbc-event:nth-child(4n + 2) {
+	background-color: #f1fce8 !important;
+}
+
+.rbc-event:nth-child(4n + 3) {
+	background-color: #f2f1ff !important;
+}
+
+.rbc-event:nth-child(4n + 4) {
+	background-color: #fdf2fb !important;
+} */
+
+.rbc-event:nth-child(4n + 1) {
+	background-color: #8ca3e8 !important;
+}
+
+.rbc-event:nth-child(4n + 2) {
+	background-color: #98c184 !important;
+}
+
+.rbc-event:nth-child(4n + 3) {
+	background-color: #d6d9ea !important;
+}
+
+.rbc-event:nth-child(4n + 4) {
+	background-color: #e7dfc4 !important;
+}
+
+.rbc-event-label {
+	color: gray !important;
+	margin-bottom: 5px;
 }

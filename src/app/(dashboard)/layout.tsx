@@ -9,8 +9,8 @@ import '/src/app/globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-	title: 'School Management System',
-	description: 'Thesis School Management System',
+	title: 'Dr. Juan A. Pastor',
+	description: 'Thesis Dr. Juan A. Pastor',
 };
 
 export default function DashboardLayout({
@@ -25,13 +25,28 @@ export default function DashboardLayout({
 				<Link
 					href="/"
 					className="flex items-center justify-center lg:justify-start gap-2">
-					<Image src="/logo.png" alt="logo" width={32} height={32} />
-					<span className="hidden lg:block font-bold">Naj School</span>
+					<Image
+						src="/edited-DrJuanLogo.png"
+						alt="logo"
+						width={32}
+						height={32}
+					/>
+					<div className="">
+						<span className="hidden lg:block font-bold">
+							Dr. Juan A. Pastor
+						</span>
+						<span className="hidden lg:block font-bold">
+							I N T E G R A T E D
+						</span>
+						<span className="hidden lg:block font-bold">
+							National High School
+						</span>
+					</div>
 				</Link>
 				<Menu />
 			</div>
-			{/* RIGHT */}
-			<div className="w-[86%] md:[92%] lg:w-[84%] xl:w-[86%] bg-[#F7F8FA] overflow-scroll">
+			{/* RIGHT bg-[#F7F8FA]*/}
+			<div className="w-[86%] md:[92%] lg:w-[84%] xl:w-[86%] bg-gray-50  overflow-scroll flex flex-col">
 				<Navbar />
 				{children}
 			</div>
