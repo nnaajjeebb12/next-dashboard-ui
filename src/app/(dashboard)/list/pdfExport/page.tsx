@@ -1045,9 +1045,12 @@ const PdfExportPage = () => {
 								<select
 									className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
 									value={selectedMonth}
-									onChange={(e) =>
-										setSelectedMonth(e.target.value as (typeof MONTHS)[number])
-									}>
+									onChange={(e) => {
+										const value = e.target.value;
+										if (MONTHS.includes(value as any)) {
+											setSelectedMonth(value as (typeof MONTHS)[number]);
+										}
+									}}>
 									{MONTHS.map((month) => (
 										<option key={month} value={month}>
 											{month}

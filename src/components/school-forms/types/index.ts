@@ -1,3 +1,5 @@
+import { MONTHS } from '../utils';
+
 // Student data interface
 export interface StudentData {
 	id: string;
@@ -104,5 +106,5 @@ export interface PDFDocumentProps {
 export interface SF2DocumentProps {
 	data: StudentResponse;
 	selectedSchoolYear: string;
-	selectedMonth: string;
+	selectedMonth: (typeof MONTHS)[number];
 }
