@@ -58,8 +58,10 @@ const SubjectForm = ({
 			);
 			setOpen(false);
 			router.refresh();
+		} else if (state.error && state.message) {
+			toast.error(state.message);
 		}
-	}, [state]);
+	}, [state, type, setOpen, router]);
 	const { teachers } = relatedData;
 
 	return (

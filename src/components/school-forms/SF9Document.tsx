@@ -57,7 +57,7 @@ const SF9Document = ({ data, selectedSchoolYear }: PDFDocumentProps) => {
 					<Image style={styles.logoContainer} src="/DrJuanLogo.png" />
 					<View style={styles.titleContainer}>
 						<Text style={styles.formTitle}>
-							School Form 9 Learner's Report Card (SF9-SHS)
+							School Form 9 Learner's Progress Report Card (SF9)
 						</Text>
 					</View>
 					<Image style={styles.logoContainer} src="/deped.png" />
