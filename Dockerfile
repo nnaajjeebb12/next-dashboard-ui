@@ -4,6 +4,9 @@ FROM node:18-alpine
 # Set the working directory inside the container
 WORKDIR /app
 
+# Install PostgreSQL client and other necessary tools
+RUN apk add --no-cache postgresql-client
+
 # Copy package.json and package-lock.json files
 COPY package*.json ./
 
