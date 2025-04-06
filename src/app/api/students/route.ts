@@ -7,6 +7,7 @@ export async function GET(request: Request) {
 		const strandId = searchParams.get('strandId');
 		const classId = searchParams.get('classId');
 		const schoolYear = searchParams.get('schoolYear');
+		const semester = searchParams.get('semester');
 
 		// Get all strands for the dropdown
 		const strands = await prisma.strand.findMany({
@@ -16,32 +17,33 @@ export async function GET(request: Request) {
 		});
 
 		// Get classes based on strand
-		const classes = strandId
-			? await prisma.class.findMany({
-					where: {
+		const classes = await prisma.class.findMany({
+			where: strandId
+				? {
 						students: {
 							some: {
 								strandId: parseInt(strandId),
 							},
 						},
-					},
-					orderBy: {
-						name: 'asc',
-					},
-			  })
-			: [];
+				  }
+				: undefined,
+			orderBy: {
+				name: 'asc',
+			},
+			include: {
+				supervisor: true,
+			},
+		});
 
 		// Base query conditions
-		const whereConditions: any = {
-			AND: [],
-		};
+		const whereConditions: any = {};
 
 		if (strandId) {
-			whereConditions.AND.push({ strandId: parseInt(strandId) });
+			whereConditions.strandId = parseInt(strandId);
 		}
 
 		if (classId) {
-			whereConditions.AND.push({ classId: parseInt(classId) });
+			whereConditions.classId = parseInt(classId);
 		}
 
 		// Get male students
@@ -54,7 +56,11 @@ export async function GET(request: Request) {
 				surname: 'asc',
 			},
 			include: {
-				class: true,
+				class: {
+					include: {
+						supervisor: true,
+					},
+				},
 				Strand: true,
 			},
 		});
@@ -69,86 +75,54 @@ export async function GET(request: Request) {
 				surname: 'asc',
 			},
 			include: {
-				class: true,
+				class: {
+					include: {
+						supervisor: true,
+					},
+				},
 				Strand: true,
 			},
 		});
 
-		// Get school information
-		const schoolInfo = {
-			name: 'Dr. Juan A. Pastor Memorial National High School',
-			schoolId: '301155',
-			district: 'Baco',
-			division: 'Batangas',
-			region: 'Region IV-A',
-			semester: '1st Semester',
-			schoolYear: '2022-2023',
-			gradeLevel: 'Grade 11',
-			section: classId
-				? classes.find((c) => c.id === parseInt(classId))?.name
-				: 'All',
-			track: 'Academic Track',
-			strand: strandId
-				? strands.find((s) => s.id === parseInt(strandId))?.name
-				: 'All',
-		};
+		// Get class info from the first student (if exists)
+		const firstStudent = [...maleStudents, ...femaleStudents][0];
+		const classInfo = firstStudent?.class || null;
 
-		if (classId) {
-			// Get class with supervisor information
-			const selectedClass = await prisma.class.findUnique({
-				where: { id: Number(classId) },
-				include: {
-					supervisor: {
-						select: {
-							id: true,
-							name: true,
-							surname: true,
-						},
-					},
-				},
-			});
+		// Get supervisor name
+		const supervisorFullName = classInfo?.supervisor
+			? `${classInfo.supervisor.name} ${classInfo.supervisor.surname}`
+			: 'NO ASSIGNED SUPERVISOR';
 
-			// Add console.log for debugging
-			console.log('Selected Class:', selectedClass);
-			console.log('Supervisor:', selectedClass?.supervisor);
-
-			// Make sure we have both name and surname before creating the full name
-			const supervisorFullName =
-				selectedClass?.supervisor?.name && selectedClass?.supervisor?.surname
-					? `${selectedClass.supervisor.surname.toUpperCase()}, ${selectedClass.supervisor.name.toUpperCase()}`
-					: 'NO ASSIGNED SUPERVISOR';
-
-			console.log('Supervisor Full Name:', supervisorFullName);
-
-			return NextResponse.json({
-				schoolInfo: {
-					...schoolInfo,
-					supervisorName: supervisorFullName,
-				},
-				strands,
-				classes,
-				maleStudents,
-				femaleStudents,
-				totalMale: maleStudents.length,
-				totalFemale: femaleStudents.length,
-				grandTotal: maleStudents.length + femaleStudents.length,
-			});
-		}
-
-		return NextResponse.json({
-			schoolInfo,
-			strands,
-			classes,
+		// Construct the response
+		const response = {
+			schoolInfo: {
+				name: 'Dr. Juan A. Pastor Memorial National High School',
+				schoolId: '301155',
+				district: 'Baco',
+				division: 'Batangas',
+				region: 'Region IV-A',
+				semester: semester || '1st Semester',
+				schoolYear: schoolYear || '2023-2024',
+				gradeLevel: 'Grade 11',
+				section: classInfo?.name || 'Unknown Section',
+				track: 'Academic Track',
+				strand: firstStudent?.Strand?.name || 'Unknown Strand',
+				supervisorName: supervisorFullName,
+			},
 			maleStudents,
 			femaleStudents,
 			totalMale: maleStudents.length,
 			totalFemale: femaleStudents.length,
 			grandTotal: maleStudents.length + femaleStudents.length,
-		});
+			strands,
+			classes,
+		};
+
+		return NextResponse.json(response);
 	} catch (error) {
-		console.error('Error fetching data:', error);
+		console.error('Error in students API:', error);
 		return NextResponse.json(
-			{ error: 'Failed to fetch data' },
+			{ error: 'Internal Server Error' },
 			{ status: 500 }
 		);
 	}

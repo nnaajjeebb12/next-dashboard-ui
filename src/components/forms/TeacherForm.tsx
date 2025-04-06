@@ -103,7 +103,7 @@ const TeacherForm = ({
 			<span className="text-xs text-gray-400 font-medium">
 				Personal Information
 			</span>
-			<CldUploadWidget
+			{/* <CldUploadWidget
 				uploadPreset="school"
 				onSuccess={(result, { widget }) => {
 					setImg(result.info);
@@ -125,7 +125,7 @@ const TeacherForm = ({
 						</div>
 					);
 				}}
-			</CldUploadWidget>
+			</CldUploadWidget> */}
 			<div className="flex justify-between flex-wrap gap-4">
 				<InputField
 					label="First Name"

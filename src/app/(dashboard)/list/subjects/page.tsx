@@ -24,6 +24,16 @@ const SubjectListpage = async ({
 			accessor: 'name',
 		},
 		{
+			header: 'Semester',
+			accessor: 'semester',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Subject Type',
+			accessor: 'subjectType',
+			className: 'hidden md:table-cell',
+		},
+		{
 			header: 'Teachers',
 			accessor: 'teachers',
 			className: 'hidden md:table-cell',
@@ -39,6 +49,8 @@ const SubjectListpage = async ({
 			key={item.id}
 			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
 			<td className="flex items-center gap-4 p-4">{item.name}</td>
+			<td className="hidden md:table-cell">{item.semester}</td>
+			<td className="hidden md:table-cell">{item.subjectType}</td>
 			<td className="hidden md:table-cell">
 				{item.teachers.map((teacher) => teacher.name).join(', ')}
 			</td>

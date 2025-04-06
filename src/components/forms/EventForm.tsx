@@ -33,7 +33,7 @@ const EventForm = ({
 	});
 
 	const onSubmit = handleSubmit((data) => {
-		console.log({ data });
+		// console.log({ data });
 	});
 	return (
 		<form className="flex flex-col gap-8" onSubmit={onSubmit}>

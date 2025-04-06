@@ -9,8 +9,37 @@ import {
 	View,
 } from '@react-pdf/renderer';
 import { useEffect, useState } from 'react';
-import { SF2DocumentProps, StudentData } from './types';
+import { Student as ApiStudent, StudentResponse } from './types';
 import { MONTHS, getNumberOfDays } from './utils';
+
+// Define Props locally
+interface SF2DocumentProps {
+	data: StudentResponse;
+	selectedSchoolYear: string;
+	selectedMonth: (typeof MONTHS)[number];
+}
+
+// Define StudentData locally (assuming similar structure to SF1)
+interface StudentData extends ApiStudent {
+	// Add any SF2 specific fields if needed, otherwise keep it based on SF1
+	religion?: string | null;
+	purok?: string | null;
+	brgy?: string | null;
+	city?: string | null;
+	province?: string | null;
+	fatherName?: string | null;
+	fatherMiddleName?: string | null;
+	fatherSurname?: string | null;
+	motherName?: string | null;
+	motherMiddleName?: string | null;
+	motherSurname?: string | null;
+	guardianName?: string | null;
+	guardianMiddleName?: string | null;
+	guardianSurname?: string | null;
+	guardianContact?: string | null;
+	learningModal?: string | null;
+	remarks?: string | null;
+}
 
 const SF2Document = ({
 	data,
@@ -61,10 +90,13 @@ const SF2Document = ({
 				const start = startDate.toISOString().split('T')[0];
 				const end = endDate.toISOString().split('T')[0];
 
+				// Ensure student lists are arrays
+				const maleStudents = data.maleStudents ?? [];
+				const femaleStudents = data.femaleStudents ?? [];
+				const allStudents = [...maleStudents, ...femaleStudents];
+
 				// Create student IDs string for the API
-				const studentIds = [...data.maleStudents, ...data.femaleStudents]
-					.map((student) => student.id)
-					.join(',');
+				const studentIds = allStudents.map((student) => student.id).join(',');
 
 				// Fetch attendance data from API
 				const response = await fetch(
@@ -80,9 +112,7 @@ const SF2Document = ({
 				// Log detailed attendance information
 				console.log('Attendance Records Details:');
 				attendanceData.forEach((record: any, index: number) => {
-					const student = [...data.maleStudents, ...data.femaleStudents].find(
-						(s) => s.id === record.studentId
-					);
+					const student = allStudents.find((s) => s.id === record.studentId);
 					console.log(`Record ${index + 1}:`, {
 						date: new Date(record.date).toLocaleDateString(),
 						status: record.status,
@@ -134,6 +164,11 @@ const SF2Document = ({
 
 		fetchAttendanceData();
 	}, [selectedMonth, selectedSchoolYear, data]);
+
+	// Ensure student lists are arrays
+	const maleStudents = data.maleStudents ?? [];
+	const femaleStudents = data.femaleStudents ?? [];
+	const allStudents = [...maleStudents, ...femaleStudents];
 
 	const getAttendanceForDay = (student: StudentData, day: number) => {
 		if (
@@ -399,22 +434,15 @@ const SF2Document = ({
 		students: StudentData[],
 		genderLabel: string
 	) => {
-		let totalPresent = 0;
-		let totalAbsent = 0;
-
-		students.forEach((student) => {
-			const totals = calculateMonthTotals(student);
-			totalPresent += totals.present;
-			totalAbsent += totals.absent;
-		});
+		// No need to calculate attendance totals for this row
+		const studentCount = students.length;
 
 		return (
 			<View style={[styles.tableRow, styles.totalRow]}>
 				<Text style={[styles.tableCell, styles.noCell]}></Text>
 				<Text style={[styles.tableCell, styles.nameCell]}>
-					{`<--- ${genderLabel} | TOTAL Per Day --->`}
+					{`${studentCount} <=== ${genderLabel}`}
 				</Text>
-
 				{Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
 					<Text
 						key={`total-${genderLabel.toLowerCase()}-day-${day}`}
@@ -422,48 +450,38 @@ const SF2Document = ({
 						{day <= daysInMonth ? calculateDayTotals(students, day) : ''}
 					</Text>
 				))}
-
-				<Text style={[styles.tableCell, styles.totalCell]}>{totalAbsent}</Text>
-				<Text style={[styles.tableCell, styles.totalCell]}>{totalPresent}</Text>
-
+				{/* Leave total cells blank */}
+				<Text style={[styles.tableCell, styles.totalCell]}></Text> {/* Blank */}
+				<Text style={[styles.tableCell, styles.totalCell]}></Text> {/* Blank */}
+				{/* Leave remarks blank */}
 				<Text style={[styles.tableCell, styles.remarksCell]}></Text>
 			</View>
 		);
 	};
 
 	const renderCombinedTotalRow = () => {
-		let totalPresent = 0;
-		let totalAbsent = 0;
-
-		const allStudents = [...data.maleStudents, ...data.femaleStudents];
-		allStudents.forEach((student) => {
-			const totals = calculateMonthTotals(student);
-			totalPresent += totals.present;
-			totalAbsent += totals.absent;
-		});
+		// No need to calculate attendance totals for this row
+		const combinedCount = allStudents.length; // Use the already defined allStudents
 
 		return (
 			<View style={[styles.tableRow, styles.totalRow]}>
-				<Text style={[styles.tableCell, styles.noCell]}>{data.grandTotal}</Text>
+				<Text style={[styles.tableCell, styles.noCell]}></Text>{' '}
+				{/* Show count */}
 				<Text style={[styles.tableCell, styles.nameCell]}>
-					Combined TOTAL Per Day
+					{`${combinedCount} <=== COMBINED`} {/* Simplified label */}
 				</Text>
-
-				{Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
-					const maleTotal = calculateDayTotals(data.maleStudents, day);
-					const femaleTotal = calculateDayTotals(data.femaleStudents, day);
-					return (
-						<Text
-							key={`combined-total-day-${day}`}
-							style={[styles.tableCell, styles.dayCell]}>
-							{day <= daysInMonth ? maleTotal + femaleTotal : ''}
-						</Text>
-					);
-				})}
-
-				<Text style={[styles.tableCell, styles.totalCell]}>{totalAbsent}</Text>
-				<Text style={[styles.tableCell, styles.totalCell]}>{totalPresent}</Text>
-
+				{/* Leave day cells blank */}
+				{Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+					<Text
+						key={`combined-total-day-${day}`}
+						style={[styles.tableCell, styles.dayCell]}>
+						{/* Blank */}
+					</Text>
+				))}
+				{/* Leave total cells blank */}
+				<Text style={[styles.tableCell, styles.totalCell]}></Text> {/* Blank */}
+				<Text style={[styles.tableCell, styles.totalCell]}></Text> {/* Blank */}
+				{/* Leave remarks blank */}
 				<Text style={[styles.tableCell, styles.remarksCell]}></Text>
 			</View>
 		);
@@ -603,16 +621,16 @@ const SF2Document = ({
 					</View>
 
 					{/* Male Students */}
-					{data.maleStudents.map((student, index) =>
+					{maleStudents.map((student: StudentData, index: number) =>
 						renderStudentRow(student, index)
 					)}
-					{renderGenderTotalRow(data.maleStudents, 'MALE')}
+					{renderGenderTotalRow(maleStudents, 'MALE')}
 
 					{/* Female Students */}
-					{data.femaleStudents.map((student, index) =>
+					{femaleStudents.map((student: StudentData, index: number) =>
 						renderStudentRow(student, index)
 					)}
-					{renderGenderTotalRow(data.femaleStudents, 'FEMALE')}
+					{renderGenderTotalRow(femaleStudents, 'FEMALE')}
 
 					{/* Combined Total */}
 					{renderCombinedTotalRow()}
