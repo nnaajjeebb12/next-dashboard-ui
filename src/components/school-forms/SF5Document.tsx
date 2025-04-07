@@ -300,10 +300,10 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 	};
 
 	const calculateTotals = () => {
-		const maleStatuses = data.maleStudents.map((student) =>
+		const maleStatuses = (data.maleStudents ?? []).map((student) =>
 			calculateStudentStatus(student)
 		);
-		const femaleStatuses = data.femaleStudents.map((student) =>
+		const femaleStatuses = (data.femaleStudents ?? []).map((student) =>
 			calculateStudentStatus(student)
 		);
 
@@ -384,10 +384,10 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 		// console.log('Male students:', data.maleStudents);
 		// console.log('Female students:', data.femaleStudents);
 
-		const maleStatuses = data.maleStudents.map((student) =>
+		const maleStatuses = (data.maleStudents ?? []).map((student) =>
 			calculateStudentStatus(student)
 		);
-		const femaleStatuses = data.femaleStudents.map((student) =>
+		const femaleStatuses = (data.femaleStudents ?? []).map((student) =>
 			calculateStudentStatus(student)
 		);
 
@@ -590,11 +590,11 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 					<View style={styles.leftSection}>
 						<View style={styles.table}>
 							{renderTableHeaders()}
-							{data.maleStudents.map((student, index) =>
+							{(data.maleStudents ?? []).map((student, index) =>
 								renderStudentRow(student, index)
 							)}
 							{renderGenderRow('male')}
-							{data.femaleStudents.map((student, index) =>
+							{(data.femaleStudents ?? []).map((student, index) =>
 								renderStudentRow(student, index)
 							)}
 							{renderGenderRow('female')}
