@@ -1,10 +1,11 @@
 'use server';
 
 import { clerkClient } from '@clerk/nextjs/server';
-import { Lesson, Strand } from '@prisma/client';
+import { Admin, Lesson, Strand } from '@prisma/client';
 import { error } from 'console';
 import { revalidatePath } from 'next/cache';
 import {
+	AdminSchema,
 	AssignmentSchema,
 	AttendanceSchema,
 	ClassSchema,
@@ -1134,3 +1135,108 @@ export async function getRelatedDataForResultForm(teacherId: string) {
 
 	return { students, lessons };
 }
+
+// TEACHER
+export const createAdmin = async (
+	currentState: CurrentState,
+	data: AdminSchema
+) => {
+	let clerkUser;
+	const client = await clerkClient();
+	try {
+		clerkUser = await client.users.createUser({
+			username: data.username,
+			password: data.password,
+			publicMetadata: { role: 'admin' },
+		});
+
+		// Create the teacher in the database with the image URL from Cloudinary
+		await prisma.admin.create({
+			data: {
+				id: clerkUser.id,
+				username: data.username,
+			},
+		});
+
+		// revalidatePath("/list/admin");
+		return { success: true, error: false, message: '' };
+	} catch (err) {
+		if (clerkUser) {
+			try {
+				await client.users.deleteUser(clerkUser.id);
+			} catch (deleteErr) {}
+		}
+		return {
+			success: false,
+			error: true,
+			message: 'Error creating the admin',
+		};
+	}
+};
+
+export const updateAdmin = async (
+	currentState: CurrentState,
+	data: AdminSchema
+) => {
+	if (!data.id) {
+		return { success: false, error: true, message: 'Error fetching data' };
+	}
+	try {
+		const client = await clerkClient();
+
+		const user = await client.users.updateUser(data.id, {
+			username: data.username,
+			...(data.password !== '' && { password: data.password }),
+			publicMetadata: { role: 'admin' },
+		});
+
+		await prisma.admin.update({
+			where: {
+				id: data.id,
+			},
+			data: {
+				...(data.password !== '' && { password: data.password }),
+				username: data.username,
+			},
+		});
+
+		// revalidatePath('/list/admin');
+		return { success: true, error: false, message: '' };
+	} catch (err) {
+		// console.log(err);
+		return {
+			success: false,
+			error: true,
+			message: 'Error updating the admin',
+		};
+	}
+};
+
+export const deleteAdmin = async (
+	currentState: CurrentState,
+	data: FormData
+) => {
+	const id = data.get('id') as string;
+
+	console.log(id);
+
+	try {
+		const client = await clerkClient();
+		await client.users.deleteUser(id);
+		await prisma.admin.delete({
+			where: {
+				id,
+			},
+		});
+
+		// revalidatePath('/list/teacher');
+		return { success: true, error: false, message: '' };
+	} catch (err) {
+		// console.log(err);
+		return {
+			success: false,
+			error: true,
+			message: 'Error deleting the Admin',
+		};
+	}
+};

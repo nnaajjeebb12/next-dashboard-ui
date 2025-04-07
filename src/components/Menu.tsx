@@ -102,6 +102,12 @@ const menuItems = [
 				href: '/list/pdfExport',
 				visible: ['admin', 'teacher'],
 			},
+			{
+				icon: '/setting.png',
+				label: 'Admin',
+				href: '/list/adminInfo',
+				visible: ['admin'],
+			},
 			// {
 			// 	icon: '/lesson.png',
 			// 	label: 'DepEd Forms',
