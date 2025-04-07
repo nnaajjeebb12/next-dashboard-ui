@@ -1,6 +1,7 @@
 'use client';
 
 import {
+	deleteAdmin,
 	deleteAssignment,
 	deleteAttendance,
 	deleteClass,
@@ -34,6 +35,7 @@ const deleteActionMap = {
 	event: deleteSubject,
 	announcement: deleteSubject,
 	strand: deleteStrand,
+	admin: deleteAdmin,
 };
 
 // import StudentForm from './forms/StudentForm';
@@ -80,6 +82,10 @@ const AttendanceForm = dynamic(() => import('./forms/AttendanceForm'), {
 });
 
 const ResultForm = dynamic(() => import('./forms/ResultForm'), {
+	loading: () => <h1>Loading...</h1>,
+});
+
+const AdminInfoForm = dynamic(() => import('./forms/AdminInfoForm'), {
 	loading: () => <h1>Loading...</h1>,
 });
 
@@ -185,6 +191,16 @@ const forms: {
 	),
 	result: (setOpen, type, data, relatedData, userRole, currentUserId) => (
 		<ResultForm
+			type={type}
+			data={data}
+			setOpen={setOpen}
+			relatedData={relatedData}
+			userRole={userRole}
+			currentUserId={currentUserId}
+		/>
+	),
+	admin: (setOpen, type, data, relatedData, userRole, currentUserId) => (
+		<AdminInfoForm
 			type={type}
 			data={data}
 			setOpen={setOpen}

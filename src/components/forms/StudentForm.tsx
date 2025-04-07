@@ -58,7 +58,7 @@ const StudentForm = ({
 	const router = useRouter();
 
 	useEffect(() => {
-		console.log(data);
+		// console.log(data);
 		if (state.success) {
 			toast.success(
 				`Student has been ${type === 'create' ? 'created' : 'updated'}!`
@@ -141,7 +141,7 @@ const StudentForm = ({
 						<span className="text-xs text-gray-400">No image</span>
 					</div>
 				)} */}
-				{data?.img ? (
+				{/* {data?.img ? (
 					<div className="flex items-center">
 						<div className="w-16 h-16 rounded-full overflow-hidden border border-gray-200">
 							<Image
@@ -204,7 +204,7 @@ const StudentForm = ({
 							</div>
 						);
 					}}
-				</CldUploadWidget>
+				</CldUploadWidget> */}
 			</div>
 
 			<div className="flex justify-between flex-wrap gap-4">

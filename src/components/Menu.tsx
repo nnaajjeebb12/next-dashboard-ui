@@ -72,24 +72,24 @@ const menuItems = [
 				href: '/list/attendance',
 				visible: ['admin', 'teacher', 'student', 'parent'],
 			},
-			{
-				icon: '/calendar.png',
-				label: 'Events',
-				href: '/list/events',
-				visible: ['admin', 'teacher', 'student', 'parent'],
-			},
+			// {
+			// 	icon: '/calendar.png',
+			// 	label: 'Events',
+			// 	href: '/list/events',
+			// 	visible: ['admin', 'teacher', 'student', 'parent'],
+			// },
 			// {
 			// 	icon: '/message.png',
 			// 	label: 'Messages',
 			// 	href: '/list/messages',
 			// 	visible: ['admin', 'teacher', 'student', 'parent'],
 			// },
-			{
-				icon: '/announcement.png',
-				label: 'Announcements',
-				href: '/list/announcements',
-				visible: ['admin', 'teacher', 'student', 'parent'],
-			},
+			// {
+			// 	icon: '/announcement.png',
+			// 	label: 'Announcements',
+			// 	href: '/list/announcements',
+			// 	visible: ['admin', 'teacher', 'student', 'parent'],
+			// },
 			{
 				icon: '/strand_edited.png',
 				label: 'Strand',
@@ -101,6 +101,12 @@ const menuItems = [
 				label: 'Export Report',
 				href: '/list/pdfExport',
 				visible: ['admin', 'teacher'],
+			},
+			{
+				icon: '/setting.png',
+				label: 'Admin',
+				href: '/list/adminInfo',
+				visible: ['admin'],
 			},
 			// {
 			// 	icon: '/lesson.png',

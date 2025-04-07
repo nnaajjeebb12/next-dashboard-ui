@@ -48,7 +48,7 @@ const AssignmentForm = ({
 	);
 
 	const onSubmit = handleSubmit((data) => {
-		console.log(data);
+		// console.log(data);
 		formAction(data);
 	});
 

@@ -5,7 +5,11 @@ import SF1Document from '@/components/school-forms/SF1Document';
 import SF2Document from '@/components/school-forms/SF2Document';
 import SF5Document from '@/components/school-forms/SF5Document';
 import SF9Document from '@/components/school-forms/SF9Document';
-import { FormType, StudentResponse } from '@/components/school-forms/types';
+import {
+	Student as ApiStudent,
+	FormType,
+	StudentResponse,
+} from '@/components/school-forms/types';
 import { MONTHS } from '@/components/school-forms/utils';
 import {
 	Document,
@@ -18,18 +22,44 @@ import {
 	View,
 } from '@react-pdf/renderer';
 import React, { useEffect, useState } from 'react';
+import EligibilityForm, { EligibilityFormData } from './EligibilityForm';
+
+// Add OBSERVED_VALUES constant
+const OBSERVED_VALUES = [
+	{
+		core: '1. Maka-Diyos',
+		behaviors: [
+			"Expresses one's spiritual beliefs while respecting the spiritual beliefs of others",
+			'Shows adherence to ethical principles by upholding truth in all undertakings',
+		],
+	},
+	{
+		core: '2. Makatao',
+		behaviors: [
+			'Is sensitive to individual social and cultural differences; resists stereotyping people',
+			'Demonstrates contributions toward solidarity',
+		],
+	},
+	{
+		core: '3. Makakalikasen',
+		behaviors: [
+			'Cares for the environment and utilizes resources wisely, judiciously and economically',
+		],
+	},
+	{
+		core: '4. Makabansa',
+		behaviors: [
+			'Demonstrates pride in being a Filipino; exercises the rights and responsibilities of a Filipino citizen',
+			'Demonstrates appropriate behavior in carrying out activities in the school, community and country',
+		],
+	},
+];
 
 // Define types for student data
-interface StudentData {
-	id: string;
-	lrn: string;
-	name: string;
-	middleName?: string | null;
-	surname: string;
-	birthday: Date;
-	sex: 'MALE' | 'FEMALE';
+interface ExtendedStudent extends ApiStudent {
+	birthday?: string;
+	sex?: 'MALE' | 'FEMALE';
 	religion?: string | null;
-	address: string;
 	purok?: string | null;
 	brgy?: string | null;
 	city?: string | null;
@@ -46,9 +76,9 @@ interface StudentData {
 	guardianContact?: string | null;
 	learningModal?: string | null;
 	remarks?: string | null;
-	class: { name: string };
-	Strand: { name: string };
 }
+
+type StudentData = ExtendedStudent;
 
 interface SchoolInfo {
 	name: string;
@@ -74,6 +104,123 @@ interface Class {
 	id: number;
 	name: string;
 }
+
+// Add new types for observed values
+interface ObservedValue {
+	coreValue: string;
+	behavior: string;
+	quarters: {
+		q1: string;
+		q2: string;
+		q3: string;
+		q4: string;
+	};
+}
+
+interface ObservedValuesFormProps {
+	onSubmit: (values: ObservedValue[]) => void;
+	isDisabled: boolean;
+}
+
+const OBSERVED_VALUES_OPTIONS = ['AO', 'SO', 'RO', 'NO'];
+
+const ObservedValuesForm: React.FC<ObservedValuesFormProps> = ({
+	onSubmit,
+	isDisabled,
+}) => {
+	const [observedValues, setObservedValues] = useState<ObservedValue[]>([]);
+
+	useEffect(() => {
+		// Initialize the form with default values
+		const initialValues = OBSERVED_VALUES.flatMap((value) =>
+			value.behaviors.map((behavior) => ({
+				coreValue: value.core,
+				behavior,
+				quarters: {
+					q1: 'SO',
+					q2: 'SO',
+					q3: 'SO',
+					q4: 'SO',
+				},
+			}))
+		);
+		setObservedValues(initialValues);
+	}, []);
+
+	const handleQuarterChange = (
+		valueIndex: number,
+		quarter: 'q1' | 'q2' | 'q3' | 'q4',
+		newValue: string
+	) => {
+		const newValues = [...observedValues];
+		newValues[valueIndex].quarters[quarter] = newValue;
+		setObservedValues(newValues);
+	};
+
+	const handleSubmit = () => {
+		onSubmit(observedValues);
+	};
+
+	return (
+		<div className="mb-6">
+			<h2 className="text-xl font-bold mb-4">Observed Values Form</h2>
+			<div className="border rounded-lg p-4 bg-white">
+				<table className="w-full">
+					<thead>
+						<tr className="bg-gray-100">
+							<th className="px-4 py-2 text-left">Core Values</th>
+							<th className="px-4 py-2 text-left">Behavior Statements</th>
+							<th className="px-4 py-2 text-center">Q1</th>
+							<th className="px-4 py-2 text-center">Q2</th>
+							<th className="px-4 py-2 text-center">Q3</th>
+							<th className="px-4 py-2 text-center">Q4</th>
+						</tr>
+					</thead>
+					<tbody>
+						{observedValues.map((value, index) => (
+							<tr key={index} className="border-t">
+								<td className="px-4 py-2">{value.coreValue}</td>
+								<td className="px-4 py-2 text-blue-600">{value.behavior}</td>
+								{['q1', 'q2', 'q3', 'q4'].map((quarter) => (
+									<td key={quarter} className="px-4 py-2 text-center">
+										<select
+											value={
+												value.quarters[quarter as keyof typeof value.quarters]
+											}
+											onChange={(e) =>
+												handleQuarterChange(
+													index,
+													quarter as 'q1' | 'q2' | 'q3' | 'q4',
+													e.target.value
+												)
+											}
+											disabled={isDisabled}
+											className="border rounded p-1 w-20">
+											{OBSERVED_VALUES_OPTIONS.map((option) => (
+												<option key={option} value={option}>
+													{option}
+												</option>
+											))}
+										</select>
+									</td>
+								))}
+							</tr>
+						))}
+					</tbody>
+				</table>
+				{!isDisabled && (
+					<div className="mt-4 flex justify-end">
+						<button
+							onClick={handleSubmit}
+							className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+							Update Values
+						</button>
+					</div>
+				)}
+			</div>
+		</div>
+	);
+};
 
 const calculateAge = (
 	birthDate: Date,
@@ -450,7 +597,7 @@ const PDFDocument = ({
 		</View>
 	);
 
-	const renderTableRow = (student: StudentData) => (
+	const renderTableRow = (student: ExtendedStudent) => (
 		<View style={styles.tableRow}>
 			<Text style={[styles.tableCell, { width: columnWidths.lrn }]}>
 				{student.lrn || ''}
@@ -463,21 +610,23 @@ const PDFDocument = ({
 					styles.tableCell,
 					{ width: columnWidths.sex, textAlign: 'center' },
 				]}>
-				{getSexDisplay(student.sex)}
+				{student.sex || ''}
 			</Text>
 			<Text
 				style={[
 					styles.tableCell,
 					{ width: columnWidths.birthDate, textAlign: 'center' },
 				]}>
-				{new Date(student.birthday).toLocaleDateString()}
+				{student.birthday
+					? new Date(student.birthday).toLocaleDateString()
+					: ''}
 			</Text>
 			<Text
 				style={[
 					styles.tableCell,
 					{ width: columnWidths.age, textAlign: 'center' },
 				]}>
-				{calculateAge(student.birthday)}
+				{student.birthday ? calculateAge(new Date(student.birthday)) : ''}
 			</Text>
 			<Text style={[styles.tableCell, { width: columnWidths.religion }]}>
 				{student.religion || ''}
@@ -614,9 +763,9 @@ const PDFDocument = ({
 	);
 
 	const renderRegisterAndSignature = () => {
-		// Add console.log for debugging
-		console.log('SchoolInfo:', data.schoolInfo);
-		console.log('Supervisor Name:', data.schoolInfo.supervisorName);
+		// Add // console.log for debugging
+		// console.log('SchoolInfo:', data.schoolInfo);
+		// console.log('Supervisor Name:', data.schoolInfo.supervisorName);
 
 		return (
 			<>
@@ -635,34 +784,41 @@ const PDFDocument = ({
 							MALE
 						</Text>
 						<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
-							{data.totalMale}
+							{(data as any)?.totalMale ?? 0}
 						</Text>
-						<Text style={styles.registerCell}>{data.totalMale}</Text>
+						<Text style={styles.registerCell}>
+							{(data as any)?.totalMale ?? 0}
+						</Text>
 					</View>
 					<View style={styles.registerRow}>
 						<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
 							FEMALE
 						</Text>
 						<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
-							{data.totalFemale}
+							{(data as any)?.totalFemale ?? 0}
 						</Text>
-						<Text style={styles.registerCell}>{data.totalFemale}</Text>
+						<Text style={styles.registerCell}>
+							{(data as any)?.totalFemale ?? 0}
+						</Text>
 					</View>
 					<View style={[styles.registerRow, { borderBottomWidth: 0 }]}>
 						<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
 							TOTAL
 						</Text>
 						<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
-							{data.grandTotal}
+							{(data as any)?.grandTotal ?? 0}
 						</Text>
-						<Text style={styles.registerCell}>{data.grandTotal}</Text>
+						<Text style={styles.registerCell}>
+							{(data as any)?.grandTotal ?? 0}
+						</Text>
 					</View>
 				</View>
 
 				<View style={styles.signatureSection}>
 					<Text style={styles.preparedByText}>Prepared by:</Text>
 					<Text style={styles.signatureName}>
-						{data.schoolInfo.supervisorName || 'NO ASSIGNED SUPERVISOR'}
+						{(data.schoolInfo as any)?.supervisorName ||
+							'NO ASSIGNED SUPERVISOR'}
 					</Text>
 					<Text style={styles.signatureCaption}>
 						(Signature of Adviser over Printed Name)
@@ -700,15 +856,21 @@ const PDFDocument = ({
 						</View>
 						<View style={[styles.fieldContainer, styles.regularField]}>
 							<Text style={styles.label}>District</Text>
-							<Text style={styles.value}>{data.schoolInfo.district}</Text>
+							<Text style={styles.value}>
+								{(data.schoolInfo as any)?.district}
+							</Text>
 						</View>
 						<View style={[styles.fieldContainer, styles.regularField]}>
 							<Text style={styles.label}>Division</Text>
-							<Text style={styles.value}>{data.schoolInfo.division}</Text>
+							<Text style={styles.value}>
+								{(data.schoolInfo as any)?.division}
+							</Text>
 						</View>
 						<View style={[styles.fieldContainer, styles.regularField]}>
 							<Text style={styles.label}>Region</Text>
-							<Text style={styles.value}>{data.schoolInfo.region}</Text>
+							<Text style={styles.value}>
+								{(data.schoolInfo as any)?.region}
+							</Text>
 						</View>
 					</View>
 
@@ -724,7 +886,9 @@ const PDFDocument = ({
 						</View>
 						<View style={[styles.fieldContainer, styles.regularField]}>
 							<Text style={styles.label}>Grade Level</Text>
-							<Text style={styles.value}>{data.schoolInfo.gradeLevel}</Text>
+							<Text style={styles.value}>
+								{(data.schoolInfo as any)?.gradeLevel}
+							</Text>
 						</View>
 					</View>
 
@@ -741,7 +905,9 @@ const PDFDocument = ({
 						<View style={[styles.fieldContainer, styles.wideField]}>
 							<Text style={styles.label}>Track and Strand</Text>
 							<Text style={styles.value}>
-								{`${data.schoolInfo.track} - ${data.schoolInfo.strand}`}
+								{`${(data.schoolInfo as any)?.track} - ${
+									data.schoolInfo.strand
+								}`}
 							</Text>
 						</View>
 					</View>
@@ -750,13 +916,20 @@ const PDFDocument = ({
 				<View style={styles.table}>
 					{renderTableHeaders()}
 
-					{data.maleStudents.map((student, index) => renderTableRow(student))}
-					{renderGenderRow(data.totalMale, '<=== TOTAL MALE')}
+					{(data as any)?.maleStudents?.map((student: any, index: any) =>
+						renderTableRow(student)
+					)}
+					{renderGenderRow((data as any)?.totalMale ?? 0, '<=== TOTAL MALE')}
 
-					{data.femaleStudents.map((student, index) => renderTableRow(student))}
-					{renderGenderRow(data.totalFemale, '<=== TOTAL FEMALE')}
+					{(data as any)?.femaleStudents?.map((student: any, index: any) =>
+						renderTableRow(student)
+					)}
+					{renderGenderRow(
+						(data as any)?.totalFemale ?? 0,
+						'<=== TOTAL FEMALE'
+					)}
 
-					{renderGenderRow(data.grandTotal, '<=== COMBINED')}
+					{renderGenderRow((data as any)?.grandTotal ?? 0, '<=== COMBINED')}
 				</View>
 
 				<View style={styles.bottomContainer}>
@@ -777,19 +950,64 @@ const PDFDocument = ({
 	);
 };
 
+// Add the eligibility form data type to the existing data state
+interface ExtendedStudentResponse extends StudentResponse {
+	eligibilityData?: EligibilityFormData;
+}
+
+const defaultEligibilityData: EligibilityFormData = {
+	isHighSchoolCompleter: false,
+	genAve: '',
+	isJHSCompleter: false,
+	jhsGenAve: '',
+	dateOfGraduation: '',
+	isPEPTCompleter: false,
+	peptRating: '',
+	isALSCompleter: false,
+	alsRating: '',
+	isOthersCompleter: false,
+	othersSpecify: '',
+};
+
 // Main Page Component
 const PdfExportPage = () => {
-	const [data, setData] = useState<StudentResponse | null>(null);
+	const [data, setData] = useState<ExtendedStudentResponse | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [selectedStrand, setSelectedStrand] = useState<string>('');
 	const [selectedClass, setSelectedClass] = useState<string>('');
+	const [selectedStudent, setSelectedStudent] = useState<string>('');
 	const [selectedSchoolYear, setSelectedSchoolYear] =
 		useState<string>('2023-2024');
 	const [selectedForm, setSelectedForm] = useState<FormType>(FormType.SF1);
 	const [selectedMonth, setSelectedMonth] = useState<(typeof MONTHS)[number]>(
 		MONTHS[0]
 	);
+	const [selectedSemester, setSelectedSemester] = useState<
+		'1st Semester' | '2nd Semester'
+	>('1st Semester');
+	const [showPdf, setShowPdf] = useState(false);
+	const [observedValues, setObservedValues] = useState<ObservedValue[]>([]);
+	const [eligibilityData, setEligibilityData] = useState<EligibilityFormData>(
+		defaultEligibilityData
+	);
+
+	// Handle eligibility form changes
+	const handleEligibilityChange = (updates: Partial<EligibilityFormData>) => {
+		setEligibilityData((prev) => ({ ...prev, ...updates }));
+		// Update the main data state with eligibility information
+		setData((prev) =>
+			prev
+				? {
+						...prev,
+						eligibilityData: {
+							...(prev.eligibilityData || defaultEligibilityData),
+							...updates,
+						},
+				  }
+				: null
+		);
+	};
 
 	// Generate school year options (current year ± 5 years)
 	const generateSchoolYearOptions = () => {
@@ -805,39 +1023,131 @@ const PdfExportPage = () => {
 
 	const schoolYearOptions = generateSchoolYearOptions();
 
-	const fetchData = async (strandId?: string, classId?: string) => {
+	// Fetch initial data (like strands) or data for non-SF9 forms
+	useEffect(() => {
+		// Fetch data whenever school year, semester (for SF5), or form type changes
+		fetchData();
+	}, [selectedSchoolYear, selectedSemester, selectedForm]);
+
+	const fetchData = async (
+		strandId?: string,
+		classId?: string,
+		studentId?: string
+	) => {
 		try {
 			setLoading(true);
 			const params = new URLSearchParams();
-			if (strandId) params.append('strandId', strandId);
-			if (classId) params.append('classId', classId);
 			params.append('schoolYear', selectedSchoolYear);
 
-			const response = await fetch(`/api/students?${params.toString()}`);
-			if (!response.ok) {
-				throw new Error('Failed to fetch students');
+			let apiUrl = '/api/students';
+
+			if (selectedForm === FormType.SF5) {
+				apiUrl = '/api/sf5';
+				params.append('semester', selectedSemester);
+				if (strandId) params.append('strandId', strandId);
+				if (classId) params.append('classId', classId);
+			} else if (selectedForm === FormType.SF9) {
+				apiUrl = '/api/sf9';
+				if (strandId) params.append('strandId', strandId);
+				if (studentId) {
+					params.append('studentId', studentId);
+					const response = await fetch(`${apiUrl}?${params.toString()}`);
+					if (!response.ok) {
+						throw new Error(`Failed to fetch data from ${apiUrl}`);
+					}
+					const studentData = await response.json();
+
+					setData((prevData) => {
+						// Combine new student-specific data with existing list data
+						return {
+							...studentData, // Includes studentInfo, grades, attendance etc.
+							eligibilityData: prevData?.eligibilityData,
+							// Explicitly carry over list data from previous state
+							strands: (prevData as any)?.strands ?? [],
+							students: (prevData as any)?.students ?? [],
+						};
+					});
+					setLoading(false);
+					return;
+				}
+			} else if (selectedForm === FormType.SF10) {
+				apiUrl = '/api/sf10';
+				if (strandId) params.append('strandId', strandId);
+				if (classId) params.append('classId', classId);
+				if (studentId) {
+					params.append('studentId', studentId);
+					const response = await fetch(`${apiUrl}?${params.toString()}`);
+					if (!response.ok) {
+						throw new Error(`Failed to fetch data from ${apiUrl}`);
+					}
+					const studentData = await response.json();
+
+					// Preserve existing data while updating with new student data
+					setData((prevData) => {
+						// Merge new student data, preserve eligibility
+						return {
+							...studentData, // Contains student, schoolInfo, class, grades from API
+							eligibilityData: prevData?.eligibilityData, // Preserve eligibility
+							// Dropdown data (strands, classes, students) will be part of studentData if fetched without studentId
+						};
+					});
+					setLoading(false);
+					return;
+				}
+			} else {
+				if (strandId) params.append('strandId', strandId);
+				if (classId) params.append('classId', classId);
+				params.append('semester', selectedSemester);
 			}
+
+			const response = await fetch(`${apiUrl}?${params.toString()}`);
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error('API Error Response:', errorText);
+				throw new Error(`Failed to fetch data from ${apiUrl}`);
+			}
+
 			const responseData = await response.json();
-			setData(responseData);
+
+			// For SF10, preserve existing data when fetching strands/classes
+			if (selectedForm === FormType.SF10) {
+				setData((prevData) => {
+					if (!prevData) return responseData; // If no prev data, use new data
+					// Merge new list data (strands/classes/students lists)
+					// while preserving the currently selected student details and eligibility
+					return {
+						...responseData, // Contains lists like strands, classes, students
+						student: prevData.student, // Preserve selected student
+						schoolInfo: prevData.schoolInfo, // Preserve selected student's schoolInfo
+						class: prevData.class, // Preserve selected student's class
+						grades: prevData.grades, // Preserve selected student's grades
+						eligibilityData: prevData.eligibilityData, // Preserve eligibility
+					};
+				});
+			} else {
+				setData(responseData);
+			}
 		} catch (err) {
+			console.error('Error fetching data:', err);
 			setError(err instanceof Error ? err.message : 'An error occurred');
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	useEffect(() => {
-		fetchData();
-	}, [selectedSchoolYear]);
-
 	const handleFormChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const newForm = e.target.value as FormType;
 		setSelectedForm(newForm);
-		// Reset all other selectors when form changes
+		setData(null); // Reset data
+		setError(null);
 		setSelectedStrand('');
 		setSelectedClass('');
-		setSelectedSchoolYear('2023-2024');
+		setSelectedStudent('');
+		// Keep selectedSchoolYear or reset? Let's keep it for now.
+		// setSelectedSchoolYear('2023-2024');
 		setSelectedMonth(MONTHS[0]);
+		setSelectedSemester('1st Semester');
+		// useEffect will trigger fetchData
 	};
 
 	const handleStrandChange = async (
@@ -845,24 +1155,73 @@ const PdfExportPage = () => {
 	) => {
 		const newStrandId = e.target.value;
 		setSelectedStrand(newStrandId);
-		setSelectedClass(''); // Reset class selection
-		await fetchData(newStrandId);
+		setSelectedClass(''); // Reset class/student below strand
+		setSelectedStudent('');
+		if (newStrandId) {
+			// Fetch data based on the new strand (students for SF9, classes for others)
+			await fetchData(newStrandId);
+		} else {
+			// If strand is deselected, fetch initial data for the form (just strands)
+			await fetchData();
+		}
 	};
 
 	const handleClassChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const newClassId = e.target.value;
+		console.log('Class changed to:', newClassId);
 		setSelectedClass(newClassId);
-		await fetchData(selectedStrand, newClassId);
+		setSelectedStudent(''); // Reset student selection when class changes
+		// Fetch students for the selected class
+		if (newClassId && selectedStrand) {
+			console.log(
+				'Fetching students for strand:',
+				selectedStrand,
+				'and class:',
+				newClassId
+			);
+			await fetchData(selectedStrand, newClassId);
+		}
 	};
 
 	const handleSchoolYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		setSelectedSchoolYear(e.target.value);
-		setSelectedStrand(''); // Reset strand selection
-		setSelectedClass(''); // Reset class selection
+		// Reset selections below school year
+		setSelectedStrand('');
+		setSelectedClass('');
+		setSelectedStudent('');
+		setSelectedSemester('1st Semester');
+		setData(null); // Clear previous data
+		setError(null);
+		// useEffect will handle fetching initial data (strands) for the new year
 	};
 
-	// Add validation for form completion
-	const isFormComplete = selectedStrand && selectedClass && selectedSchoolYear;
+	const handleStudentChange = async (
+		e: React.ChangeEvent<HTMLSelectElement>
+	) => {
+		const newStudentId = e.target.value;
+		setSelectedStudent(newStudentId);
+		if (
+			(selectedForm === FormType.SF9 || selectedForm === FormType.SF10) &&
+			newStudentId &&
+			selectedStrand
+		) {
+			// Keep the current strand and class selections, just fetch the student data
+			await fetchData(selectedStrand, selectedClass, newStudentId);
+		}
+	};
+
+	// Update validation for form completion
+	const isFormComplete =
+		selectedForm === FormType.SF9
+			? selectedStrand && selectedStudent && selectedSchoolYear
+			: selectedForm === FormType.SF10
+			? selectedStrand && selectedClass && selectedStudent && selectedSchoolYear
+			: selectedStrand && selectedClass && selectedSchoolYear;
+
+	const handleObservedValuesSubmit = (values: ObservedValue[]) => {
+		setObservedValues(values);
+		setShowPdf(true);
+	};
 
 	if (loading) {
 		return <div>Loading students data...</div>;
@@ -878,13 +1237,14 @@ const PdfExportPage = () => {
 
 	const renderForm = () => {
 		// Add console logs for debugging
-		console.log('Rendering form:', {
-			selectedForm,
-			data,
-			selectedSchoolYear,
-			selectedMonth,
-			isFormComplete,
-		});
+		// console.log('Rendering form:', {
+		// 	selectedForm,
+		// 	data,
+		// 	selectedSchoolYear,
+		// 	selectedMonth,
+		// 	selectedSemester,
+		// 	isFormComplete,
+		// });
 
 		// Return an empty document if data is not ready
 		if (!data || !isFormComplete) {
@@ -903,6 +1263,7 @@ const PdfExportPage = () => {
 			data,
 			selectedSchoolYear,
 			selectedMonth,
+			selectedSemester,
 		};
 
 		switch (selectedForm) {
@@ -918,12 +1279,23 @@ const PdfExportPage = () => {
 				);
 			case FormType.SF9:
 				return (
-					<SF9Document data={data} selectedSchoolYear={selectedSchoolYear} />
+					<SF9Document
+						data={{
+							...data,
+							observedValues: observedValues,
+						}}
+						selectedSchoolYear={selectedSchoolYear}
+					/>
 				);
 			case FormType.SF10:
-				return (
-					<SF10Document data={data} selectedSchoolYear={selectedSchoolYear} />
-				);
+				console.log('Rendering SF10 Document with data:', {
+					fullData: data,
+					student: data.student,
+					class: data.class,
+					supervisor: data.class?.supervisor,
+					schoolInfo: data.schoolInfo,
+				});
+				return <SF10Document data={data} eligibilityData={eligibilityData} />;
 			default:
 				return (
 					<Document>
@@ -983,7 +1355,9 @@ const PdfExportPage = () => {
 					</select>
 				</div>
 
-				{(selectedForm === FormType.SF1 || selectedForm === FormType.SF2) && (
+				{(selectedForm === FormType.SF1 ||
+					selectedForm === FormType.SF2 ||
+					selectedForm === FormType.SF5) && (
 					<>
 						<div className="flex-1">
 							<label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1002,6 +1376,27 @@ const PdfExportPage = () => {
 							</select>
 						</div>
 
+						{selectedForm === FormType.SF5 && (
+							<div className="flex-1">
+								<label className="block text-sm font-medium text-gray-700 mb-2">
+									Semester
+								</label>
+								<select
+									className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+									value={selectedSemester}
+									onChange={(e) => {
+										setSelectedSemester(
+											e.target.value as '1st Semester' | '2nd Semester'
+										);
+										setSelectedStrand('');
+										setSelectedClass('');
+									}}>
+									<option value="1st Semester">1st Semester</option>
+									<option value="2nd Semester">2nd Semester</option>
+								</select>
+							</div>
+						)}
+
 						<div className="flex-1">
 							<label className="block text-sm font-medium text-gray-700 mb-2">
 								Select Strand
@@ -1011,7 +1406,7 @@ const PdfExportPage = () => {
 								value={selectedStrand}
 								onChange={handleStrandChange}>
 								<option value="">Select Strand</option>
-								{data.strands.map((strand) => (
+								{((data as any)?.strands ?? []).map((strand: any) => (
 									<option key={strand.id} value={strand.id}>
 										{strand.name}
 									</option>
@@ -1029,11 +1424,13 @@ const PdfExportPage = () => {
 								onChange={handleClassChange}
 								disabled={!selectedStrand}>
 								<option value="">Select Section</option>
-								{data.classes.map((cls) => (
-									<option key={cls.id} value={cls.id}>
-										{cls.name}
-									</option>
-								))}
+								{((data as any)?.classes ?? []).map(
+									(cls: { id: number; name: string }) => (
+										<option key={cls.id} value={cls.id}>
+											{cls.name}
+										</option>
+									)
+								)}
 							</select>
 						</div>
 
@@ -1061,40 +1458,209 @@ const PdfExportPage = () => {
 						)}
 					</>
 				)}
-			</div>
 
-			<div
-				className={`${!isFormComplete ? 'opacity-50 cursor-not-allowed' : ''}`}>
-				{data && isFormComplete && (
+				{selectedForm === FormType.SF9 && (
 					<>
-						<PDFViewer
-							width="100%"
-							height="500px"
-							className="mb-4"
-							showToolbar={true}>
-							{renderForm()}
-						</PDFViewer>
+						<div className="flex-1">
+							<label className="block text-sm font-medium text-gray-700 mb-2">
+								School Year
+							</label>
+							<select
+								className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+								value={selectedSchoolYear}
+								onChange={handleSchoolYearChange}>
+								<option value="">Select School Year</option>
+								{schoolYearOptions.map((year) => (
+									<option key={year} value={year}>
+										{year}
+									</option>
+								))}
+							</select>
+						</div>
 
-						<PDFDownloadLink
-							document={renderForm()}
-							fileName={getFormFileName()}
-							className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
-								!isFormComplete ? 'pointer-events-none' : ''
-							}`}>
-							{({ loading: pdfLoading }) =>
-								pdfLoading
-									? 'Preparing document...'
-									: `Download ${selectedForm} Form`
-							}
-						</PDFDownloadLink>
+						<div className="flex-1">
+							<label className="block text-sm font-medium text-gray-700 mb-2">
+								Select Strand
+							</label>
+							<select
+								className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+								value={selectedStrand}
+								onChange={handleStrandChange}>
+								<option value="">Select Strand</option>
+								{((data as any)?.strands ?? []).map((strand: any) => (
+									<option key={strand.id} value={strand.id}>
+										{strand.name}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div className="flex-1">
+							<label className="block text-sm font-medium text-gray-700 mb-2">
+								Select Student
+							</label>
+							<select
+								className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+								value={selectedStudent}
+								onChange={handleStudentChange}
+								disabled={!selectedStrand}>
+								<option value="">Select Student</option>
+								{(data as any)?.students?.map((student: ExtendedStudent) => (
+									<option key={student.id} value={student.id}>
+										{`${student.surname}, ${student.name} ${
+											student.middleName || ''
+										}`}
+									</option>
+								))}
+							</select>
+						</div>
 					</>
 				)}
-				{(!data || !isFormComplete) && (
-					<div className="text-center py-8 text-gray-500">
-						Please select all required fields to view and download the form.
-					</div>
+
+				{selectedForm === FormType.SF10 && (
+					<>
+						<div className="flex-1">
+							<label className="block text-sm font-medium text-gray-700 mb-2">
+								School Year
+							</label>
+							<select
+								className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+								value={selectedSchoolYear}
+								onChange={handleSchoolYearChange}>
+								<option value="">Select School Year</option>
+								{schoolYearOptions.map((year) => (
+									<option key={year} value={year}>
+										{year}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div className="flex-1">
+							<label className="block text-sm font-medium text-gray-700 mb-2">
+								Select Strand
+							</label>
+							<select
+								className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+								value={selectedStrand}
+								onChange={handleStrandChange}>
+								<option value="">Select Strand</option>
+								{((data as any)?.strands ?? []).map((strand: any) => (
+									<option key={strand.id} value={strand.id}>
+										{strand.name}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div className="flex-1">
+							<label className="block text-sm font-medium text-gray-700 mb-2">
+								Select Section
+							</label>
+							<select
+								className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+								value={selectedClass}
+								onChange={handleClassChange}
+								disabled={!selectedStrand}>
+								<option value="">Select Section</option>
+								{((data as any)?.classes ?? []).map(
+									(cls: { id: number; name: string }) => (
+										<option key={cls.id} value={cls.id}>
+											{cls.name}
+										</option>
+									)
+								)}
+							</select>
+						</div>
+
+						<div className="flex-1">
+							<label className="block text-sm font-medium text-gray-700 mb-2">
+								Select Student
+							</label>
+							<select
+								className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+								value={selectedStudent}
+								onChange={handleStudentChange}
+								disabled={!selectedClass}>
+								<option value="">Select Student</option>
+								{(data as any)?.students?.map((student: ExtendedStudent) => (
+									<option key={student.id} value={student.id}>
+										{`${student.surname}, ${student.name} ${
+											student.middleName || ''
+										}`}
+									</option>
+								))}
+							</select>
+						</div>
+					</>
 				)}
 			</div>
+
+			{/* Show observed values form only for SF9 */}
+			{selectedForm === FormType.SF9 && data && isFormComplete && !showPdf && (
+				<ObservedValuesForm
+					onSubmit={handleObservedValuesSubmit}
+					isDisabled={false}
+				/>
+			)}
+
+			{/* Show eligibility form for SF10 */}
+			{selectedForm === FormType.SF10 && data && (
+				<div className="mb-6">
+					<EligibilityForm
+						data={eligibilityData}
+						onChange={handleEligibilityChange}
+					/>
+				</div>
+			)}
+
+			{/* Show PDF viewer for all forms */}
+			{((selectedForm === FormType.SF9 && showPdf) ||
+				(selectedForm !== FormType.SF9 && data && isFormComplete)) && (
+				<>
+					{selectedForm === FormType.SF9 && (
+						<>
+							<ObservedValuesForm
+								onSubmit={handleObservedValuesSubmit}
+								isDisabled={true}
+							/>
+							<button
+								onClick={() => setShowPdf(false)}
+								className="mb-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+								Edit Values
+							</button>
+						</>
+					)}
+					<PDFViewer
+						width="100%"
+						height="500px"
+						className="mb-4"
+						showToolbar={true}>
+						{renderForm()}
+					</PDFViewer>
+
+					<PDFDownloadLink
+						document={renderForm()}
+						fileName={getFormFileName()}
+						className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+						{({ loading: pdfLoading }) =>
+							pdfLoading
+								? 'Preparing document...'
+								: `Download ${selectedForm} Form`
+						}
+					</PDFDownloadLink>
+				</>
+			)}
+
+			{(!data ||
+				!isFormComplete ||
+				(selectedForm === FormType.SF9 && !showPdf)) && (
+				<div className="text-center py-8 text-gray-500">
+					{selectedForm === FormType.SF9 && isFormComplete
+						? 'Please fill out the observed values form to view and download the PDF.'
+						: 'Please select all required fields to view and download the form.'}
+				</div>
+			)}
 		</div>
 	);
 };

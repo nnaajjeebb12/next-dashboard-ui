@@ -211,7 +211,7 @@ const SingleStudentPage = async ({
 					</div>
 				</div>
 				{/* <Performance /> */}
-				<Announcements />
+				{/* <Announcements /> */}
 			</div>
 		</div>
 	);

@@ -45,7 +45,7 @@ const ClassForm = ({
 	);
 
 	const onSubmit = handleSubmit((data) => {
-		console.log(data);
+		// console.log(data);
 		formAction(data);
 	});
 
@@ -54,7 +54,7 @@ const ClassForm = ({
 	useEffect(() => {
 		if (state.success) {
 			toast.success(
-				`Class has been ${type === 'create' ? 'created' : 'updated'}!`
+				`Section has been ${type === 'create' ? 'created' : 'updated'}!`
 			);
 			setOpen(false);
 			router.refresh();
@@ -67,7 +67,7 @@ const ClassForm = ({
 	return (
 		<form className="flex flex-col gap-8" onSubmit={onSubmit}>
 			<h1 className="text-xl font-semibold">
-				{type === 'create' ? 'Create a new class' : 'Update the class'}
+				{type === 'create' ? 'Create a new section' : 'Update the section'}
 			</h1>
 
 			<div className="flex justify-between flex-wrap gap-4">

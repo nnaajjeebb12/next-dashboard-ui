@@ -4,10 +4,26 @@ import { z } from 'zod';
 export const subjectSchema = z.object({
 	id: z.coerce.number().optional(),
 	name: z.string().min(1, { message: 'Subject name is required!' }),
+	semester: z.string().min(1, { message: 'Semester is required' }),
+	subjectType: z.string().min(1, { message: 'Subject type is required' }),
 	teachers: z.array(z.string()), //teacher ids
 });
 
 export type SubjectSchema = z.infer<typeof subjectSchema>;
+
+// ADMIN
+export const adminSchema = z.object({
+	id: z.string().optional(),
+	username: z
+		.string()
+		.min(3, { message: 'Username must be at least 3 characters' })
+		.max(20, { message: 'Username must be at least 3 characters' }),
+	password: z
+		.string()
+		.min(8, { message: 'Password must be at least 8 characters long!' }),
+});
+
+export type AdminSchema = z.infer<typeof adminSchema>;
 
 // CLASS
 export const classSchema = z.object({

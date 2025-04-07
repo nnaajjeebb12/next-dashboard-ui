@@ -114,10 +114,12 @@ model Class {
 }
 
 model Subject {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  teachers Teacher[]
-  lessons  Lesson[]
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  semester    String?
+  subjectType String?
+  teachers    Teacher[]
+  lessons     Lesson[]
 }
 
 model Lesson {

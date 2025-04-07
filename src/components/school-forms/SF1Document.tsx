@@ -8,11 +8,38 @@ import {
 	Text,
 	View,
 } from '@react-pdf/renderer';
-import { PDFDocumentProps, StudentData } from './types';
+import { Student as ApiStudent, StudentResponse } from './types';
 import { calculateAge, getSexDisplay } from './utils';
 
+// Define the props interface locally
+interface SF1DocumentProps {
+	data: StudentResponse;
+	selectedSchoolYear: string;
+}
+
+// Define StudentData locally based on usage in renderTableRow
+interface StudentData extends ApiStudent {
+	religion?: string | null;
+	purok?: string | null;
+	brgy?: string | null;
+	city?: string | null;
+	province?: string | null;
+	fatherName?: string | null;
+	fatherMiddleName?: string | null;
+	fatherSurname?: string | null;
+	motherName?: string | null;
+	motherMiddleName?: string | null;
+	motherSurname?: string | null;
+	guardianName?: string | null;
+	guardianMiddleName?: string | null;
+	guardianSurname?: string | null;
+	guardianContact?: string | null;
+	learningModal?: string | null;
+	remarks?: string | null;
+}
+
 // PDF Document Component
-const SF1Document = ({ data, selectedSchoolYear }: PDFDocumentProps) => {
+const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 	// Define dimensions for landscape orientation
 	const PAGE_HEIGHT = 1684.8; // 16.5 inches
 	const PAGE_WIDTH = 1188; // 23.4 inches
@@ -345,21 +372,23 @@ const SF1Document = ({ data, selectedSchoolYear }: PDFDocumentProps) => {
 					styles.tableCell,
 					{ width: columnWidths.sex, textAlign: 'center' },
 				]}>
-				{getSexDisplay(student.sex)}
+				{student.sex ? getSexDisplay(student.sex) : ''}
 			</Text>
 			<Text
 				style={[
 					styles.tableCell,
 					{ width: columnWidths.birthDate, textAlign: 'center' },
 				]}>
-				{new Date(student.birthday).toLocaleDateString()}
+				{student.birthday
+					? new Date(student.birthday).toLocaleDateString()
+					: ''}
 			</Text>
 			<Text
 				style={[
 					styles.tableCell,
 					{ width: columnWidths.age, textAlign: 'center' },
 				]}>
-				{calculateAge(student.birthday)}
+				{student.birthday ? calculateAge(new Date(student.birthday)) : ''}
 			</Text>
 			<Text style={[styles.tableCell, { width: columnWidths.religion }]}>
 				{student.religion || ''}
@@ -510,34 +539,34 @@ const SF1Document = ({ data, selectedSchoolYear }: PDFDocumentProps) => {
 						MALE
 					</Text>
 					<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
-						{data.totalMale}
+						{(data as any).totalMale}
 					</Text>
-					<Text style={styles.registerCell}>{data.totalMale}</Text>
+					<Text style={styles.registerCell}>{(data as any).totalMale}</Text>
 				</View>
 				<View style={styles.registerRow}>
 					<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
 						FEMALE
 					</Text>
 					<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
-						{data.totalFemale}
+						{(data as any).totalFemale}
 					</Text>
-					<Text style={styles.registerCell}>{data.totalFemale}</Text>
+					<Text style={styles.registerCell}>{(data as any).totalFemale}</Text>
 				</View>
 				<View style={[styles.registerRow, { borderBottomWidth: 0 }]}>
 					<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
 						TOTAL
 					</Text>
 					<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
-						{data.grandTotal}
+						{(data as any).grandTotal}
 					</Text>
-					<Text style={styles.registerCell}>{data.grandTotal}</Text>
+					<Text style={styles.registerCell}>{(data as any).grandTotal}</Text>
 				</View>
 			</View>
 
 			<View style={styles.signatureSection}>
 				<Text style={styles.preparedByText}>Prepared by:</Text>
 				<Text style={styles.signatureName}>
-					{data.schoolInfo.supervisorName || 'NO ASSIGNED SUPERVISOR'}
+					{(data.schoolInfo as any).supervisorName || 'NO ASSIGNED SUPERVISOR'}
 				</Text>
 				<Text style={styles.signatureCaption}>
 					(Signature of Adviser over Printed Name)
@@ -627,13 +656,17 @@ const SF1Document = ({ data, selectedSchoolYear }: PDFDocumentProps) => {
 				<View style={styles.table}>
 					{renderTableHeaders()}
 
-					{data.maleStudents.map((student, index) => renderTableRow(student))}
-					{renderGenderRow(data.totalMale, '<=== TOTAL MALE')}
+					{(data.maleStudents ?? []).map(
+						(student: StudentData, index: number) => renderTableRow(student)
+					)}
+					{renderGenderRow((data as any).totalMale ?? 0, '<=== TOTAL MALE')}
 
-					{data.femaleStudents.map((student, index) => renderTableRow(student))}
-					{renderGenderRow(data.totalFemale, '<=== TOTAL FEMALE')}
+					{(data.femaleStudents ?? []).map(
+						(student: StudentData, index: number) => renderTableRow(student)
+					)}
+					{renderGenderRow((data as any).totalFemale ?? 0, '<=== TOTAL FEMALE')}
 
-					{renderGenderRow(data.grandTotal, '<=== COMBINED')}
+					{renderGenderRow((data as any).grandTotal ?? 0, '<=== COMBINED')}
 				</View>
 
 				<View style={styles.bottomContainer}>

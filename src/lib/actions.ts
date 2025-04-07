@@ -1,10 +1,11 @@
 'use server';
 
 import { clerkClient } from '@clerk/nextjs/server';
-import { Lesson, Strand } from '@prisma/client';
+import { Admin, Lesson, Strand } from '@prisma/client';
 import { error } from 'console';
 import { revalidatePath } from 'next/cache';
 import {
+	AdminSchema,
 	AssignmentSchema,
 	AttendanceSchema,
 	ClassSchema,
@@ -41,9 +42,12 @@ export const createSubject = async (
 	data: SubjectSchema
 ) => {
 	try {
+		console.log(data);
 		await prisma.subject.create({
 			data: {
 				name: data.name,
+				semester: data.semester,
+				subjectType: data.subjectType,
 				teachers: {
 					connect: data.teachers.map((teacherId) => ({ id: teacherId })),
 				},
@@ -53,7 +57,7 @@ export const createSubject = async (
 		// revalidatePath("/list/subjects");
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error creating subject' };
 	}
 };
@@ -69,6 +73,8 @@ export const updateSubject = async (
 			},
 			data: {
 				name: data.name,
+				semester: data.semester,
+				subjectType: data.subjectType,
 				teachers: {
 					set: data.teachers.map((teacherId) => ({ id: teacherId })),
 				},
@@ -78,7 +84,7 @@ export const updateSubject = async (
 		// revalidatePath('/list/subjects');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -102,7 +108,7 @@ export const deleteSubject = async (
 		// revalidatePath('/list/subjects');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -124,7 +130,7 @@ export const createClass = async (
 		// revalidatePath("/list/class");
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -148,7 +154,7 @@ export const updateClass = async (
 		// revalidatePath('/list/class');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error updating section' };
 	}
 };
@@ -168,7 +174,7 @@ export const deleteClass = async (
 		// revalidatePath('/list/class');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -193,18 +199,7 @@ export const createTeacher = async (
 			publicMetadata: { role: 'teacher' },
 		});
 
-		// Update the user's profile image if an image link is provided
-		if (data.img) {
-			// Assuming data.img is a URL string, convert it to a File
-			const fileToUpload = await urlToFile(
-				data.img,
-				'profile-pic.jpg',
-				'image/jpeg'
-			);
-			const params = { file: fileToUpload };
-			await client.users.updateUserProfileImage(clerkUser.id, params);
-		}
-
+		// Create the teacher in the database with the image URL from Cloudinary
 		await prisma.teacher.create({
 			data: {
 				id: clerkUser.id,
@@ -229,16 +224,16 @@ export const createTeacher = async (
 		// revalidatePath("/list/teacher");
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
-		console.log('clerkid = ' + clerkUser?.id);
+		// console.log(err);
+		// console.log('clerkid = ' + clerkUser?.id);
 		if (clerkUser) {
 			try {
 				await client.users.deleteUser(clerkUser.id);
 			} catch (deleteErr) {
-				console.log(
-					'Failed to delete Clerk user after teacher creation failure:',
-					deleteErr
-				);
+				// console.log(
+				// 	'Failed to delete Clerk user after teacher creation failure:',
+				// 	deleteErr
+				// );
 			}
 		}
 		return {
@@ -295,7 +290,7 @@ export const updateTeacher = async (
 		// revalidatePath('/list/teacher');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -322,7 +317,7 @@ export const deleteTeacher = async (
 		// revalidatePath('/list/teacher');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -338,7 +333,7 @@ export const createStudent = async (
 ) => {
 	let clerkUser;
 	const client = await clerkClient();
-	console.log(data);
+	// console.log(data);
 
 	try {
 		const classItem = await prisma.class.findUnique({
@@ -407,16 +402,16 @@ export const createStudent = async (
 		// revalidatePath("/list/student");
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
-		console.log('clerkid = ' + clerkUser?.id);
+		// console.log(err);
+		// console.log('clerkid = ' + clerkUser?.id);
 		if (clerkUser) {
 			try {
 				await client.users.deleteUser(clerkUser.id);
 			} catch (deleteErr) {
-				console.log(
-					'Failed to delete Clerk user after teacher creation failure:',
-					deleteErr
-				);
+				// console.log(
+				// 	'Failed to delete Clerk user after teacher creation failure:',
+				// 	deleteErr
+				// );
 			}
 		}
 		return { success: false, error: true, message: 'Error creating student' };
@@ -489,7 +484,7 @@ export const updateStudent = async (
 		// revalidatePath('/list/student');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -516,7 +511,7 @@ export const deleteStudent = async (
 		// revalidatePath('/list/student');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -540,7 +535,7 @@ export const createStrand = async (
 		// revalidatePath("/list/strand");
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -566,7 +561,7 @@ export const updateStrand = async (
 		// revalidatePath('/list/class');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error updating strand' };
 	}
 };
@@ -586,7 +581,7 @@ export const deleteStrand = async (
 		// revalidatePath('/list/class');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error deleting strand' };
 	}
 };
@@ -627,7 +622,7 @@ export const createExam = async (
 		// revalidatePath("/list/exams");
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error creating exam' };
 	}
 };
@@ -665,7 +660,7 @@ export const updateExam = async (
 		// revalidatePath('/list/subjects');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error updating exam' };
 	}
 };
@@ -690,7 +685,7 @@ export const deleteExam = async (
 		// revalidatePath('/list/exams');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error deleting exam' };
 	}
 };
@@ -716,7 +711,7 @@ export const createLesson = async (
 		// revalidatePath("/list/lessons");
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error creating lesson' };
 	}
 };
@@ -743,7 +738,7 @@ export const updateLesson = async (
 		// revalidatePath('/list/Lessons');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error updating lesson' };
 	}
 };
@@ -764,7 +759,7 @@ export const deleteLesson = async (
 		// revalidatePath('/list/exams');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error deleting lesson' };
 	}
 };
@@ -805,7 +800,7 @@ export const createAssignment = async (
 		// revalidatePath("/list/assignment");
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -851,7 +846,7 @@ export const updateAssignment = async (
 		// revalidatePath('/list/assignments');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -880,7 +875,7 @@ export const deleteAssignment = async (
 		// revalidatePath('/list/exams');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -927,7 +922,7 @@ export const createAttendance = async (
 		// revalidatePath("/list/attendance");
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -958,7 +953,7 @@ export const updateAttendance = async (
 		// revalidatePath('/list/attendance');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return {
 			success: false,
 			error: true,
@@ -994,7 +989,7 @@ export const deleteAttendance = async (
 		revalidatePath('/list/attendance');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: '' };
 	}
 };
@@ -1049,7 +1044,7 @@ export const createResult = async (
 		// revalidatePath("/list/results");
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error creating result' };
 	}
 };
@@ -1077,7 +1072,7 @@ export const updateResult = async (
 		// revalidatePath('/list/results');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error updating result' };
 	}
 };
@@ -1098,7 +1093,7 @@ export const deleteResult = async (
 		// revalidatePath('/list/results');
 		return { success: true, error: false, message: '' };
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return { success: false, error: true, message: 'Error updating result' };
 	}
 };
@@ -1140,3 +1135,108 @@ export async function getRelatedDataForResultForm(teacherId: string) {
 
 	return { students, lessons };
 }
+
+// TEACHER
+export const createAdmin = async (
+	currentState: CurrentState,
+	data: AdminSchema
+) => {
+	let clerkUser;
+	const client = await clerkClient();
+	try {
+		clerkUser = await client.users.createUser({
+			username: data.username,
+			password: data.password,
+			publicMetadata: { role: 'admin' },
+		});
+
+		// Create the teacher in the database with the image URL from Cloudinary
+		await prisma.admin.create({
+			data: {
+				id: clerkUser.id,
+				username: data.username,
+			},
+		});
+
+		// revalidatePath("/list/admin");
+		return { success: true, error: false, message: '' };
+	} catch (err) {
+		if (clerkUser) {
+			try {
+				await client.users.deleteUser(clerkUser.id);
+			} catch (deleteErr) {}
+		}
+		return {
+			success: false,
+			error: true,
+			message: 'Error creating the admin',
+		};
+	}
+};
+
+export const updateAdmin = async (
+	currentState: CurrentState,
+	data: AdminSchema
+) => {
+	if (!data.id) {
+		return { success: false, error: true, message: 'Error fetching data' };
+	}
+	try {
+		const client = await clerkClient();
+
+		const user = await client.users.updateUser(data.id, {
+			username: data.username,
+			...(data.password !== '' && { password: data.password }),
+			publicMetadata: { role: 'admin' },
+		});
+
+		await prisma.admin.update({
+			where: {
+				id: data.id,
+			},
+			data: {
+				...(data.password !== '' && { password: data.password }),
+				username: data.username,
+			},
+		});
+
+		// revalidatePath('/list/admin');
+		return { success: true, error: false, message: '' };
+	} catch (err) {
+		// console.log(err);
+		return {
+			success: false,
+			error: true,
+			message: 'Error updating the admin',
+		};
+	}
+};
+
+export const deleteAdmin = async (
+	currentState: CurrentState,
+	data: FormData
+) => {
+	const id = data.get('id') as string;
+
+	console.log(id);
+
+	try {
+		const client = await clerkClient();
+		await client.users.deleteUser(id);
+		await prisma.admin.delete({
+			where: {
+				id,
+			},
+		});
+
+		// revalidatePath('/list/teacher');
+		return { success: true, error: false, message: '' };
+	} catch (err) {
+		// console.log(err);
+		return {
+			success: false,
+			error: true,
+			message: 'Error deleting the Admin',
+		};
+	}
+};
