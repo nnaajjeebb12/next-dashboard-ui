@@ -71,7 +71,7 @@ const StrandForm = ({
 
 			<div className="flex justify-between flex-wrap gap-4">
 				<InputField
-					label="Subject name"
+					label="Strand name"
 					name="name"
 					defaultValue={data?.name}
 					register={register}
