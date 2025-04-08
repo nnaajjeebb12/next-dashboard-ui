@@ -142,7 +142,7 @@ const LessonListpage = async ({
 		prisma.lesson.findMany({
 			where: query,
 			include: {
-				subject: { select: { name: true } },
+				subject: { select: { name: true, semester: true } },
 				class: { select: { name: true } },
 				teacher: { select: { name: true, surname: true } },
 			},

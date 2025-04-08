@@ -99,7 +99,11 @@ const FormContainer = async ({
 				break;
 			case 'lesson':
 				const lessonSubjects = await prisma.subject.findMany({
-					select: { id: true, name: true },
+					select: {
+						id: true,
+						name: true,
+						semester: true,
+					},
 				});
 				const lessonSections = await prisma.class.findMany({
 					select: { id: true, name: true },
