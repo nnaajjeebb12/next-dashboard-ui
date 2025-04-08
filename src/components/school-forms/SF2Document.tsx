@@ -65,23 +65,24 @@ const SF2Document = ({
 				const monthIndex = MONTHS.indexOf(selectedMonth);
 				const [startYear, endYear] = selectedSchoolYear.split('-');
 
-				// Determine which year to use based on the month
-				// If month is January to March, use the end year (2025 for 2024-2025)
-				// If month is April to December, use the start year (2024 for 2024-2025)
+				// Corrected logic: Assume school year starts in August.
+				// Months August-December (indices 7-11) use startYear.
+				// Months January-July (indices 0-6) use endYear.
 				const yearToUse =
-					monthIndex <= 2 ? parseInt(endYear) : parseInt(startYear);
+					monthIndex >= 7 ? parseInt(startYear) : parseInt(endYear);
 
 				// Prepare date range for the selected month
 				const startDate = new Date(yearToUse, monthIndex, 1);
-				const endDate = new Date(yearToUse, monthIndex + 1, 0);
+				const endDate = new Date(yearToUse, monthIndex + 1, 0); // Correctly get the last day
 
-				console.log('School Year Calculation:', {
+				console.log('Corrected School Year Calculation:', {
+					// Updated console log
 					selectedSchoolYear,
 					startYear,
 					endYear,
 					monthIndex,
 					monthName: selectedMonth,
-					yearUsed: yearToUse,
+					yearUsed: yearToUse, // Log the calculated year
 					startDate: startDate.toISOString(),
 					endDate: endDate.toISOString(),
 				});

@@ -1036,6 +1036,12 @@ const PdfExportPage = () => {
 	) => {
 		try {
 			setLoading(true);
+			console.log('Fetching data with params:', {
+				strandId,
+				classId,
+				studentId,
+			});
+
 			const params = new URLSearchParams();
 			params.append('schoolYear', selectedSchoolYear);
 
@@ -1056,16 +1062,18 @@ const PdfExportPage = () => {
 						throw new Error(`Failed to fetch data from ${apiUrl}`);
 					}
 					const studentData = await response.json();
+					console.log('Received student data:', studentData);
 
 					setData((prevData) => {
-						// Combine new student-specific data with existing list data
-						return {
-							...studentData, // Includes studentInfo, grades, attendance etc.
-							eligibilityData: prevData?.eligibilityData,
-							// Explicitly carry over list data from previous state
-							strands: (prevData as any)?.strands ?? [],
-							students: (prevData as any)?.students ?? [],
+						const newData = {
+							...prevData,
+							...studentData,
+							strands: prevData?.strands || [],
+							classes: prevData?.classes || [],
+							students: prevData?.students || [],
 						};
+						console.log('Updated data state:', newData);
+						return newData;
 					});
 					setLoading(false);
 					return;
@@ -1081,15 +1089,26 @@ const PdfExportPage = () => {
 						throw new Error(`Failed to fetch data from ${apiUrl}`);
 					}
 					const studentData = await response.json();
+					console.log('Received SF10 student data:', studentData);
 
-					// Preserve existing data while updating with new student data
 					setData((prevData) => {
-						// Merge new student data, preserve eligibility
-						return {
-							...studentData, // Contains student, schoolInfo, class, grades from API
-							eligibilityData: prevData?.eligibilityData, // Preserve eligibility
-							// Dropdown data (strands, classes, students) will be part of studentData if fetched without studentId
+						// Construct new state while preserving all necessary data
+						const newData = {
+							...prevData, // Keep all previous state
+							...studentData, // Add new student data
+							// Explicitly preserve dropdown data
+							strands: prevData?.strands || [],
+							classes: prevData?.classes || [],
+							students: prevData?.students || [],
+							// Preserve specific student details
+							student: studentData.student,
+							schoolInfo: studentData.schoolInfo,
+							class: studentData.class,
+							grades: studentData.grades,
+							eligibilityData: prevData?.eligibilityData,
 						};
+						console.log('Updated SF10 data state:', newData);
+						return newData;
 					});
 					setLoading(false);
 					return;
@@ -1108,25 +1127,28 @@ const PdfExportPage = () => {
 			}
 
 			const responseData = await response.json();
+			console.log('Received general data:', responseData);
 
-			// For SF10, preserve existing data when fetching strands/classes
-			if (selectedForm === FormType.SF10) {
-				setData((prevData) => {
-					if (!prevData) return responseData; // If no prev data, use new data
-					// Merge new list data (strands/classes/students lists)
-					// while preserving the currently selected student details and eligibility
-					return {
-						...responseData, // Contains lists like strands, classes, students
-						student: prevData.student, // Preserve selected student
-						schoolInfo: prevData.schoolInfo, // Preserve selected student's schoolInfo
-						class: prevData.class, // Preserve selected student's class
-						grades: prevData.grades, // Preserve selected student's grades
-						eligibilityData: prevData.eligibilityData, // Preserve eligibility
-					};
-				});
-			} else {
-				setData(responseData);
-			}
+			setData((prevData) => {
+				const newData = {
+					...prevData,
+					...responseData,
+					// Always preserve these fields if they exist
+					strands: responseData.strands || prevData?.strands || [],
+					classes: responseData.classes || prevData?.classes || [],
+					students: responseData.students || prevData?.students || [],
+					// For SF10, preserve additional fields
+					...(selectedForm === FormType.SF10 && {
+						student: prevData?.student,
+						schoolInfo: prevData?.schoolInfo,
+						class: prevData?.class,
+						grades: prevData?.grades,
+						eligibilityData: prevData?.eligibilityData,
+					}),
+				};
+				console.log('Updated general data state:', newData);
+				return newData;
+			});
 		} catch (err) {
 			console.error('Error fetching data:', err);
 			setError(err instanceof Error ? err.message : 'An error occurred');
@@ -1154,33 +1176,42 @@ const PdfExportPage = () => {
 		e: React.ChangeEvent<HTMLSelectElement>
 	) => {
 		const newStrandId = e.target.value;
+		console.log('Strand change - Previous values:', {
+			strand: selectedStrand,
+			class: selectedClass,
+			student: selectedStudent,
+		});
 		setSelectedStrand(newStrandId);
-		setSelectedClass(''); // Reset class/student below strand
-		setSelectedStudent('');
+		// Don't reset class and student selections
 		if (newStrandId) {
-			// Fetch data based on the new strand (students for SF9, classes for others)
-			await fetchData(newStrandId);
-		} else {
-			// If strand is deselected, fetch initial data for the form (just strands)
-			await fetchData();
+			console.log('Fetching data for new strand:', newStrandId);
+			await fetchData(newStrandId, selectedClass, selectedStudent);
 		}
+		console.log('Strand change - New values:', {
+			strand: newStrandId,
+			class: selectedClass,
+			student: selectedStudent,
+		});
 	};
 
 	const handleClassChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const newClassId = e.target.value;
-		console.log('Class changed to:', newClassId);
+		console.log('Class change - Previous values:', {
+			strand: selectedStrand,
+			class: selectedClass,
+			student: selectedStudent,
+		});
 		setSelectedClass(newClassId);
-		setSelectedStudent(''); // Reset student selection when class changes
-		// Fetch students for the selected class
+		// Don't reset student selection
 		if (newClassId && selectedStrand) {
-			console.log(
-				'Fetching students for strand:',
-				selectedStrand,
-				'and class:',
-				newClassId
-			);
-			await fetchData(selectedStrand, newClassId);
+			console.log('Fetching data for new class:', newClassId);
+			await fetchData(selectedStrand, newClassId, selectedStudent);
 		}
+		console.log('Class change - New values:', {
+			strand: selectedStrand,
+			class: newClassId,
+			student: selectedStudent,
+		});
 	};
 
 	const handleSchoolYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -1199,15 +1230,25 @@ const PdfExportPage = () => {
 		e: React.ChangeEvent<HTMLSelectElement>
 	) => {
 		const newStudentId = e.target.value;
+		console.log('Student change - Previous values:', {
+			strand: selectedStrand,
+			class: selectedClass,
+			student: selectedStudent,
+		});
 		setSelectedStudent(newStudentId);
 		if (
 			(selectedForm === FormType.SF9 || selectedForm === FormType.SF10) &&
 			newStudentId &&
 			selectedStrand
 		) {
-			// Keep the current strand and class selections, just fetch the student data
+			console.log('Fetching data for new student:', newStudentId);
 			await fetchData(selectedStrand, selectedClass, newStudentId);
 		}
+		console.log('Student change - New values:', {
+			strand: selectedStrand,
+			class: selectedClass,
+			student: newStudentId,
+		});
 	};
 
 	// Update validation for form completion
