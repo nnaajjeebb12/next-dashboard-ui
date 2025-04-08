@@ -27,6 +27,10 @@ const LessonForm = ({
 	currentUserId?: number | string;
 }) => {
 	const [dayOfWeek, setDayOfWeek] = useState<Day>(data?.day || 'MONDAY');
+	const [selectedSemester, setSelectedSemester] = useState<string>(
+		data?.subject?.semester || ''
+	);
+	const [filteredSubjects, setFilteredSubjects] = useState<any[]>([]);
 
 	const {
 		register,
@@ -43,6 +47,39 @@ const LessonForm = ({
 
 	// Watch the startTime field
 	const startTime = watch('startTime');
+
+	// Get unique semesters from subjects
+	const { subjects, sections, teachers } = relatedData;
+	const uniqueSemesters = Array.from(
+		new Set(subjects.map((subject: any) => subject.semester))
+	).filter(Boolean);
+
+	// Filter subjects when semester changes
+	useEffect(() => {
+		if (selectedSemester) {
+			const filtered = subjects.filter(
+				(subject: any) => subject.semester === selectedSemester
+			);
+			setFilteredSubjects(filtered);
+			// Reset subject selection when semester changes
+			if (!data?.subjectId) {
+				setValue('subjectId', 0);
+			}
+		} else {
+			setFilteredSubjects([]);
+		}
+	}, [selectedSemester, subjects, setValue, data]);
+
+	// Set initial semester and filtered subjects for update
+	useEffect(() => {
+		if (type === 'update' && data?.subject?.semester) {
+			setSelectedSemester(data.subject.semester);
+			const filtered = subjects.filter(
+				(subject: any) => subject.semester === data.subject.semester
+			);
+			setFilteredSubjects(filtered);
+		}
+	}, [type, data, subjects]);
 
 	// Update day of week whenever startTime changes
 	useEffect(() => {
@@ -110,8 +147,6 @@ const LessonForm = ({
 		}
 	}, [state, type, setOpen, router]);
 
-	const { subjects, sections, teachers } = relatedData;
-
 	return (
 		<form className="flex flex-col gap-8" onSubmit={onSubmit}>
 			<h1 className="text-xl font-semibold">
@@ -167,13 +202,29 @@ const LessonForm = ({
 						</p>
 					)}
 				</div>
-				<div className="flex flex-col gap-2 w-full md:w-1/2">
+				<div className="flex flex-col gap-2 w-full md:w-1/4">
+					<label className="text-xs text-gray-500">Semester</label>
+					<select
+						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+						value={selectedSemester}
+						onChange={(e) => setSelectedSemester(e.target.value)}>
+						<option value="">Select Semester</option>
+						{uniqueSemesters.map((semester: unknown) => (
+							<option value={String(semester)} key={String(semester)}>
+								{String(semester)}
+							</option>
+						))}
+					</select>
+				</div>
+				<div className="flex flex-col gap-2 w-full md:w-1/4">
 					<label className="text-xs text-gray-500">Subject</label>
 					<select
 						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
 						{...register('subjectId')}
-						defaultValue={data?.subjectId}>
-						{subjects.map((subject: { id: number; name: string }) => (
+						defaultValue={data?.subjectId}
+						disabled={!selectedSemester}>
+						<option value="">Select Subject</option>
+						{filteredSubjects.map((subject: { id: number; name: string }) => (
 							<option value={subject.id} key={subject.id}>
 								{subject.name}
 							</option>
