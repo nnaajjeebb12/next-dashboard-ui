@@ -101,7 +101,7 @@ const SF2Document = ({
 
 				// Fetch attendance data from API
 				const response = await fetch(
-					`/api/attendance?start=${start}&end=${end}&students=${studentIds}&semester=${data.schoolInfo.semester}`
+					`/api/attendance?start=${start}&end=${end}&students=${studentIds}`
 				);
 
 				if (!response.ok) {
