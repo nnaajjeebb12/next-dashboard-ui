@@ -96,6 +96,7 @@ export interface ObservedValue {
 export interface StudentResponse {
 	students?: Student[];
 	student?: Student;
+	studentInfo?: StudentInfo;
 	schoolInfo: {
 		name: string;
 		schoolId: string;
@@ -119,18 +120,8 @@ export interface StudentResponse {
 		};
 	};
 	grades?: {
-		firstSemester: {
-			subjects: any[];
-			averages: {
-				final: number;
-			};
-		};
-		secondSemester: {
-			subjects: any[];
-			averages: {
-				final: number;
-			};
-		};
+		firstSemester: SemesterGrades;
+		secondSemester: SemesterGrades;
 	};
 	maleStudents?: Student[];
 	femaleStudents?: Student[];
