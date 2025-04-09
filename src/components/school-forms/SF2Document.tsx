@@ -65,39 +65,53 @@ const SF2Document = ({
 				const monthIndex = MONTHS.indexOf(selectedMonth);
 				const [startYear, endYear] = selectedSchoolYear.split('-');
 
-				// Corrected logic: Assume school year starts in August.
-				// Months August-December (indices 7-11) use startYear.
-				// Months January-July (indices 0-6) use endYear.
+				// Determine the correct year based on the month
 				const yearToUse =
 					monthIndex >= 7 ? parseInt(startYear) : parseInt(endYear);
 
-				// Prepare date range for the selected month
-				const startDate = new Date(yearToUse, monthIndex, 1);
-				const endDate = new Date(yearToUse, monthIndex + 1, 0); // Correctly get the last day
+				// Create date objects for the first and last day of the selected month
+				// Use UTC to avoid timezone issues
+				const startDate = new Date(Date.UTC(yearToUse, monthIndex, 1));
+				const endDate = new Date(Date.UTC(yearToUse, monthIndex + 1, 0));
 
-				console.log('Corrected School Year Calculation:', {
-					// Updated console log
-					selectedSchoolYear,
+				console.log('Date Range:', {
+					selectedMonth,
+					monthIndex,
 					startYear,
 					endYear,
-					monthIndex,
-					monthName: selectedMonth,
-					yearUsed: yearToUse, // Log the calculated year
+					yearToUse,
 					startDate: startDate.toISOString(),
 					endDate: endDate.toISOString(),
 				});
 
-				// Format dates for API query
+				// Format dates for API query (YYYY-MM-DD format)
 				const start = startDate.toISOString().split('T')[0];
 				const end = endDate.toISOString().split('T')[0];
 
-				// Ensure student lists are arrays
-				const maleStudents = data.maleStudents ?? [];
-				const femaleStudents = data.femaleStudents ?? [];
+				// Ensure student lists are arrays and filter out any null/undefined values
+				const maleStudents = data.maleStudents?.filter(Boolean) ?? [];
+				const femaleStudents = data.femaleStudents?.filter(Boolean) ?? [];
 				const allStudents = [...maleStudents, ...femaleStudents];
+
+				if (allStudents.length === 0) {
+					console.log('No students found in the data');
+					setAttendanceMap({});
+					return;
+				}
 
 				// Create student IDs string for the API
 				const studentIds = allStudents.map((student) => student.id).join(',');
+
+				// Log request details
+				console.log('Fetching attendance for:', {
+					dateRange: { start, end },
+					students: allStudents.map((student) => ({
+						id: student.id,
+						name: `${student.surname}, ${student.name} ${
+							student.middleName || ''
+						}`,
+					})),
+				});
 
 				// Fetch attendance data from API
 				const response = await fetch(
@@ -105,24 +119,24 @@ const SF2Document = ({
 				);
 
 				if (!response.ok) {
-					throw new Error('Failed to fetch attendance data');
+					const errorText = await response.text();
+					console.error('API Error Response:', errorText);
+					throw new Error(
+						`API request failed: ${response.status} ${response.statusText}`
+					);
 				}
 
 				const attendanceData = await response.json();
 
 				// Log detailed attendance information
-				console.log('Attendance Records Details:');
-				attendanceData.forEach((record: any, index: number) => {
-					const student = allStudents.find((s) => s.id === record.studentId);
-					console.log(`Record ${index + 1}:`, {
-						date: new Date(record.date).toLocaleDateString(),
-						status: record.status,
-						studentName: student
-							? `${student.surname}, ${student.name}`
-							: 'Unknown Student',
-						studentId: record.studentId,
-					});
-				});
+				console.log('Attendance Records Details:', attendanceData);
+
+				// Check if attendanceData is an array and has items
+				if (!Array.isArray(attendanceData) || attendanceData.length === 0) {
+					console.log('No attendance records found for the period');
+					setAttendanceMap({});
+					return;
+				}
 
 				// Process attendance data into a lookup map
 				const map: { [key: string]: { [key: string]: string } } = {};
@@ -556,7 +570,9 @@ const SF2Document = ({
 						</View>
 						<View style={[styles.fieldContainer, styles.regularField]}>
 							<Text style={styles.label}>Grade Level</Text>
-							<Text style={styles.value}>{data.schoolInfo.gradeLevel}</Text>
+							<Text style={styles.value}>{`Grade ${
+								data.class?.grade?.level || ''
+							}`}</Text>
 						</View>
 						<View style={[styles.fieldContainer, styles.regularField]}>
 							<Text style={styles.label}>Track and Strand</Text>

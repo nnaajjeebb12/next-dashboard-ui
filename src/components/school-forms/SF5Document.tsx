@@ -561,7 +561,9 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 						</View>
 						<View style={[styles.fieldContainer, styles.regularField]}>
 							<Text style={styles.label}>Grade Level</Text>
-							<Text style={styles.value}>{data.schoolInfo.gradeLevel}</Text>
+							<Text style={styles.value}>{`Grade ${
+								data.class?.grade?.level || ''
+							}`}</Text>
 						</View>
 						<View style={[styles.fieldContainer, styles.wideField]}>
 							<Text style={styles.label}>Section</Text>

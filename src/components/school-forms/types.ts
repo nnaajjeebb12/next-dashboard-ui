@@ -94,27 +94,8 @@ export interface ObservedValue {
 }
 
 export interface StudentResponse {
-	student?: {
-		id: number;
-		name: string;
-		surname: string;
-		middleName?: string;
-		lrn?: string;
-		birthday?: string;
-		sex?: string;
-		dateOfSHSAdmission?: string;
-		dateOfAssessment?: string;
-		learningCenterAddress?: string;
-		gradeId?: number;
-		classId?: number;
-	};
-	class?: {
-		supervisor?: {
-			name: string;
-			surname: string;
-		};
-	};
-	studentInfo?: StudentInfo;
+	students?: Student[];
+	student?: Student;
 	schoolInfo: {
 		name: string;
 		schoolId: string;
@@ -125,11 +106,32 @@ export interface StudentResponse {
 		district?: string;
 		division?: string;
 		region?: string;
-		gradeLevel?: string;
 		track?: string;
 		supervisorName?: string;
 	};
-	grades?: StudentGrades;
+	class?: {
+		supervisor?: {
+			name: string;
+			surname: string;
+		};
+		grade?: {
+			level: number;
+		};
+	};
+	grades?: {
+		firstSemester: {
+			subjects: any[];
+			averages: {
+				final: number;
+			};
+		};
+		secondSemester: {
+			subjects: any[];
+			averages: {
+				final: number;
+			};
+		};
+	};
 	maleStudents?: Student[];
 	femaleStudents?: Student[];
 	totalMale?: number;
@@ -137,7 +139,7 @@ export interface StudentResponse {
 	grandTotal?: number;
 	strands?: { id: number; name: string }[];
 	classes?: { id: number; name: string }[];
-	students?: Student[];
+	summaryData?: any;
 }
 
 export interface SubjectGrades {

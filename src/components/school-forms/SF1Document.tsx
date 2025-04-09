@@ -630,7 +630,9 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 						</View>
 						<View style={[styles.fieldContainer, styles.regularField]}>
 							<Text style={styles.label}>Grade Level</Text>
-							<Text style={styles.value}>{data.schoolInfo.gradeLevel}</Text>
+							<Text style={styles.value}>{`Grade ${
+								data.class?.grade?.level || ''
+							}`}</Text>
 						</View>
 					</View>
 
