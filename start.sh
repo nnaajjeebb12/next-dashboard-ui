@@ -13,27 +13,13 @@ until test_postgresql; do
 done
 echo "PostgreSQL is ready!"
 
-# Reset database (optional, remove if you want to persist data)
-echo "Resetting database..."
-npx prisma migrate reset --force
-
-# Run Prisma migrations
+# Run Prisma migrations (this only applies pending migrations, doesn't reset data)
 echo "Running Prisma migrations..."
 npx prisma migrate deploy
 
 # Generate Prisma Client (just to be safe)
 echo "Generating Prisma Client..."
 npx prisma generate
-
-# Verify database schema
-echo "Verifying database schema..."
-npx prisma db pull --force
-if [ $? -eq 0 ]; then
-    echo "Database schema verified successfully!"
-else
-    echo "Error: Database schema verification failed!"
-    exit 1
-fi
 
 # Start the application
 echo "Starting the application..."
