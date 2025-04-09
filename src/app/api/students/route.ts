@@ -59,6 +59,7 @@ export async function GET(request: Request) {
 				class: {
 					include: {
 						supervisor: true,
+						grade: true,
 					},
 				},
 				Strand: true,
@@ -78,6 +79,7 @@ export async function GET(request: Request) {
 				class: {
 					include: {
 						supervisor: true,
+						grade: true,
 					},
 				},
 				Strand: true,
@@ -103,11 +105,14 @@ export async function GET(request: Request) {
 				region: 'Region IV-A',
 				semester: semester || '1st Semester',
 				schoolYear: schoolYear || '2023-2024',
-				gradeLevel: 'Grade 11',
 				section: classInfo?.name || 'Unknown Section',
 				track: 'Academic Track',
 				strand: firstStudent?.Strand?.name || 'Unknown Strand',
 				supervisorName: supervisorFullName,
+			},
+			class: {
+				supervisor: classInfo?.supervisor,
+				grade: classInfo?.grade,
 			},
 			maleStudents,
 			femaleStudents,

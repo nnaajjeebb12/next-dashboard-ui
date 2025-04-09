@@ -953,6 +953,14 @@ const PDFDocument = ({
 // Add the eligibility form data type to the existing data state
 interface ExtendedStudentResponse extends StudentResponse {
 	eligibilityData?: EligibilityFormData;
+	student?: StudentData;
+	class?: {
+		id: number;
+		name: string;
+		supervisor?: { name: string; surname: string };
+		grade?: { level: number };
+	};
+	grades?: any;
 }
 
 const defaultEligibilityData: EligibilityFormData = {
@@ -1040,6 +1048,8 @@ const PdfExportPage = () => {
 				strandId,
 				classId,
 				studentId,
+				selectedForm,
+				selectedSchoolYear,
 			});
 
 			const params = new URLSearchParams();
@@ -1065,15 +1075,13 @@ const PdfExportPage = () => {
 					console.log('Received student data:', studentData);
 
 					setData((prevData) => {
-						const newData = {
-							...prevData,
+						if (!prevData) return studentData;
+						return {
 							...studentData,
-							strands: prevData?.strands || [],
-							classes: prevData?.classes || [],
-							students: prevData?.students || [],
+							strands: prevData.strands || [],
+							classes: prevData.classes || [],
+							students: prevData.students || [],
 						};
-						console.log('Updated data state:', newData);
-						return newData;
 					});
 					setLoading(false);
 					return;
@@ -1084,6 +1092,10 @@ const PdfExportPage = () => {
 				if (classId) params.append('classId', classId);
 				if (studentId) {
 					params.append('studentId', studentId);
+					console.log(
+						'Fetching SF10 data with URL:',
+						`${apiUrl}?${params.toString()}`
+					);
 					const response = await fetch(`${apiUrl}?${params.toString()}`);
 					if (!response.ok) {
 						throw new Error(`Failed to fetch data from ${apiUrl}`);
@@ -1092,23 +1104,21 @@ const PdfExportPage = () => {
 					console.log('Received SF10 student data:', studentData);
 
 					setData((prevData) => {
-						// Construct new state while preserving all necessary data
-						const newData = {
-							...prevData, // Keep all previous state
-							...studentData, // Add new student data
-							// Explicitly preserve dropdown data
-							strands: prevData?.strands || [],
-							classes: prevData?.classes || [],
-							students: prevData?.students || [],
-							// Preserve specific student details
+						if (!prevData) return studentData;
+						return {
+							...prevData,
+							...studentData,
+							// Preserve dropdown data
+							strands: prevData.strands || [],
+							classes: prevData.classes || [],
+							students: prevData.students || [],
+							// Update specific student details
 							student: studentData.student,
 							schoolInfo: studentData.schoolInfo,
 							class: studentData.class,
 							grades: studentData.grades,
-							eligibilityData: prevData?.eligibilityData,
+							eligibilityData: prevData.eligibilityData,
 						};
-						console.log('Updated SF10 data state:', newData);
-						return newData;
 					});
 					setLoading(false);
 					return;
@@ -1133,11 +1143,9 @@ const PdfExportPage = () => {
 				const newData = {
 					...prevData,
 					...responseData,
-					// Always preserve these fields if they exist
 					strands: responseData.strands || prevData?.strands || [],
 					classes: responseData.classes || prevData?.classes || [],
 					students: responseData.students || prevData?.students || [],
-					// For SF10, preserve additional fields
 					...(selectedForm === FormType.SF10 && {
 						student: prevData?.student,
 						schoolInfo: prevData?.schoolInfo,
@@ -1236,6 +1244,24 @@ const PdfExportPage = () => {
 			student: selectedStudent,
 		});
 		setSelectedStudent(newStudentId);
+
+		// Clear previous student data when selection changes
+		if (selectedForm === FormType.SF10 || selectedForm === FormType.SF9) {
+			setData((prevData) => {
+				if (!prevData) return null;
+				return {
+					...prevData,
+					student: undefined,
+					grades: undefined,
+					// Preserve other required fields
+					schoolInfo: prevData.schoolInfo,
+					strands: prevData.strands || [],
+					classes: prevData.classes || [],
+					students: prevData.students || [],
+				};
+			});
+		}
+
 		if (
 			(selectedForm === FormType.SF9 || selectedForm === FormType.SF10) &&
 			newStudentId &&
@@ -1244,6 +1270,7 @@ const PdfExportPage = () => {
 			console.log('Fetching data for new student:', newStudentId);
 			await fetchData(selectedStrand, selectedClass, newStudentId);
 		}
+
 		console.log('Student change - New values:', {
 			strand: selectedStrand,
 			class: selectedClass,

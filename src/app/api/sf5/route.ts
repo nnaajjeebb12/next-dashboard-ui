@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
 						class: {
 							include: {
 								supervisor: true,
+								grade: true,
 							},
 						},
 					},
@@ -157,11 +158,14 @@ export async function GET(req: NextRequest) {
 				region: 'Region IV-A',
 				semester: semester,
 				schoolYear: schoolYear,
-				gradeLevel: 'Grade 11',
 				section: classInfo?.name || 'Unknown Section',
 				track: 'Academic Track',
 				strand: strand?.name || 'Unknown Strand',
 				supervisorName: supervisorFullName,
+			},
+			class: {
+				supervisor: classInfo?.supervisor,
+				grade: classInfo?.grade,
 			},
 			maleStudents,
 			femaleStudents,

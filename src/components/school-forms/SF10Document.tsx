@@ -40,6 +40,14 @@ const SF10Document = ({ data, eligibilityData }: SF10DocumentProps) => {
 
 	const convertGradeIdToWords = (gradeId: number | undefined) => {
 		switch (gradeId) {
+			case 7:
+				return 'SEVEN';
+			case 8:
+				return 'EIGHT';
+			case 9:
+				return 'NINE';
+			case 10:
+				return 'TEN';
 			case 11:
 				return 'ELEVEN';
 			case 12:

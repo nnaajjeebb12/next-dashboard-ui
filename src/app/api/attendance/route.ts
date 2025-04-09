@@ -34,7 +34,7 @@ export async function GET(request: Request) {
 		});
 		console.log('Sample attendance records:', sampleAttendance);
 
-		if (!start || !end || !students || !semester) {
+		if (!start || !end || !students) {
 			return NextResponse.json(
 				{ error: 'Missing required parameters' },
 				{ status: 400 }
@@ -69,14 +69,6 @@ export async function GET(request: Request) {
 		});
 		console.log('Records within date range:', dateRangeCount);
 
-		// Debug: Check semester separately
-		const semesterCount = await prisma.attendance.count({
-			where: {
-				semester: semester,
-			},
-		});
-		console.log('Records with matching semester:', semesterCount);
-
 		// Original query with all conditions
 		const attendanceRecords = await prisma.attendance.findMany({
 			where: {
@@ -87,7 +79,7 @@ export async function GET(request: Request) {
 					gte: new Date(start),
 					lte: new Date(end),
 				},
-				semester: semester,
+				...(semester ? { semester: semester } : {}),
 			},
 			select: {
 				id: true,

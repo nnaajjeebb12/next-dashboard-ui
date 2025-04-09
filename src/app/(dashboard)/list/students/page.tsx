@@ -5,11 +5,13 @@ import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
 import { getRole, getUserId } from '@/lib/utils';
-import { Class, Prisma, Strand, Student } from '@prisma/client';
+import { Class, Grade, Prisma, Strand, Student } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
 
-type StudentList = Student & { class: Class } & { Strand: Strand };
+type StudentList = Student & { class: Class } & { Strand: Strand } & {
+	grade: Grade;
+};
 
 const StudentListpage = async ({
 	searchParams,
@@ -83,7 +85,7 @@ const StudentListpage = async ({
 			<td className="hidden md:table-cell">{item.username}</td>
 			<td className="hidden md:table-cell">{item.lrn}</td>
 			<td className="hidden md:table-cell">{item.class.name}</td>
-			<td className="hidden md:table-cell">{item.class.gradeId}</td>
+			<td className="hidden md:table-cell">{item.grade.level}</td>
 			<td className="hidden md:table-cell">{item.phone}</td>
 			<td className="hidden md:table-cell">{item.address}</td>
 			<td>
@@ -140,6 +142,7 @@ const StudentListpage = async ({
 			include: {
 				Strand: true,
 				class: true,
+				grade: true,
 			},
 			take: ITEM_PER_PAGE,
 			skip: ITEM_PER_PAGE * (p - 1),
