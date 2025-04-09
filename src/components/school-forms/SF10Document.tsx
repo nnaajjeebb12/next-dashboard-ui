@@ -1639,16 +1639,7 @@ const SF10Document = ({ data, eligibilityData }: SF10DocumentProps) => {
 											width: '100%',
 											paddingBottom: 2,
 											marginBottom: 2,
-										}}>
-										<Text
-											style={{
-												fontSize: 8,
-												textAlign: 'center',
-												fontFamily: 'Helvetica-Bold',
-											}}>
-											THELMA A. PASCUA, Ed.D
-										</Text>
-									</View>
+										}}></View>
 									<Text style={{ fontSize: 7, textAlign: 'center' }}>
 										Signature of School Head over Printed Name
 									</Text>
