@@ -13,8 +13,8 @@
 
 ## Students Tab
 
-- [ ] Add Filter Students by Grade Level, Strand, and Section.
-- [ ] Highlight the edit function in student's profile.
+- [x] Add Filter Students by Grade Level, Strand, and Section.
+- [x] Highlight the edit function in student's profile.
 
 ## Subjects Tab
 

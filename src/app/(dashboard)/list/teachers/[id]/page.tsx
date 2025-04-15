@@ -61,15 +61,13 @@ const SingleTeacherPage = async ({
 									{teacher.name + ' ' + teacher.surname}
 								</h1>
 								{(role === 'admin' || role === 'teacher') && (
-									<div className="flex items-center gap-2">
-										<>
-											<FormContainer
-												table="teacher"
-												type="update"
-												data={teacher}
-											/>{' '}
-											(Edit)
-										</>
+									<div className="flex items-center gap-1 px-3 py-1.5 bg-najPurpleLight hover:bg-najPurple transition-colors duration-200 rounded-full text-sm cursor-pointer">
+										<span className="text-najPurpleDark font-medium">Edit</span>
+										<FormContainer
+											table="teacher"
+											type="update"
+											data={teacher}
+										/>
 									</div>
 								)}
 							</div>
