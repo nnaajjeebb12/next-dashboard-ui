@@ -5,11 +5,29 @@ import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
 import { getRole, getUserId } from '@/lib/utils';
-import { Class, Prisma, Subject, Teacher } from '@prisma/client';
+import {
+	Class,
+	Grade,
+	Prisma,
+	Strand,
+	Student,
+	Subject,
+	Teacher,
+} from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
 
-type TeacherList = Teacher & { subjects: Subject[] } & { classes: Class[] };
+type ClassWithDetails = Class & {
+	grade: Grade;
+	students: (Student & {
+		Strand: Strand;
+	})[];
+};
+
+type TeacherList = Teacher & {
+	subjects: Subject[];
+	classes: ClassWithDetails[];
+};
 
 const TeacherListpage = async ({
 	searchParams,
@@ -36,6 +54,16 @@ const TeacherListpage = async ({
 		{
 			header: 'Supervising Section',
 			accessor: 'classes',
+			className: 'hidden md:table-cell',
+		},
+		// {
+		// 	header: 'Strand',
+		// 	accessor: 'strand',
+		// 	className: 'hidden md:table-cell',
+		// },
+		{
+			header: 'Supervising Grade',
+			accessor: 'grade',
 			className: 'hidden md:table-cell',
 		},
 		{
@@ -83,6 +111,34 @@ const TeacherListpage = async ({
 				{item.classes.map((classItem) => classItem.name).join(', ') ||
 					'No supervising class'}
 			</td>
+			{/* <td className="hidden md:table-cell">
+				{item.classes
+					.map((classItem) => {
+						// Count strands for this class
+						const strandCounts = classItem.students.reduce((acc, student) => {
+							const strandName = student.Strand.name;
+							acc[strandName] = (acc[strandName] || 0) + 1;
+							return acc;
+						}, {} as Record<string, number>);
+
+						// Find the majority strand
+						let majorityStrand = '';
+						let maxCount = 0;
+						for (const [strand, count] of Object.entries(strandCounts)) {
+							if (count > maxCount) {
+								maxCount = count;
+								majorityStrand = strand;
+							}
+						}
+
+						return majorityStrand;
+					})
+					.join(', ') || '-'}
+			</td> */}
+			<td className="hidden md:table-cell">
+				{item.classes.map((classItem) => classItem.grade.level).join(', ') ||
+					'No supervising grade'}
+			</td>
 			<td className="hidden md:table-cell">{item.phone}</td>
 			<td className="hidden md:table-cell">{item.address}</td>
 			<td>
@@ -122,6 +178,16 @@ const TeacherListpage = async ({
 						query.OR = [
 							{ name: { contains: value, mode: 'insensitive' } },
 							{ username: { contains: value, mode: 'insensitive' } },
+							{
+								classes: {
+									some: {
+										OR: [
+											{ name: { contains: value, mode: 'insensitive' } },
+											{ grade: { level: parseInt(value) || undefined } },
+										],
+									},
+								},
+							},
 						];
 						break;
 					default:
@@ -135,7 +201,16 @@ const TeacherListpage = async ({
 			where: query,
 			include: {
 				subjects: true,
-				classes: true,
+				classes: {
+					include: {
+						grade: true,
+						students: {
+							include: {
+								Strand: true,
+							},
+						},
+					},
+				},
 			},
 			take: ITEM_PER_PAGE,
 			skip: ITEM_PER_PAGE * (p - 1),

@@ -15,11 +15,7 @@ const SingleTeacherPage = async ({
 }) => {
 	const role = await getRole();
 	const userId = await getUserId();
-	const teacher:
-		| (Teacher & {
-				_count: { subjects: number; lessons: number; classes: number };
-		  })
-		| null = await prisma.teacher.findUnique({
+	const teacher = await prisma.teacher.findUnique({
 		where: { id },
 		include: {
 			_count: {
@@ -27,6 +23,12 @@ const SingleTeacherPage = async ({
 					subjects: true,
 					lessons: true,
 					classes: true,
+				},
+			},
+			subjects: {
+				select: {
+					id: true,
+					name: true,
 				},
 			},
 		},
@@ -43,7 +45,7 @@ const SingleTeacherPage = async ({
 				{/* TOP */}
 				<div className="flex flex-col lg:flex-row gap-4">
 					{/* USER INFO CARD */}
-					<div className="bg-najSky py-6 px-4 rounded-md flex-1 flex gap-4">
+					<div className="bg-najDepEdCoolGray py-6 px-4 rounded-md flex-1 flex gap-4">
 						<div className="w-1/3">
 							<Image
 								src={teacher.img || '/noAvatar.png'}
@@ -58,8 +60,17 @@ const SingleTeacherPage = async ({
 								<h1 className="text-xl font-semibold">
 									{teacher.name + ' ' + teacher.surname}
 								</h1>
-								{role === 'admin' && (
-									<FormContainer table="teacher" type="update" data={teacher} />
+								{(role === 'admin' || role === 'teacher') && (
+									<div className="flex items-center gap-2">
+										<>
+											<FormContainer
+												table="teacher"
+												type="update"
+												data={teacher}
+											/>{' '}
+											(Edit)
+										</>
+									</div>
 								)}
 							</div>
 							<div className="flex items-center justify-between gap-2 flex-wrap text-xs font-medium">
@@ -113,7 +124,7 @@ const SingleTeacherPage = async ({
 					</div>
 					{/* SMALL CARD */}
 					<div className="flex-1 flex g-4 justify-between flex-wrap">
-						{/* ATTENDANCE CARD */}
+						{/* ATTENDANCE CARD
 						<div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
 							<Image
 								src="/singleAttendance.png"
@@ -126,7 +137,7 @@ const SingleTeacherPage = async ({
 								<h1 className="text-xl font-semibold">90%</h1>
 								<span className="text-sm text-gray-400">Attendance</span>
 							</div>
-						</div>
+						</div> */}
 						{/* BRANCHES CARD */}
 						<div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
 							<Image
@@ -203,20 +214,20 @@ const SingleTeacherPage = async ({
 							href={`/list/lessons?teacherId=${teacher.id}`}>
 							Teacher&apos;s Lessons
 						</Link>
-						<Link
+						{/* <Link
 							className="p-3 rounded-md bg-pink-50"
 							href={`/list/exams?teacherId=${teacher.id}`}>
 							Teacher&apos;s Exams
-						</Link>
-						<Link
+						</Link> */}
+						{/* <Link
 							className="p-3 rounded-md bg-najSkyLight"
 							href={`/list/assignments?teacherId=${teacher.id}`}>
 							Teacher&apos;s Assignments
-						</Link>
+						</Link> */}
 					</div>
 				</div>
 				{/* <Performance /> */}
-				<Announcements />
+				{/* <Announcements /> */}
 			</div>
 		</div>
 	);

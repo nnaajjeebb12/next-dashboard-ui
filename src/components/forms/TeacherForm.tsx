@@ -28,6 +28,14 @@ const TeacherForm = ({
 	userRole?: string;
 	currentUserId?: number | string;
 }) => {
+	console.log('TeacherForm - Component Props:', {
+		type,
+		data,
+		relatedData,
+		userRole,
+		currentUserId,
+	});
+
 	const {
 		register,
 		handleSubmit,
@@ -48,6 +56,7 @@ const TeacherForm = ({
 	);
 
 	const onSubmit = handleSubmit((data) => {
+		console.log('TeacherForm - Form Submit Data:', data);
 		formAction({ ...data, img: img?.secure_url });
 	});
 
@@ -65,6 +74,8 @@ const TeacherForm = ({
 		}
 	}, [state, type, setOpen, router]);
 	const { subjects } = relatedData;
+	console.log('TeacherForm - Available Subjects:', subjects);
+	console.log('TeacherForm - Teacher Current Subjects:', data?.subjects);
 
 	return (
 		<form className="flex flex-col gap-8" onSubmit={onSubmit}>
@@ -196,21 +207,36 @@ const TeacherForm = ({
 						</p>
 					)}
 				</div>
-				<div className="flex flex-col gap-2 w-full md:w-1/4">
+				<div className="flex flex-col gap-2 w-full">
 					<label className="text-xs text-gray-500">Subjects</label>
-					<select
-						multiple
-						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-						{...register('subjects')}
-						defaultValue={data?.subjects}>
-						{subjects.map((subject: { id: number; name: string }) => (
-							<option value={subject.id} key={subject.id}>
-								{subject.name}
-							</option>
-						))}
-					</select>
+					<div className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full max-h-[200px] overflow-y-auto">
+						{subjects.map((subject: { id: number; name: string }) => {
+							const isSelected = data?.subjects?.some(
+								(s: any) => s.id === subject.id
+							);
+							return (
+								<div
+									key={subject.id}
+									className="flex items-center gap-2 py-2 px-2 rounded-md transition-colors hover:bg-gray-50">
+									<input
+										type="checkbox"
+										id={`subject-${subject.id}`}
+										value={subject.id}
+										{...register('subjects')}
+										defaultChecked={isSelected}
+										className="w-4 h-4 accent-najSky cursor-pointer"
+									/>
+									<label
+										htmlFor={`subject-${subject.id}`}
+										className="text-sm cursor-pointer flex-1 hover:text-najSky/70">
+										{subject.name}
+									</label>
+								</div>
+							);
+						})}
+					</div>
 					{errors.subjects?.message && (
-						<p className=" text-xs text-red-400">
+						<p className="text-xs text-red-400">
 							{errors.subjects.message.toString()}
 						</p>
 					)}
