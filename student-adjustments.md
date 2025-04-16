@@ -28,11 +28,11 @@
 
 ## Sections Tab
 
-- [ ] Add Filter Sections
-  - [ ] Grade Level
-  - [ ] Strand
-  - [ ] Section
-- [ ] Only Grade 11 and 12 when adding Sections
+- [x] Add Filter Sections
+  - [x] Grade Level
+  - [x] Strand
+  - [x] Section
+- [x] Only Grade 11 and 12 when adding Sections
 
 ## Lessons Tab
 

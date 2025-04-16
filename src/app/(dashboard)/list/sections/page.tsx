@@ -5,11 +5,31 @@ import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
 import { getRole, getUserId } from '@/lib/utils';
-import { Class, Grade, Prisma, Teacher } from '@prisma/client';
+import { Class, Grade, Prisma, Strand, Student, Teacher } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
 
-type ClassList = Class & { supervisor: Teacher } & { grade: Grade };
+type ClassList = Class & {
+	supervisor: Teacher;
+	grade: Grade;
+	students: (Student & { Strand: Strand })[];
+};
+
+const getMajorityStrand = (students: (Student & { Strand: Strand })[]) => {
+	if (students.length === 0) return 'No students';
+
+	const strandCount = students.reduce((acc, student) => {
+		const strandName = student.Strand.name;
+		acc[strandName] = (acc[strandName] || 0) + 1;
+		return acc;
+	}, {} as Record<string, number>);
+
+	const majorityStrand = Object.entries(strandCount).reduce((a, b) =>
+		a[1] > b[1] ? a : b
+	)[0];
+
+	return majorityStrand;
+};
 
 const ClassListpage = async ({
 	searchParams,
@@ -31,6 +51,11 @@ const ClassListpage = async ({
 		{
 			header: 'Grade',
 			accessor: 'grade',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Strand',
+			accessor: 'strand',
 			className: 'hidden md:table-cell',
 		},
 		{
@@ -56,6 +81,9 @@ const ClassListpage = async ({
 			<td className="hidden md:table-cell">{item.capacity}</td>
 			<td className="hidden md:table-cell">{item.grade.level}</td>
 			<td className="hidden md:table-cell">
+				{getMajorityStrand(item.students)}
+			</td>
+			<td className="hidden md:table-cell">
 				{item.supervisor.name + ' ' + item.supervisor.surname}
 			</td>
 			<td>
@@ -80,39 +108,53 @@ const ClassListpage = async ({
 
 	if (queryParams) {
 		for (const [key, value] of Object.entries(queryParams)) {
-			if (value !== undefined)
-				switch (key) {
-					case 'supervisorId':
-						query.supervisorId = value;
-						break;
-					case 'search':
-						query.OR = [
-							{ name: { contains: value, mode: 'insensitive' } },
-							{
-								supervisor: {
-									name: { contains: value, mode: 'insensitive' },
-								},
-							},
-						];
-						break;
-					default:
-						break;
-				}
+			if (value !== undefined && key === 'supervisorId') {
+				query.supervisorId = value;
+			}
 		}
 	}
 
-	const [data, count] = await prisma.$transaction([
+	// Get all data first
+	const [allData, totalCount] = await prisma.$transaction([
 		prisma.class.findMany({
 			where: query,
 			include: {
 				supervisor: true,
 				grade: true,
+				students: {
+					include: {
+						Strand: true,
+					},
+				},
 			},
-			take: ITEM_PER_PAGE,
-			skip: ITEM_PER_PAGE * (p - 1),
 		}),
 		prisma.class.count({ where: query }),
 	]);
+
+	// Filter data based on search term
+	const filteredData = queryParams.search
+		? allData.filter((item) => {
+				const searchTerm = queryParams.search?.toLowerCase() || '';
+				const majorityStrand = getMajorityStrand(item.students);
+
+				// Check each column that's shown in the table
+				const matchName = item.name.toLowerCase().includes(searchTerm);
+				const matchGrade = item.grade.level.toString() === searchTerm;
+				const matchStrand = majorityStrand.toLowerCase().includes(searchTerm);
+				const matchSupervisor = item.supervisor
+					? `${item.supervisor.name} ${item.supervisor.surname}`
+							.toLowerCase()
+							.includes(searchTerm)
+					: false;
+
+				return matchName || matchGrade || matchStrand || matchSupervisor;
+		  })
+		: allData;
+
+	// Apply pagination after filtering
+	const data = filteredData.slice(ITEM_PER_PAGE * (p - 1), ITEM_PER_PAGE * p);
+	const count = filteredData.length;
+
 	return (
 		<div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
 			{/* TOP */}
@@ -121,14 +163,6 @@ const ClassListpage = async ({
 				<div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
-						{/* <button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
-							<Image src="/filter.png" alt="" width={14} height={14} />
-						</button> */}
-						{/* <button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
-							<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
-							<Image src="/sort.png" alt="" width={14} height={14} />
-						</button>
-						</button> */}
 						{role === 'admin' && <FormContainer table="class" type="create" />}
 					</div>
 				</div>

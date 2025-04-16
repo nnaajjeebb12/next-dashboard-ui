@@ -124,14 +124,19 @@ const ClassForm = ({
 						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
 						{...register('gradeId')}
 						defaultValue={data?.gradeId}>
-						{grades.map((grade: { id: number; level: number }) => (
-							<option
-								value={grade.id}
-								key={grade.id}
-								selected={data && grade.id === data.gradeId}>
-								{grade.level}
-							</option>
-						))}
+						{grades
+							.filter(
+								(grade: { level: number }) =>
+									grade.level >= 11 && grade.level <= 12
+							)
+							.map((grade: { id: number; level: number }) => (
+								<option
+									value={grade.id}
+									key={grade.id}
+									selected={data && grade.id === data.gradeId}>
+									{grade.level}
+								</option>
+							))}
 					</select>
 					{errors.gradeId?.message && (
 						<p className="text-xs text-red-400">
