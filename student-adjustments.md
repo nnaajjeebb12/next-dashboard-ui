@@ -36,7 +36,12 @@
 
 ## Lessons Tab
 
-- [ ] Add Filter Lessons by Grade Level, Strand, and Section.
+- Columns for the filters will be hidden to avoid overpopulating the table making it unreadable
+
+- [x] Add Filter Lessons
+  - [x] Grade Level
+  - [x] Strand
+  - [x] Section
 
 ## Results Tab
 
