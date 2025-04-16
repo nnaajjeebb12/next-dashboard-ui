@@ -4,7 +4,7 @@
 
 - [x] Add Filter Teachers
   - [x] supervised Grade Level,
-  - [x] Strand - cannot be done since strand is connected to the student not the teacher
+  - [ ] Strand - strand is connected to the student not the teacher
   - [x] Section.
 - [x] Highlight the edit function in teacher's profile.
 - [x] In adding teachers
@@ -18,12 +18,21 @@
 
 ## Subjects Tab
 
-- [ ] Add Filter Subjects by Grade Level, Strand, Section, and Semester.
+    Note: Subject is a general term, lesson yung inaattendan ng students
+
+- [x] Add Filter Subjects
+  - [ ] Grade Level - subject is many-to-many relationship. A subject can be connected to a different lessons
+  - [ ] Strand - strand is connected to the student not the subject
+  - [ ] Section (Since the subject is not bound by section this cannot be done) [many-to-many relationship]
+  - [x] Semester.
 
 ## Sections Tab
 
-- [ ] Add Filter Sections by Grade Level, Strand, and Section.
-- [ ] Only Grade 11 and 12 when adding Sections.
+- [ ] Add Filter Sections
+  - [ ] Grade Level
+  - [ ] Strand
+  - [ ] Section
+- [ ] Only Grade 11 and 12 when adding Sections
 
 ## Lessons Tab
 
