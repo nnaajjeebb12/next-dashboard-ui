@@ -55,9 +55,13 @@
 
 ## Attendance Tab
 
-- [ ] Only can be edited by the teachers in their dashboard.
-- [ ] Add Filter Attendance by Grade Level, Strand, and Section.
-- [ ] All Attendance by a specific student can be seen in one tab only if possible.
+- [x] Only can be edited by the teachers in their dashboard.
+- [x] Add Filter Attendance
+  - [x] Grade Level
+  - [x] Strand
+  - [x] Section
+- [x] All Attendance by a specific student can be seen in one tab only if possible.
+  - [x] This is done but the risk is after a while dadami records, babagal to sa pag load
 
 ## Strand Tab
 

@@ -5,7 +5,14 @@ import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
 import { getRole, getUserId } from '@/lib/utils';
-import { Attendance, Prisma, Student } from '@prisma/client';
+import {
+	Attendance,
+	Class,
+	Grade,
+	Prisma,
+	Strand,
+	Student,
+} from '@prisma/client';
 import Image from 'next/image';
 
 type AttendanceRecord = {
@@ -19,7 +26,13 @@ type AttendanceRecord = {
 	semester: string;
 };
 
-type AttendanceList = Attendance & { student: Student };
+type AttendanceList = Attendance & {
+	student: Student & {
+		class: Class;
+		grade: Grade;
+		Strand: Strand;
+	};
+};
 
 const AttendanceListPage = async ({
 	searchParams,
@@ -35,6 +48,21 @@ const AttendanceListPage = async ({
 			accessor: 'student',
 		},
 		{
+			header: 'Grade',
+			accessor: 'grade',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Strand',
+			accessor: 'strand',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Section',
+			accessor: 'section',
+			className: 'hidden md:table-cell',
+		},
+		{
 			header: 'Date',
 			accessor: 'date',
 		},
@@ -46,7 +74,7 @@ const AttendanceListPage = async ({
 			header: 'Status',
 			accessor: 'status',
 		},
-		...(role === 'admin' || role === 'teacher'
+		...(role === 'teacher'
 			? [
 					{
 						header: 'Actions',
@@ -71,6 +99,15 @@ const AttendanceListPage = async ({
 				<div className="flex flex-col">
 					{item.student.name + ' ' + item.student.surname}
 				</div>
+			</td>
+			<td>
+				<div className="flex flex-col">{item.student.grade.level}</div>
+			</td>
+			<td>
+				<div className="flex flex-col">{item.student.Strand.name}</div>
+			</td>
+			<td>
+				<div className="flex flex-col">{item.student.class.name}</div>
 			</td>
 
 			<td>
@@ -111,7 +148,7 @@ const AttendanceListPage = async ({
 			</td>
 			<td>
 				<div className="flex items-center gap-2">
-					{(role === 'admin' || role === 'teacher') && (
+					{role === 'teacher' && (
 						<>
 							<FormContainer
 								table="attendance"
@@ -142,16 +179,35 @@ const AttendanceListPage = async ({
 				switch (key) {
 					case 'search':
 						query.OR = [
+							{ student: { name: { contains: value, mode: 'insensitive' } } },
+							{
+								student: { surname: { contains: value, mode: 'insensitive' } },
+							},
 							{
 								student: {
-									name: { contains: value, mode: 'insensitive' },
+									class: { name: { contains: value, mode: 'insensitive' } },
+								},
+							},
+							{
+								student: {
+									Strand: { name: { contains: value, mode: 'insensitive' } },
 								},
 							},
 							{
 								semester: { contains: value, mode: 'insensitive' },
 							},
 						];
+						// Only add grade level search if value can be parsed as a number
+						const gradeLevel = parseInt(value);
+						if (!isNaN(gradeLevel)) {
+							query.OR.push({
+								student: {
+									grade: { level: gradeLevel },
+								},
+							});
+						}
 						break;
+
 					default:
 						break;
 				}
@@ -173,14 +229,19 @@ const AttendanceListPage = async ({
 		prisma.attendance.findMany({
 			where: query,
 			include: {
-				student: true,
-				// Remove the lesson inclusion
+				student: {
+					include: {
+						class: true,
+						Strand: true,
+						grade: true,
+					},
+				},
 			},
 			orderBy: {
 				date: 'desc',
 			},
-			take: ITEM_PER_PAGE,
-			skip: ITEM_PER_PAGE * (p - 1),
+			// take: ITEM_PER_PAGE,
+			// skip: ITEM_PER_PAGE * (p - 1),
 		}),
 		prisma.attendance.count({
 			where: query,
@@ -200,7 +261,7 @@ const AttendanceListPage = async ({
 						{/* <button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
 							<Image src="/sort.png" alt="" width={14} height={14} />
 						</button> */}
-						{(role === 'admin' || role === 'teacher') && (
+						{role === 'teacher' && (
 							<FormContainer table="attendance" type="create" />
 						)}
 					</div>
