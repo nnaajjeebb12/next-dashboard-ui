@@ -76,26 +76,27 @@
 
 ## Teachers Tab
 
-- [ ] Can only be seen/edited by admin in their dashboard.
+- [x] Can only be seen/edited by admin in their dashboard.
 
 ## Students Tab and Sections Tab
 
 - [ ] If possible integrate these two Tabs together.
-- [ ] Only handled students/sections can be seen/edited by the teacher in their dashboard.
-- [ ] Add Filter Student by Grade Level, Strand, and Section.
+  - [ ] This is not possible right now this late in the development since we will restructure the database and change alot of the code
+- [x] Only handled students/sections can be seen/edited by the teacher in their dashboard.
+- [x] Add Filter Student by Grade Level, Strand, and Section.
 
 ## Lessons Tab
 
-- [ ] Only handled lessons can be seen/edited by the teacher in their dashboard.
+- [x] Only handled lessons can be seen/edited by the teacher in their dashboard.
 
 ## Results Tab
 
-- [ ] Transfer here the edit privileges from the admin dashboard.
+- [x] Transfer here the edit privileges from the admin dashboard.
 
 ## Strand Tab
 
-- [ ] Only can be seen/edited by the admin in their dashboard.
+- [x] Only can be seen/edited by the admin in their dashboard.
 
 ## Export Report
 
-- [ ] Looks good so far.
+- [x] Looks good so far.
