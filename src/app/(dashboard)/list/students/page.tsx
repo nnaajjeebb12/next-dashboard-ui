@@ -22,8 +22,13 @@ const StudentListpage = async ({
 	const currentUserId = await getUserId();
 	const columns = [
 		{
-			header: 'Info',
-			accessor: 'info',
+			header: 'LRN',
+			accessor: 'lrn',
+			className: 'hidden md:table-cell',
+		},
+		{
+			header: 'Name',
+			accessor: 'name',
 		},
 		{
 			header: 'Student ID',
@@ -31,9 +36,8 @@ const StudentListpage = async ({
 			className: 'hidden md:table-cell',
 		},
 		{
-			header: 'LRN',
-			accessor: 'lrn',
-			className: 'hidden md:table-cell',
+			header: 'Strand',
+			accessor: 'Strand',
 		},
 		{
 			header: 'Section',
@@ -69,21 +73,12 @@ const StudentListpage = async ({
 		<tr
 			key={item.id}
 			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
-			<td className="flex items-center gap-4 p-4">
-				<Image
-					src={item.img || '/noAvatar.png'}
-					alt=""
-					width={40}
-					height={40}
-					className="md:hidden xl:block  w-10 h-10 rounded-full object-cover"
-				/>
-				<div className="flex flex-col">
-					<h3 className="font-semibold">{item.name}</h3>
-					<p className="text-xs text-gray-500">{item.Strand.name}</p>
-				</div>
+			<td className="">{item.lrn}</td>
+			<td className="flex items-center gap-1 p-1">
+				<h3 className="font-semibold">{item.name}</h3>
 			</td>
 			<td className="hidden md:table-cell">{item.username}</td>
-			<td className="hidden md:table-cell">{item.lrn}</td>
+			<td className="hidden md:table-cell">{item.Strand.name}</td>
 			<td className="hidden md:table-cell">{item.class.name}</td>
 			<td className="hidden md:table-cell">{item.grade.level}</td>
 			<td className="hidden md:table-cell">{item.phone}</td>
@@ -124,11 +119,22 @@ const StudentListpage = async ({
 						};
 						break;
 					case 'search':
+						// Only try to parse as number if it's a small number (for grade levels)
+						const isGradeSearch = !isNaN(parseInt(value)) && value.length <= 2;
+						const gradeLevel = isGradeSearch ? parseInt(value) : null;
+
 						query.OR = [
 							{ name: { contains: value, mode: 'insensitive' } },
+							{ username: { contains: value, mode: 'insensitive' } },
 							{ lrn: { contains: value, mode: 'insensitive' } },
+							{ Strand: { name: { contains: value, mode: 'insensitive' } } },
+							{ class: { name: { contains: value, mode: 'insensitive' } } },
 						];
-						// query.name = { contains: value, mode: 'insensitive' };
+
+						// Only add grade search if it's likely a grade level (1-2 digits)
+						if (gradeLevel !== null) {
+							query.OR.push({ grade: { level: gradeLevel } });
+						}
 						break;
 					default:
 						break;

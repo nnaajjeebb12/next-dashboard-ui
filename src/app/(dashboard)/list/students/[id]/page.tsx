@@ -43,7 +43,7 @@ const SingleStudentPage = async ({
 				{/* TOP */}
 				<div className="flex flex-col lg:flex-row gap-4">
 					{/* USER INFO CARD */}
-					<div className="bg-najSky py-6 px-4 rounded-md flex-1 flex gap-4">
+					<div className="bg-najDepEdCoolGray py-6 px-4 rounded-md flex-1 flex gap-4">
 						<div className="w-1/3">
 							<Image
 								src={student.img || '/noAvatar.png'}
@@ -58,8 +58,19 @@ const SingleStudentPage = async ({
 								<h1 className="text-xl font-semibold">
 									{student.name + ' ' + student.surname}
 								</h1>
-								{role === 'admin' && (
-									<FormContainer table="student" type="update" data={student} />
+								{(role === 'admin' || role === 'teacher') && (
+									<div className="flex items-center gap-2">
+										<div className="flex items-center gap-1 px-3 py-1.5 bg-najPurpleLight hover:bg-najPurple transition-colors duration-200 rounded-full text-sm cursor-pointer">
+											<span className="text-najPurpleDark font-medium">
+												Edit
+											</span>
+											<FormContainer
+												table="student"
+												type="update"
+												data={student}
+											/>
+										</div>
+									</div>
 								)}
 							</div>
 							<p className="text-sm text-gray-500">{student.lrn}</p>
