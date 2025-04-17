@@ -45,9 +45,13 @@
 
 ## Results Tab
 
-- [ ] Can be only edited by the teachers in their dashboard.
-- [ ] Add Filter Results by Grade Level, Strand, and Section.
-- [ ] All Subjects by the student can be seen in one tab only if possible.
+- [x] Can be only edited by the teachers in their dashboard.
+- [x] Add Filter Results
+  - [x] Grade Level
+  - [x] Strand
+  - [x] Section
+- [x] All Subjects by the student can be seen in one tab only if possible.
+  - [x] This is done but the risk is after a while dadami records, babagal to sa pag load.
 
 ## Attendance Tab
 
