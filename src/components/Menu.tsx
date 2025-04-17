@@ -100,7 +100,7 @@ const menuItems = [
 				icon: '/lesson.png',
 				label: 'Export Report',
 				href: '/list/pdfExport',
-				visible: ['admin', 'teacher'],
+				visible: ['teacher'],
 			},
 			{
 				icon: '/setting.png',

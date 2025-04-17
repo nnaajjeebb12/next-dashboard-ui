@@ -66,10 +66,11 @@
 ## Strand Tab
 
 - [ ] Add Filter Strand by Grade Level.
+  - [ ] Cannot add filter here by grade level since this is a category
 
 ## Export Report Tab
 
-- [ ] Can be only seen/edited by teachers in their dashboard.
+- [x] Can be only seen/edited by teachers in their dashboard.
 
 # TEACHER DASHBOARD
 
