@@ -1,6 +1,7 @@
 import FormContainer from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
+import TableFilter from '@/components/TableFilter';
 import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
@@ -42,6 +43,12 @@ const AttendanceListPage = async ({
 	const role = await getRole();
 	const currentUserId = await getUserId();
 
+	// Get all strands first
+	const strands = await prisma.strand.findMany({
+		select: { name: true },
+		orderBy: { name: 'asc' },
+	});
+
 	const columns = [
 		{
 			header: 'Student',
@@ -51,11 +58,19 @@ const AttendanceListPage = async ({
 			header: 'Grade',
 			accessor: 'grade',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: '11', label: 'Grade 11' },
+				{ value: '12', label: 'Grade 12' },
+			],
 		},
 		{
 			header: 'Strand',
 			accessor: 'strand',
 			className: 'hidden md:table-cell',
+			filterOptions: strands.map((strand) => ({
+				value: strand.name,
+				label: strand.name,
+			})),
 		},
 		{
 			header: 'Section',
@@ -69,10 +84,20 @@ const AttendanceListPage = async ({
 		{
 			header: 'Semester',
 			accessor: 'semester',
+			filterOptions: [
+				{ value: '1st Semester', label: '1st Semester' },
+				{ value: '2nd Semester', label: '2nd Semester' },
+			],
 		},
 		{
 			header: 'Status',
 			accessor: 'status',
+			filterOptions: [
+				{ value: '1', label: 'Present' },
+				{ value: '0', label: 'Absent' },
+				{ value: 'E', label: 'Excused' },
+				{ value: 'H', label: 'Holiday' },
+			],
 		},
 		...(role === 'teacher'
 			? [
@@ -165,53 +190,55 @@ const AttendanceListPage = async ({
 		</tr>
 	);
 
-	// Get current page from searchParams (defaults to page 1)
-	const { page, ...queryParams } = searchParams;
+	const { page, filterColumn, filterValue, search } = searchParams;
 	const p = page ? parseInt(page) : 1;
 
 	// Initialize the query object
 	let query: Prisma.AttendanceWhereInput = {};
 
-	// Process query parameters
-	if (queryParams) {
-		for (const [key, value] of Object.entries(queryParams)) {
-			if (value !== undefined) {
-				switch (key) {
-					case 'search':
-						query.OR = [
-							{ student: { name: { contains: value, mode: 'insensitive' } } },
-							{
-								student: { surname: { contains: value, mode: 'insensitive' } },
-							},
-							{
-								student: {
-									class: { name: { contains: value, mode: 'insensitive' } },
-								},
-							},
-							{
-								student: {
-									Strand: { name: { contains: value, mode: 'insensitive' } },
-								},
-							},
-							{
-								semester: { contains: value, mode: 'insensitive' },
-							},
-						];
-						// Only add grade level search if value can be parsed as a number
-						const gradeLevel = parseInt(value);
-						if (!isNaN(gradeLevel)) {
-							query.OR.push({
-								student: {
-									grade: { level: gradeLevel },
-								},
-							});
-						}
-						break;
+	if (search) {
+		query.OR = [
+			{ student: { name: { contains: search, mode: 'insensitive' } } },
+			{ student: { surname: { contains: search, mode: 'insensitive' } } },
+			{
+				student: { class: { name: { contains: search, mode: 'insensitive' } } },
+			},
+			{
+				student: {
+					Strand: { name: { contains: search, mode: 'insensitive' } },
+				},
+			},
+			{ semester: { contains: search, mode: 'insensitive' } },
+		];
+		// Add grade level search if applicable
+		const gradeLevel = parseInt(search);
+		if (!isNaN(gradeLevel)) {
+			query.OR.push({
+				student: { grade: { level: gradeLevel } },
+			});
+		}
+	}
 
-					default:
-						break;
-				}
-			}
+	if (filterColumn && filterValue) {
+		switch (filterColumn) {
+			case 'grade':
+				query.student = {
+					grade: { level: parseInt(filterValue) },
+				};
+				break;
+			case 'strand':
+				query.student = {
+					Strand: { name: filterValue },
+				};
+				break;
+			case 'semester':
+				query.semester = filterValue;
+				break;
+			case 'status':
+				query.status = filterValue;
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -258,9 +285,17 @@ const AttendanceListPage = async ({
 				<div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
-						<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
-							<Image src="/sort.png" alt="" width={14} height={14} />
-						</button>
+						<TableFilter
+							columns={columns.filter(
+								(col) =>
+									col.accessor !== 'action' &&
+									col.accessor !== 'student' &&
+									col.accessor !== 'section' &&
+									col.accessor !== 'date' &&
+									col.filterOptions
+							)}
+						/>
+
 						{role === 'teacher' && (
 							<FormContainer table="attendance" type="create" />
 						)}

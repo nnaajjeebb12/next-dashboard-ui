@@ -1,6 +1,7 @@
 import { default as FormContainer } from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
+import TableFilter from '@/components/TableFilter';
 import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
@@ -50,21 +51,29 @@ const TeacherListpage = async ({
 			header: 'Subjects',
 			accessor: 'subjects',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: 'with_subjects', label: 'With Subjects' },
+				{ value: 'no_subjects', label: 'No Subjects' },
+			],
 		},
 		{
 			header: 'Supervising Section',
 			accessor: 'classes',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: 'with_class', label: 'With Section' },
+				{ value: 'no_class', label: 'No Section' },
+			],
 		},
-		// {
-		// 	header: 'Strand',
-		// 	accessor: 'strand',
-		// 	className: 'hidden md:table-cell',
-		// },
 		{
 			header: 'Supervising Grade',
 			accessor: 'grade',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: '11', label: 'Grade 11' },
+				{ value: '12', label: 'Grade 12' },
+				{ value: 'none', label: 'No Grade' },
+			],
 		},
 		{
 			header: 'Phone',
@@ -111,30 +120,6 @@ const TeacherListpage = async ({
 				{item.classes.map((classItem) => classItem.name).join(', ') ||
 					'No supervising class'}
 			</td>
-			{/* <td className="hidden md:table-cell">
-				{item.classes
-					.map((classItem) => {
-						// Count strands for this class
-						const strandCounts = classItem.students.reduce((acc, student) => {
-							const strandName = student.Strand.name;
-							acc[strandName] = (acc[strandName] || 0) + 1;
-							return acc;
-						}, {} as Record<string, number>);
-
-						// Find the majority strand
-						let majorityStrand = '';
-						let maxCount = 0;
-						for (const [strand, count] of Object.entries(strandCounts)) {
-							if (count > maxCount) {
-								maxCount = count;
-								majorityStrand = strand;
-							}
-						}
-
-						return majorityStrand;
-					})
-					.join(', ') || '-'}
-			</td> */}
 			<td className="hidden md:table-cell">
 				{item.classes.map((classItem) => classItem.grade.level).join(', ') ||
 					'No supervising grade'}
@@ -156,43 +141,62 @@ const TeacherListpage = async ({
 		</tr>
 	);
 
-	const { page, ...queryParams } = searchParams;
+	const { page, filterColumn, filterValue, search, ...queryParams } =
+		searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
 	// URL PARAMS CONDITION
 	const query: Prisma.TeacherWhereInput = {};
 
-	if (queryParams) {
-		for (const [key, value] of Object.entries(queryParams)) {
-			if (value !== undefined)
-				switch (key) {
-					case 'classId':
-						query.lessons = {
-							some: {
-								classId: parseInt(value),
-							},
-						};
-						break;
-					case 'search':
-						query.OR = [
-							{ name: { contains: value, mode: 'insensitive' } },
-							{ username: { contains: value, mode: 'insensitive' } },
-							{
-								classes: {
-									some: {
-										OR: [
-											{ name: { contains: value, mode: 'insensitive' } },
-											{ grade: { level: parseInt(value) || undefined } },
-										],
-									},
-								},
-							},
-						];
-						break;
-					default:
-						break;
+	if (search) {
+		query.OR = [
+			{ name: { contains: search, mode: 'insensitive' } },
+			{ username: { contains: search, mode: 'insensitive' } },
+			{
+				classes: {
+					some: {
+						OR: [
+							{ name: { contains: search, mode: 'insensitive' } },
+							{ grade: { level: parseInt(search) || undefined } },
+						],
+					},
+				},
+			},
+		];
+	}
+
+	if (filterColumn && filterValue) {
+		switch (filterColumn) {
+			case 'subjects':
+				if (filterValue === 'with_subjects') {
+					query.subjects = { some: {} };
+				} else if (filterValue === 'no_subjects') {
+					query.subjects = { none: {} };
 				}
+				break;
+			case 'classes':
+				if (filterValue === 'with_class') {
+					query.classes = { some: {} };
+				} else if (filterValue === 'no_class') {
+					query.classes = { none: {} };
+				}
+				break;
+			case 'grade':
+				if (filterValue === 'none') {
+					query.classes = { none: {} };
+				} else {
+					query.classes = {
+						some: {
+							grade: {
+								level: parseInt(filterValue),
+							},
+						},
+					};
+				}
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -226,9 +230,12 @@ const TeacherListpage = async ({
 				<div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
-						<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
-							<Image src="/sort.png" alt="" width={14} height={14} />
-						</button>
+						<TableFilter
+							columns={columns.filter(
+								(col) => col.accessor !== 'action' && col.accessor !== 'info'
+							)}
+						/>
+
 						{role === 'admin' && (
 							<FormContainer table="teacher" type="create" />
 						)}

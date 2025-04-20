@@ -1,6 +1,7 @@
 import FormContainer from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
+import TableFilter from '@/components/TableFilter';
 import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
@@ -27,16 +28,29 @@ const SubjectListpage = async ({
 			header: 'Semester',
 			accessor: 'semester',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: '1st Semester', label: '1st Semester' },
+				{ value: '2nd Semester', label: '2nd Semester' },
+			],
 		},
 		{
 			header: 'Subject Type',
 			accessor: 'subjectType',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: 'CORE', label: 'Core Subject' },
+				{ value: 'APPLIED', label: 'Applied Subject' },
+				{ value: 'SPECIALIZED', label: 'Specialized Subject' },
+			],
 		},
 		{
 			header: 'Teachers',
 			accessor: 'teachers',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: 'assigned', label: 'With Teacher' },
+				{ value: 'unassigned', label: 'Without Teacher' },
+			],
 		},
 		{
 			header: 'Actions',
@@ -67,42 +81,49 @@ const SubjectListpage = async ({
 		</tr>
 	);
 
-	const { page, ...queryParams } = searchParams;
+	const { page, filterColumn, filterValue, search, ...queryParams } =
+		searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
 	// URL PARAMS CONDITION
 	const query: Prisma.SubjectWhereInput = {};
 
-	if (queryParams) {
-		for (const [key, value] of Object.entries(queryParams)) {
-			if (value !== undefined)
-				switch (key) {
-					// case 'search':
-					// 	query.name = { contains: value, mode: 'insensitive' };
-					// 	break;
-					// default:
-					// 	break;
-					case 'search':
-						query.OR = [
-							{
-								name: { contains: value, mode: 'insensitive' },
-							},
-							{
-								semester: { contains: value, mode: 'insensitive' },
-							},
-							{
-								teachers: {
-									some: {
-										name: { contains: value, mode: 'insensitive' },
-									},
-								},
-							},
-						];
-						break;
-					default:
-						break;
+	if (search) {
+		query.OR = [
+			{
+				name: { contains: search, mode: 'insensitive' },
+			},
+			{
+				semester: { contains: search, mode: 'insensitive' },
+			},
+			{
+				teachers: {
+					some: {
+						name: { contains: search, mode: 'insensitive' },
+					},
+				},
+			},
+		];
+	}
+
+	if (filterColumn && filterValue) {
+		switch (filterColumn) {
+			case 'semester':
+				query.semester = { equals: filterValue };
+				break;
+			case 'subjectType':
+				query.subjectType = { equals: filterValue };
+				break;
+			case 'teachers':
+				if (filterValue === 'assigned') {
+					query.teachers = { some: {} };
+				} else if (filterValue === 'unassigned') {
+					query.teachers = { none: {} };
 				}
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -126,9 +147,10 @@ const SubjectListpage = async ({
 				<div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
-						<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
-							<Image src="/sort.png" alt="" width={14} height={14} />
-						</button>
+						<TableFilter
+							columns={columns.filter((col) => col.accessor !== 'action')}
+						/>
+
 						{(role === 'admin' || role === 'teacher') && (
 							<FormContainer table="subject" type="create" />
 						)}

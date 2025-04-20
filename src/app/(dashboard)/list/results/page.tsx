@@ -1,6 +1,7 @@
 import FormContainer from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
+import TableFilter from '@/components/TableFilter';
 import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
@@ -36,6 +37,13 @@ const ResultListpage = async ({
 }) => {
 	const role = await getRole();
 	const currentUserId = await getUserId();
+
+	// Get all strands first
+	const strands = await prisma.strand.findMany({
+		select: { name: true },
+		orderBy: { name: 'asc' },
+	});
+
 	const columns = [
 		{
 			header: 'Student',
@@ -44,6 +52,10 @@ const ResultListpage = async ({
 		{
 			header: 'Grade',
 			accessor: 'grade',
+			filterOptions: [
+				{ value: '11', label: 'Grade 11' },
+				{ value: '12', label: 'Grade 12' },
+			],
 		},
 		{
 			header: 'Section',
@@ -57,6 +69,10 @@ const ResultListpage = async ({
 			header: 'Strand',
 			accessor: 'strand',
 			className: 'hidden md:table-cell',
+			filterOptions: strands.map((strand) => ({
+				value: strand.name,
+				label: strand.name,
+			})),
 		},
 		{
 			header: 'Q1',
@@ -83,8 +99,13 @@ const ResultListpage = async ({
 			accessor: 'totalScore',
 		},
 		{
-			header: 'Assesment',
-			accessor: 'assesment',
+			header: 'Assessment',
+			accessor: 'assessment',
+			filterOptions: [
+				{ value: 'passed', label: 'Passed' },
+				{ value: 'failed', label: 'Failed' },
+				{ value: 'incomplete', label: 'Incomplete' },
+			],
 		},
 		...(role === 'teacher'
 			? [
@@ -172,50 +193,99 @@ const ResultListpage = async ({
 		);
 	};
 
-	const { page, ...queryParams } = searchParams;
+	const { page, filterColumn, filterValue, search } = searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
-	// URL PARAMS CONDITION
+	// Initialize the query object
 	const query: Prisma.ResultWhereInput = {};
 
-	if (queryParams) {
-		for (const [key, value] of Object.entries(queryParams)) {
-			if (value !== undefined)
-				switch (key) {
-					case 'studentId':
-						query.studentId = value;
-						break;
-					case 'search':
-						query.OR = [
-							{ student: { name: { contains: value, mode: 'insensitive' } } },
-							{
-								student: { surname: { contains: value, mode: 'insensitive' } },
-							},
-							{
-								student: {
-									class: { name: { contains: value, mode: 'insensitive' } },
+	if (search) {
+		query.OR = [
+			{ student: { name: { contains: search, mode: 'insensitive' } } },
+			{ student: { surname: { contains: search, mode: 'insensitive' } } },
+			{ Lesson: { name: { contains: search, mode: 'insensitive' } } },
+			{
+				student: { class: { name: { contains: search, mode: 'insensitive' } } },
+			},
+			{
+				student: {
+					Strand: { name: { contains: search, mode: 'insensitive' } },
+				},
+			},
+		];
+		// Add grade level search if applicable
+		const gradeLevel = parseInt(search);
+		if (!isNaN(gradeLevel)) {
+			query.OR.push({
+				student: { grade: { level: gradeLevel } },
+			});
+		}
+	}
+
+	if (filterColumn && filterValue) {
+		switch (filterColumn) {
+			case 'grade':
+				query.student = {
+					grade: { level: parseInt(filterValue) },
+				};
+				break;
+			case 'strand':
+				query.student = {
+					Strand: { name: filterValue },
+				};
+				break;
+			case 'assessment':
+				if (filterValue === 'passed') {
+					// All quarters must be present and average must be >= 75
+					query.AND = [
+						{ q1: { not: null } },
+						{ q2: { not: null } },
+						{ q3: { not: null } },
+						{ q4: { not: null } },
+						{
+							OR: [
+								{
+									AND: [
+										{ q1: { gte: 0 } },
+										{ q2: { gte: 0 } },
+										{ q3: { gte: 0 } },
+										{ q4: { gte: 0 } },
+									],
 								},
-							},
-							{
-								student: {
-									Strand: { name: { contains: value, mode: 'insensitive' } },
+							],
+						},
+					];
+					// Using a raw query to calculate average
+					query.OR = undefined; // Clear any previous OR conditions
+				} else if (filterValue === 'failed') {
+					// All quarters must be present and average must be < 75
+					query.AND = [
+						{ q1: { not: null } },
+						{ q2: { not: null } },
+						{ q3: { not: null } },
+						{ q4: { not: null } },
+						{
+							OR: [
+								{
+									AND: [
+										{ q1: { gte: 0 } },
+										{ q2: { gte: 0 } },
+										{ q3: { gte: 0 } },
+										{ q4: { gte: 0 } },
+									],
 								},
-							},
-						];
-						// Only add grade level search if value can be parsed as a number
-						const gradeLevel = parseInt(value);
-						if (!isNaN(gradeLevel)) {
-							query.OR.push({
-								student: {
-									grade: { level: gradeLevel },
-								},
-							});
-						}
-						break;
-					default:
-						break;
+							],
+						},
+					];
+					// Using a raw query to calculate average
+					query.OR = undefined; // Clear any previous OR conditions
+				} else if (filterValue === 'incomplete') {
+					query.OR = [{ q1: null }, { q2: null }, { q3: null }, { q4: null }];
 				}
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -239,9 +309,21 @@ const ResultListpage = async ({
 			break;
 	}
 
+	// Get the base query results
 	const [dataRes, count] = await prisma.$transaction([
 		prisma.result.findMany({
-			where: query,
+			where: {
+				...query,
+				...(filterColumn === 'assessment' &&
+					filterValue === 'passed' && {
+						AND: [
+							{ q1: { not: null } },
+							{ q2: { not: null } },
+							{ q3: { not: null } },
+							{ q4: { not: null } },
+						],
+					}),
+			},
 			include: {
 				student: {
 					include: {
@@ -250,13 +332,41 @@ const ResultListpage = async ({
 						grade: true,
 					},
 				},
-				Lesson: true, // include Lesson relation
+				Lesson: true,
 			},
-			// take: ITEM_PER_PAGE,
-			// skip: ITEM_PER_PAGE * (p - 1),
 		}),
 		prisma.result.count({ where: query }),
 	]);
+
+	// Post-process the results for assessment filtering
+	let filteredData = dataRes;
+	if (filterColumn === 'assessment') {
+		filteredData = dataRes.filter((result) => {
+			// Calculate average only if all quarters have values
+			if (
+				result.q1 !== null &&
+				result.q2 !== null &&
+				result.q3 !== null &&
+				result.q4 !== null
+			) {
+				const average = (result.q1 + result.q2 + result.q3 + result.q4) / 4;
+
+				if (filterValue === 'passed') {
+					return average >= 75;
+				} else if (filterValue === 'failed') {
+					return average < 75;
+				}
+			} else if (filterValue === 'incomplete') {
+				return (
+					result.q1 === null ||
+					result.q2 === null ||
+					result.q3 === null ||
+					result.q4 === null
+				);
+			}
+			return true;
+		});
+	}
 
 	return (
 		<div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
@@ -266,9 +376,17 @@ const ResultListpage = async ({
 				<div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
-						<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
-							<Image src="/sort.png" alt="" width={14} height={14} />
-						</button>
+						<TableFilter
+							columns={columns.filter(
+								(col) =>
+									col.accessor !== 'action' &&
+									col.accessor !== 'student' &&
+									col.accessor !== 'section' &&
+									col.accessor !== 'subject' &&
+									col.filterOptions
+							)}
+						/>
+
 						{role === 'teacher' && (
 							<FormContainer table="result" type="create" />
 						)}
@@ -277,7 +395,7 @@ const ResultListpage = async ({
 			</div>
 
 			{/* LIST */}
-			<Table columns={columns} renderRow={renderRow} data={dataRes} />
+			<Table columns={columns} renderRow={renderRow} data={filteredData} />
 			{/* PAGINATION */}
 			{/* <Pagination page={p} count={count} /> */}
 		</div>

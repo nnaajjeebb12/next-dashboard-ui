@@ -1,6 +1,7 @@
 import { default as FormContainer } from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
+import TableFilter from '@/components/TableFilter';
 import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
@@ -21,7 +22,7 @@ const AdminInfoListPage = async ({
 	const columns = [
 		{
 			header: 'Admin username',
-			accessor: 'adminId',
+			accessor: 'username',
 		},
 		...(role === 'admin'
 			? [
@@ -57,23 +58,25 @@ const AdminInfoListPage = async ({
 		</tr>
 	);
 
-	const { page, ...queryParams } = searchParams;
+	const { page, filter, search, ...queryParams } = searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
 	// URL PARAMS CONDITION
 	const query: Prisma.AdminWhereInput = {};
 
-	if (queryParams) {
-		for (const [key, value] of Object.entries(queryParams)) {
-			if (value !== undefined)
-				switch (key) {
-					case 'search':
-						query.username = { contains: value, mode: 'insensitive' };
-						break;
-					default:
-						break;
-				}
+	if (queryParams || search || filter) {
+		if (search) {
+			query.username = { contains: search, mode: 'insensitive' };
+		}
+		if (filter) {
+			switch (filter) {
+				case 'username':
+					query.username = { not: '' };
+					break;
+				default:
+					break;
+			}
 		}
 	}
 
@@ -81,6 +84,7 @@ const AdminInfoListPage = async ({
 		prisma.admin.findMany({
 			take: ITEM_PER_PAGE,
 			skip: ITEM_PER_PAGE * (p - 1),
+			where: query,
 		}),
 		prisma.admin.count({ where: query }),
 	]);
@@ -93,9 +97,9 @@ const AdminInfoListPage = async ({
 				<div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
-						<button className="w-8 h-8 flex items-center justify-center rounded-full bg-najYellow">
-							<Image src="/sort.png" alt="" width={14} height={14} />
-						</button>
+						<TableFilter
+							columns={columns.filter((col) => col.accessor !== 'action')}
+						/>
 						{role === 'admin' && <FormContainer table="admin" type="create" />}
 					</div>
 				</div>
