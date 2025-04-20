@@ -1,6 +1,7 @@
 import FormContainer from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
+import TableFilter from '@/components/TableFilter';
 import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
@@ -50,6 +51,13 @@ const LessonListpage = async ({
 }) => {
 	const role = await getRole();
 	const currentUserId = await getUserId();
+
+	// Get all strands first
+	const strands = await prisma.strand.findMany({
+		select: { name: true },
+		orderBy: { name: 'asc' },
+	});
+
 	const columns = [
 		{
 			header: 'Lesson Name',
@@ -67,11 +75,19 @@ const LessonListpage = async ({
 			header: 'Grade',
 			accessor: 'grade',
 			className: 'hidden',
+			filterOptions: [
+				{ value: '11', label: 'Grade 11' },
+				{ value: '12', label: 'Grade 12' },
+			],
 		},
 		{
 			header: 'Strand',
 			accessor: 'strand',
 			className: 'hidden md:table-cell',
+			filterOptions: strands.map((strand) => ({
+				value: strand.name,
+				label: strand.name,
+			})),
 		},
 		{
 			header: 'Teacher Name',
@@ -82,16 +98,24 @@ const LessonListpage = async ({
 			header: 'Day',
 			accessor: 'day',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: 'MONDAY', label: 'Monday' },
+				{ value: 'TUESDAY', label: 'Tuesday' },
+				{ value: 'WEDNESDAY', label: 'Wednesday' },
+				{ value: 'THURSDAY', label: 'Thursday' },
+				{ value: 'FRIDAY', label: 'Friday' },
+				{ value: 'SATURDAY', label: 'Saturday' },
+				{ value: 'SUNDAY', label: 'Sunday' },
+			],
 		},
 		{
-			header: 'Start Time',
-			accessor: 'startTime',
+			header: 'Time',
+			accessor: 'time',
 			className: 'hidden md:table-cell',
-		},
-		{
-			header: 'End Time',
-			accessor: 'endTime',
-			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: 'morning', label: 'Morning (7AM-12PM)' },
+				{ value: 'afternoon', label: 'Afternoon (12PM-5PM)' },
+			],
 		},
 		...(role === 'admin'
 			? [
@@ -134,14 +158,13 @@ const LessonListpage = async ({
 					{new Intl.DateTimeFormat('en-US', {
 						hour: '2-digit',
 						minute: '2-digit',
-						hour12: true, // or false for 24-hour format
+						hour12: true,
 					}).format(item.startTime)}
-				</td>
-				<td className="hidden lg:table-cell">
+					{' - '}
 					{new Intl.DateTimeFormat('en-US', {
 						hour: '2-digit',
 						minute: '2-digit',
-						hour12: true, // or false for 24-hour format
+						hour12: true,
 					}).format(item.endTime)}
 				</td>
 				<td>
@@ -158,25 +181,14 @@ const LessonListpage = async ({
 		);
 	};
 
-	const { page, ...queryParams } = searchParams;
+	const { page, filterColumn, filterValue, search, ...queryParams } =
+		searchParams;
 
 	const p = page ? parseInt(page) : 1;
-
-	// URL PARAMS CONDITION
-	const query: Prisma.LessonWhereInput = {};
-
-	if (queryParams) {
-		for (const [key, value] of Object.entries(queryParams)) {
-			if (value !== undefined && key === 'teacherId') {
-				query.teacherId = value;
-			}
-		}
-	}
 
 	// Get all data first
 	const [allData, totalCount] = await prisma.$transaction([
 		prisma.lesson.findMany({
-			where: query,
 			include: {
 				subject: { select: { name: true, semester: true } },
 				class: {
@@ -195,37 +207,47 @@ const LessonListpage = async ({
 				teacher: { select: { name: true, surname: true } },
 			},
 		}),
-		prisma.lesson.count({ where: query }),
+		prisma.lesson.count(),
 	]);
 
-	// Filter data based on search term
-	const filteredData = queryParams.search
-		? allData.filter((item) => {
-				const searchTerm = queryParams.search?.toLowerCase() || '';
-				const majorityStrand = getMajorityStrand(item.class.students);
+	// Filter data based on search term and filters
+	let filteredData = allData;
 
-				// Check each column that's shown in the table
-				const matchName = item.name.toLowerCase().includes(searchTerm);
-				const matchSubject = (item.subject.name || '')
-					.toLowerCase()
-					.includes(searchTerm);
-				const matchClass = item.class.name.toLowerCase().includes(searchTerm);
-				const matchGrade = item.class.grade.level.toString() === searchTerm;
-				const matchStrand = majorityStrand.toLowerCase().includes(searchTerm);
-				const matchTeacher = `${item.teacher.name} ${item.teacher.surname}`
-					.toLowerCase()
-					.includes(searchTerm);
+	if (search) {
+		const searchTerm = search.toLowerCase();
+		filteredData = filteredData.filter((item) => {
+			const majorityStrand = getMajorityStrand(item.class.students);
 
-				return (
-					matchName ||
-					matchSubject ||
-					matchClass ||
-					matchGrade ||
-					matchStrand ||
-					matchTeacher
-				);
-		  })
-		: allData;
+			return (
+				item.name.toLowerCase().includes(searchTerm) ||
+				(item.subject.name || '').toLowerCase().includes(searchTerm) ||
+				item.class.name.toLowerCase().includes(searchTerm) ||
+				item.class.grade.level.toString() === searchTerm ||
+				majorityStrand.toLowerCase().includes(searchTerm) ||
+				`${item.teacher.name} ${item.teacher.surname}`
+					.toLowerCase()
+					.includes(searchTerm)
+			);
+		});
+	}
+
+	if (filterColumn && filterValue) {
+		filteredData = filteredData.filter((item) => {
+			switch (filterColumn) {
+				case 'grade':
+					return item.class.grade.level === parseInt(filterValue);
+				case 'strand':
+					return getMajorityStrand(item.class.students) === filterValue;
+				case 'day':
+					return item.day === filterValue;
+				case 'time':
+					const hour = new Date(item.startTime).getHours();
+					return filterValue === 'morning' ? hour < 12 : hour >= 12;
+				default:
+					return true;
+			}
+		});
+	}
 
 	// Apply pagination after filtering
 	const data = filteredData.slice(ITEM_PER_PAGE * (p - 1), ITEM_PER_PAGE * p);
@@ -239,6 +261,17 @@ const LessonListpage = async ({
 				<div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
+						<TableFilter
+							columns={columns.filter(
+								(col) =>
+									col.accessor !== 'action' &&
+									col.accessor !== 'subject' &&
+									col.accessor !== 'class' &&
+									col.accessor !== 'teacher' &&
+									col.filterOptions
+							)}
+						/>
+
 						{role === 'admin' && <FormContainer table="lesson" type="create" />}
 					</div>
 				</div>

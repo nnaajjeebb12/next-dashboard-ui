@@ -1,6 +1,7 @@
 import FormContainer from '@/components/FormContainer';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
+import TableFilter from '@/components/TableFilter';
 import TableSearch from '@/components/TableSearch';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
@@ -38,6 +39,13 @@ const ClassListpage = async ({
 }) => {
 	const role = await getRole();
 	const currentUserId = await getUserId();
+
+	// Get all strands first
+	const strands = await prisma.strand.findMany({
+		select: { name: true },
+		orderBy: { name: 'asc' },
+	});
+
 	const columns = [
 		{
 			header: 'Section Name',
@@ -47,21 +55,37 @@ const ClassListpage = async ({
 			header: 'Capacity',
 			accessor: 'capacity',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: 'available', label: 'Has Space' },
+				{ value: 'full', label: 'Full' },
+			],
 		},
 		{
 			header: 'Grade',
 			accessor: 'grade',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: '11', label: 'Grade 11' },
+				{ value: '12', label: 'Grade 12' },
+			],
 		},
 		{
 			header: 'Strand',
 			accessor: 'strand',
 			className: 'hidden md:table-cell',
+			filterOptions: strands.map((strand) => ({
+				value: strand.name,
+				label: strand.name,
+			})),
 		},
 		{
 			header: 'Supervisor',
 			accessor: 'supervisor',
 			className: 'hidden md:table-cell',
+			filterOptions: [
+				{ value: 'assigned', label: 'With Supervisor' },
+				{ value: 'unassigned', label: 'Without Supervisor' },
+			],
 		},
 		...(role == 'admin'
 			? [
@@ -84,7 +108,9 @@ const ClassListpage = async ({
 				{getMajorityStrand(item.students)}
 			</td>
 			<td className="hidden md:table-cell">
-				{item.supervisor.name + ' ' + item.supervisor.surname}
+				{item.supervisor?.name
+					? item.supervisor.name + ' ' + item.supervisor.surname
+					: 'No supervisor'}
 			</td>
 			<td>
 				<div className="flex items-center gap-2">
@@ -99,20 +125,13 @@ const ClassListpage = async ({
 		</tr>
 	);
 
-	const { page, ...queryParams } = searchParams;
+	const { page, filterColumn, filterValue, search, ...queryParams } =
+		searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
 	// URL PARAMS CONDITION
 	const query: Prisma.ClassWhereInput = {};
-
-	if (queryParams) {
-		for (const [key, value] of Object.entries(queryParams)) {
-			if (value !== undefined && key === 'supervisorId') {
-				query.supervisorId = value;
-			}
-		}
-	}
 
 	// Get all data first
 	const [allData, totalCount] = await prisma.$transaction([
@@ -131,25 +150,44 @@ const ClassListpage = async ({
 		prisma.class.count({ where: query }),
 	]);
 
-	// Filter data based on search term
-	const filteredData = queryParams.search
-		? allData.filter((item) => {
-				const searchTerm = queryParams.search?.toLowerCase() || '';
-				const majorityStrand = getMajorityStrand(item.students);
+	// Filter data based on search term and filters
+	let filteredData = allData;
 
-				// Check each column that's shown in the table
-				const matchName = item.name.toLowerCase().includes(searchTerm);
-				const matchGrade = item.grade.level.toString() === searchTerm;
-				const matchStrand = majorityStrand.toLowerCase().includes(searchTerm);
-				const matchSupervisor = item.supervisor
-					? `${item.supervisor.name} ${item.supervisor.surname}`
-							.toLowerCase()
-							.includes(searchTerm)
-					: false;
+	if (search) {
+		const searchTerm = search.toLowerCase();
+		filteredData = filteredData.filter((item) => {
+			const majorityStrand = getMajorityStrand(item.students);
 
-				return matchName || matchGrade || matchStrand || matchSupervisor;
-		  })
-		: allData;
+			return (
+				item.name.toLowerCase().includes(searchTerm) ||
+				item.grade.level.toString() === searchTerm ||
+				majorityStrand.toLowerCase().includes(searchTerm) ||
+				(item.supervisor &&
+					`${item.supervisor.name} ${item.supervisor.surname}`
+						.toLowerCase()
+						.includes(searchTerm))
+			);
+		});
+	}
+
+	if (filterColumn && filterValue) {
+		filteredData = filteredData.filter((item) => {
+			switch (filterColumn) {
+				case 'capacity':
+					const isFull = item.students.length >= item.capacity;
+					return filterValue === 'full' ? isFull : !isFull;
+				case 'grade':
+					return item.grade.level === parseInt(filterValue);
+				case 'strand':
+					return getMajorityStrand(item.students) === filterValue;
+				case 'supervisor':
+					const hasSupervisor = !!item.supervisor;
+					return filterValue === 'assigned' ? hasSupervisor : !hasSupervisor;
+				default:
+					return true;
+			}
+		});
+	}
 
 	// Apply pagination after filtering
 	const data = filteredData.slice(ITEM_PER_PAGE * (p - 1), ITEM_PER_PAGE * p);
@@ -163,6 +201,12 @@ const ClassListpage = async ({
 				<div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
+						<TableFilter
+							columns={columns.filter(
+								(col) => col.accessor !== 'action' && col.filterOptions
+							)}
+						/>
+
 						{role === 'admin' && <FormContainer table="class" type="create" />}
 					</div>
 				</div>
