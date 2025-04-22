@@ -45,7 +45,7 @@
 
 ## =Sections Tab=
 
-- [ ] Only see the strand and section that they are handling.
+- [x] Only see the strand and section that they are handling.
   - (for example, Teacher B = Teacher B lang makakakita ng handled niyang section, wala nang iba.)
 
 ## =Lessons Tab=

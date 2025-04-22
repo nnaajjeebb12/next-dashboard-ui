@@ -133,6 +133,11 @@ const ClassListpage = async ({
 	// URL PARAMS CONDITION
 	const query: Prisma.ClassWhereInput = {};
 
+	// Add supervisor filter for teachers
+	if (role === 'teacher') {
+		query.supervisorId = currentUserId;
+	}
+
 	// Get all data first
 	const [allData, totalCount] = await prisma.$transaction([
 		prisma.class.findMany({
