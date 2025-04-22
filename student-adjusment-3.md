@@ -69,6 +69,6 @@
 
 ## =ALL TABS=
 
-- [ ] Delete strand function not working.
+- [x] Delete strand function not working.
 - [ ] Allow to multi-select filters.
 - [ ] Filter by Strand not working.

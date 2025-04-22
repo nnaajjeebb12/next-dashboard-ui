@@ -574,7 +574,7 @@ export const deleteStrand = async (
 ) => {
 	const id = data.get('id') as string;
 	try {
-		await prisma.class.delete({
+		await prisma.strand.delete({
 			where: {
 				id: parseInt(id),
 			},
