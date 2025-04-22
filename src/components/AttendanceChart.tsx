@@ -42,26 +42,28 @@ const AttendanceChart = ({
 				/>
 				<Bar
 					dataKey="present"
+					name="PRESENT (P)"
 					fill="#BDA75F"
 					legendType="circle"
 					radius={[10, 10, 0, 0]}
 				/>
 				<Bar
 					dataKey="absent"
+					name="ABSENT (A)"
 					fill="#9099C4"
 					legendType="circle"
 					radius={[10, 10, 0, 0]}
 				/>
 				<Bar
 					dataKey="excused"
-					name="Excused (E)"
+					name="EXCUSED (E)"
 					fill="#FFC107"
 					legendType="circle"
 					radius={[10, 10, 0, 0]}
 				/>
 				<Bar
 					dataKey="holiday"
-					name="Holiday (H)"
+					name="HOLIDAY (H)"
 					fill="#4CAF50"
 					legendType="circle"
 					radius={[10, 10, 0, 0]}
