@@ -44,6 +44,22 @@ const ResultListpage = async ({
 		orderBy: { name: 'asc' },
 	});
 
+	// Get classes based on role
+	const classes =
+		role === 'teacher'
+			? await prisma.$queryRaw<{ name: string }[]>`
+			SELECT DISTINCT c.name 
+			FROM "Class" c
+			LEFT JOIN "Lesson" l ON l."classId" = c.id
+			WHERE c."supervisorId" = ${currentUserId}
+			OR l."teacherId" = ${currentUserId}
+			ORDER BY c.name ASC
+		`
+			: await prisma.class.findMany({
+					select: { name: true },
+					orderBy: { name: 'asc' },
+			  });
+
 	const columns = [
 		{
 			header: 'Student',
@@ -59,7 +75,11 @@ const ResultListpage = async ({
 		},
 		{
 			header: 'Section',
-			accessor: 'section',
+			accessor: 'student.class.name',
+			filterOptions: classes.map((cls) => ({
+				value: cls.name,
+				label: cls.name,
+			})),
 		},
 		{
 			header: 'Subject',
@@ -197,32 +217,46 @@ const ResultListpage = async ({
 
 	const p = page ? parseInt(page) : 1;
 
-	// Initialize the query object
-	const query: Prisma.ResultWhereInput = {};
+	// Initialize the base query
+	let query: Prisma.ResultWhereInput = {};
 
+	// Add search conditions
 	if (search) {
-		query.OR = [
-			{ student: { name: { contains: search, mode: 'insensitive' } } },
-			{ student: { surname: { contains: search, mode: 'insensitive' } } },
-			{ Lesson: { name: { contains: search, mode: 'insensitive' } } },
-			{
-				student: { class: { name: { contains: search, mode: 'insensitive' } } },
-			},
-			{
-				student: {
-					Strand: { name: { contains: search, mode: 'insensitive' } },
-				},
-			},
-		];
-		// Add grade level search if applicable
+		// Try to parse grade level
 		const gradeLevel = parseInt(search);
-		if (!isNaN(gradeLevel)) {
-			query.OR.push({
-				student: { grade: { level: gradeLevel } },
-			});
-		}
+
+		query = {
+			OR: [
+				// Student full name
+				{
+					OR: [
+						{ student: { name: { contains: search, mode: 'insensitive' } } },
+						{ student: { surname: { contains: search, mode: 'insensitive' } } },
+					],
+				},
+				// Grade level (if search is a number)
+				...(!isNaN(gradeLevel)
+					? [{ student: { grade: { level: gradeLevel } } }]
+					: []),
+				// Section/Class
+				{
+					student: {
+						class: { name: { contains: search, mode: 'insensitive' } },
+					},
+				},
+				// Subject/Lesson
+				{ Lesson: { name: { contains: search, mode: 'insensitive' } } },
+				// Strand
+				{
+					student: {
+						Strand: { name: { contains: search, mode: 'insensitive' } },
+					},
+				},
+			],
+		};
 	}
 
+	// Add filter conditions
 	if (filterColumn && filterValue) {
 		switch (filterColumn) {
 			case 'grade':
@@ -233,6 +267,11 @@ const ResultListpage = async ({
 			case 'strand':
 				query.student = {
 					Strand: { name: filterValue },
+				};
+				break;
+			case 'student.class.name':
+				query.student = {
+					class: { name: filterValue },
 				};
 				break;
 			case 'assessment':
@@ -256,10 +295,8 @@ const ResultListpage = async ({
 							],
 						},
 					];
-					// Using a raw query to calculate average
-					query.OR = undefined; // Clear any previous OR conditions
+					query.OR = undefined;
 				} else if (filterValue === 'failed') {
-					// All quarters must be present and average must be < 75
 					query.AND = [
 						{ q1: { not: null } },
 						{ q2: { not: null } },
@@ -278,8 +315,7 @@ const ResultListpage = async ({
 							],
 						},
 					];
-					// Using a raw query to calculate average
-					query.OR = undefined; // Clear any previous OR conditions
+					query.OR = undefined;
 				} else if (filterValue === 'incomplete') {
 					query.OR = [{ q1: null }, { q2: null }, { q3: null }, { q4: null }];
 				}
@@ -292,18 +328,38 @@ const ResultListpage = async ({
 	// ROLE CONDITIONS
 	switch (role) {
 		case 'teacher':
-			// For teachers, only show results for their students
-			query.student = {
+			if (!currentUserId) break;
+
+			const teacherConditions: Prisma.ResultWhereInput = {
 				OR: [
-					// Students in classes where the teacher is the supervisor
-					{ class: { supervisorId: currentUserId! } },
-					// Students in classes where the teacher teaches at least one lesson
-					{ class: { lessons: { some: { teacherId: currentUserId! } } } },
+					{ Lesson: { teacherId: currentUserId } },
+					{ student: { class: { supervisorId: currentUserId } } },
+					{
+						student: {
+							class: { lessons: { some: { teacherId: currentUserId } } },
+						},
+					},
 				],
 			};
+
+			// Combine teacher conditions with existing query
+			if (query.OR) {
+				// If we have search conditions, we need both search AND teacher conditions to match
+				query = {
+					AND: [teacherConditions, { OR: query.OR }],
+				};
+			} else {
+				// If no search conditions, just use teacher conditions
+				query = teacherConditions;
+			}
 			break;
 		case 'student':
-			query.studentId = currentUserId!;
+			query = {
+				AND: [
+					{ studentId: currentUserId! },
+					...(query.OR ? [{ OR: query.OR }] : []),
+				],
+			};
 			break;
 		default:
 			break;
@@ -334,14 +390,57 @@ const ResultListpage = async ({
 				},
 				Lesson: true,
 			},
+			orderBy: [
+				// Sort by class name first
+				{
+					student: {
+						class: {
+							name: 'asc',
+						},
+					},
+				},
+				// Then by student name
+				{
+					student: {
+						name: 'asc',
+					},
+				},
+			],
 		}),
 		prisma.result.count({ where: query }),
 	]);
 
+	// Post-process sorting to put supervising class at top if teacher role
+	let sortedData = dataRes;
+	if (role === 'teacher') {
+		sortedData = [...dataRes].sort((a, b) => {
+			const aIsSupervised = a.student.class.supervisorId === currentUserId;
+			const bIsSupervised = b.student.class.supervisorId === currentUserId;
+
+			// First sort by supervised status
+			if (aIsSupervised !== bIsSupervised) {
+				return aIsSupervised ? -1 : 1;
+			}
+
+			// Then by class name
+			const aClassName = a.student.class.name || '';
+			const bClassName = b.student.class.name || '';
+			const classCompare = aClassName.localeCompare(bClassName);
+			if (classCompare !== 0) {
+				return classCompare;
+			}
+
+			// Finally by student name
+			const aStudentName = a.student.name || '';
+			const bStudentName = b.student.name || '';
+			return aStudentName.localeCompare(bStudentName);
+		});
+	}
+
 	// Post-process the results for assessment filtering
-	let filteredData = dataRes;
+	let filteredData = sortedData;
 	if (filterColumn === 'assessment') {
-		filteredData = dataRes.filter((result) => {
+		filteredData = sortedData.filter((result) => {
 			// Calculate average only if all quarters have values
 			if (
 				result.q1 !== null &&
