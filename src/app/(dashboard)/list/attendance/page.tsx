@@ -49,6 +49,12 @@ const AttendanceListPage = async ({
 		orderBy: { name: 'asc' },
 	});
 
+	// Get all classes/sections
+	const classes = await prisma.class.findMany({
+		select: { name: true },
+		orderBy: { name: 'asc' },
+	});
+
 	const columns = [
 		{
 			header: 'Student',
@@ -76,6 +82,10 @@ const AttendanceListPage = async ({
 			header: 'Section',
 			accessor: 'section',
 			className: 'hidden md:table-cell',
+			filterOptions: classes.map((cls) => ({
+				value: cls.name,
+				label: cls.name,
+			})),
 		},
 		{
 			header: 'Date',
@@ -231,6 +241,11 @@ const AttendanceListPage = async ({
 					Strand: { name: filterValue },
 				};
 				break;
+			case 'section':
+				query.student = {
+					class: { name: filterValue },
+				};
+				break;
 			case 'semester':
 				query.semester = filterValue;
 				break;
@@ -290,8 +305,6 @@ const AttendanceListPage = async ({
 								(col) =>
 									col.accessor !== 'action' &&
 									col.accessor !== 'student' &&
-									col.accessor !== 'section' &&
-									col.accessor !== 'date' &&
 									col.filterOptions
 							)}
 						/>

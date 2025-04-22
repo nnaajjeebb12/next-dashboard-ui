@@ -58,7 +58,7 @@
 
 ## =Results Tab=
 
-- [ ] Able to See, Add, and Edit results ONLY in the section/students that they are handling.
+- [x] Able to See, Add, and Edit results ONLY in the section/students that they are handling.
   - (for example, Teacher D = Teacher D lang makakakita at edit ng handled niyang results sa bawat section.)
 
 ## =Attendance Tab=
