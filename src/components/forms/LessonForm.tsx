@@ -32,6 +32,15 @@ const LessonForm = ({
 	);
 	const [filteredSubjects, setFilteredSubjects] = useState<any[]>([]);
 
+	// Format datetime for input fields
+	const formatDateTime = (date: Date | string | undefined) => {
+		if (!date) return '';
+		const d = new Date(date);
+		// Convert to local timezone and format
+		const localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+		return localDate.toISOString().slice(0, 16); // Format as YYYY-MM-DDTHH:mm
+	};
+
 	const {
 		register,
 		handleSubmit,
@@ -164,7 +173,7 @@ const LessonForm = ({
 				<InputField
 					label="Start Time"
 					name="startTime"
-					defaultValue={data?.startTime}
+					defaultValue={formatDateTime(data?.startTime)}
 					register={register}
 					error={errors?.startTime}
 					type="dateTime-local"
@@ -172,7 +181,7 @@ const LessonForm = ({
 				<InputField
 					label="End Time"
 					name="endTime"
-					defaultValue={data?.endTime}
+					defaultValue={formatDateTime(data?.endTime)}
 					register={register}
 					error={errors?.endTime}
 					type="dateTime-local"
@@ -224,11 +233,18 @@ const LessonForm = ({
 						defaultValue={data?.subjectId}
 						disabled={!selectedSemester}>
 						<option value="">Select Subject</option>
-						{filteredSubjects.map((subject: { id: number; name: string }) => (
-							<option value={subject.id} key={subject.id}>
-								{subject.name}
-							</option>
-						))}
+						{filteredSubjects.length > 0 ? (
+							filteredSubjects.map((subject: { id: number; name: string }) => (
+								<option
+									value={subject.id}
+									key={subject.id}
+									selected={subject.id === data?.subjectId}>
+									{subject.name}
+								</option>
+							))
+						) : (
+							<option value={data?.subjectId}>{data?.subject?.name}</option>
+						)}
 					</select>
 					{errors.subjectId?.message && (
 						<p className="text-xs text-red-400">
@@ -255,19 +271,29 @@ const LessonForm = ({
 					)}
 				</div>
 				<div className="flex flex-col gap-2 w-full md:w-1/2">
-					<label className="text-xs text-gray-500">Teacher</label>
-					<select
-						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-						{...register('teacherId')}
-						defaultValue={data?.teacherId}>
-						{teachers.map(
-							(teacher: { id: string; name: string; surname: string }) => (
-								<option value={teacher.id} key={teacher.id}>
-									{teacher.name + ' ' + teacher.surname}
-								</option>
-							)
-						)}
-					</select>
+					{type === 'create' ? (
+						<>
+							<label className="text-xs text-gray-500">Teacher</label>
+							<select
+								className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+								{...register('teacherId')}
+								defaultValue={data?.teacherId}>
+								{teachers.map(
+									(teacher: { id: string; name: string; surname: string }) => (
+										<option value={teacher.id} key={teacher.id}>
+											{teacher.name + ' ' + teacher.surname}
+										</option>
+									)
+								)}
+							</select>
+						</>
+					) : (
+						<input
+							type="hidden"
+							{...register('teacherId')}
+							defaultValue={data?.teacherId}
+						/>
+					)}
 					{errors.teacherId?.message && (
 						<p className="text-xs text-red-400">
 							{errors.teacherId.message.toString()}

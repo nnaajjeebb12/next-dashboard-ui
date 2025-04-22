@@ -50,8 +50,11 @@
 
 ## =Lessons Tab=
 
-- [ ] Able to See, Add, and Edit subjects/lessons ONLY in the sections that they are handling.
-  - (for example, Teacher C = Teacher C lang makakakita at edit ng handled niyang subjects sa bawat section and priority ang supervising class niya sa taas ng result.)
+- [x] Able to:
+  - [x] See
+  - [x] Edit subjects/lessons ONLY in the sections that they are handling.
+    - (for example, Teacher C = Teacher C lang makakakita at edit ng handled niyang subjects sa bawat section and priority ang supervising class niya sa taas ng result.)
+  - [x] Add - di to possible na ang maiaadd nya lang eh sariling lessons nya. Since this is general adding
 
 ## =Results Tab=
 

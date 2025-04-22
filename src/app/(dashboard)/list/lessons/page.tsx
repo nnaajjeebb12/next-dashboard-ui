@@ -117,7 +117,7 @@ const LessonListpage = async ({
 				{ value: 'afternoon', label: 'Afternoon (12PM-5PM)' },
 			],
 		},
-		...(role === 'admin'
+		...(role === 'teacher'
 			? [
 					{
 						header: 'Actions',
@@ -167,7 +167,7 @@ const LessonListpage = async ({
 				</td>
 				<td>
 					<div className="flex items-center gap-2">
-						{role === 'admin' && (
+						{role === 'teacher' && (
 							<>
 								<FormContainer table="lesson" type="update" data={item} />
 								<FormContainer table="lesson" type="delete" id={item.id} />
@@ -187,6 +187,10 @@ const LessonListpage = async ({
 	// Get all data first
 	const [allData, totalCount] = await prisma.$transaction([
 		prisma.lesson.findMany({
+			where:
+				role === 'teacher' && currentUserId
+					? { teacherId: currentUserId }
+					: undefined,
 			include: {
 				subject: { select: { name: true, semester: true } },
 				class: {
@@ -205,7 +209,11 @@ const LessonListpage = async ({
 				teacher: { select: { name: true, surname: true } },
 			},
 		}),
-		prisma.lesson.count(),
+		prisma.lesson.count(
+			role === 'teacher' && currentUserId
+				? { where: { teacherId: currentUserId } }
+				: undefined
+		),
 	]);
 
 	// Filter data based on search term and filters
@@ -270,7 +278,9 @@ const LessonListpage = async ({
 							)}
 						/>
 
-						{role === 'admin' && <FormContainer table="lesson" type="create" />}
+						{role === 'teacher' && (
+							<FormContainer table="lesson" type="create" />
+						)}
 					</div>
 				</div>
 			</div>
