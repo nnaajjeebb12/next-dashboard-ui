@@ -27,37 +27,45 @@ const TableFilter = ({ columns }: TableFilterProps) => {
 
 	const handleFilter = (accessor: string, value: string) => {
 		const params = new URLSearchParams(searchParams.toString());
+		const currentFilters = params.getAll(`${accessor}Filter`);
 
-		// If the same filter is clicked, remove it
-		if (
-			params.get('filterColumn') === accessor &&
-			params.get('filterValue') === value
-		) {
-			params.delete('filterColumn');
-			params.delete('filterValue');
+		// If value is already selected, remove it
+		if (currentFilters.includes(value)) {
+			const newFilters = currentFilters.filter((v) => v !== value);
+			params.delete(`${accessor}Filter`);
+			newFilters.forEach((v) => params.append(`${accessor}Filter`, v));
 		} else {
-			// Set new filter
-			params.set('filterColumn', accessor);
-			params.set('filterValue', value);
+			// Add new value to existing filters
+			params.append(`${accessor}Filter`, value);
 		}
 
 		// Reset to page 1 when filtering
 		params.set('page', '1');
 
 		router.push(`?${params.toString()}`);
-		setIsOpen(false);
 	};
 
 	const clearFilter = () => {
 		const params = new URLSearchParams(searchParams.toString());
-		params.delete('filterColumn');
-		params.delete('filterValue');
+
+		// Clear all filter parameters
+		columns.forEach((column) => {
+			params.delete(`${column.accessor}Filter`);
+		});
+
 		router.push(`?${params.toString()}`);
 		setIsOpen(false);
 	};
 
-	const currentFilterColumn = searchParams.get('filterColumn');
-	const currentFilterValue = searchParams.get('filterValue');
+	// Get all active filters for a column
+	const getActiveFilters = (accessor: string) => {
+		return searchParams.getAll(`${accessor}Filter`);
+	};
+
+	// Check if any filters are active
+	const hasActiveFilters = columns.some(
+		(column) => getActiveFilters(column.accessor).length > 0
+	);
 
 	// Only show columns that have filterOptions
 	const filterableColumns = columns.filter(
@@ -68,7 +76,9 @@ const TableFilter = ({ columns }: TableFilterProps) => {
 		<>
 			<button
 				onClick={() => setIsOpen(true)}
-				className="w-8 h-8 flex items-center justify-center rounded-full bg-najPurple">
+				className={`w-8 h-8 flex items-center justify-center rounded-full ${
+					hasActiveFilters ? 'bg-najPurple' : 'bg-gray-200'
+				}`}>
 				<Image src="/filter.png" alt="Filter" width={14} height={14} />
 			</button>
 
@@ -81,30 +91,34 @@ const TableFilter = ({ columns }: TableFilterProps) => {
 									{column.header}
 								</h3>
 								<div className="flex flex-wrap gap-2">
-									{column.filterOptions?.map((option) => (
-										<button
-											key={option.value}
-											onClick={() =>
-												handleFilter(column.accessor, option.value)
-											}
-											className={`px-3 py-1 rounded-full text-sm transition-colors ${
-												currentFilterColumn === column.accessor &&
-												currentFilterValue === option.value
-													? 'bg-najPurple text-white'
-													: 'bg-gray-100 hover:bg-najPurpleLight'
-											}`}>
-											{option.label}
-										</button>
-									))}
+									{column.filterOptions?.map((option) => {
+										const activeFilters = getActiveFilters(column.accessor);
+										const isActive = activeFilters.includes(option.value);
+
+										return (
+											<button
+												key={option.value}
+												onClick={() =>
+													handleFilter(column.accessor, option.value)
+												}
+												className={`px-3 py-1 rounded-full text-sm transition-colors ${
+													isActive
+														? 'bg-najPurple text-white'
+														: 'bg-gray-100 hover:bg-najPurpleLight'
+												}`}>
+												{option.label}
+											</button>
+										);
+									})}
 								</div>
 							</div>
 						))}
 					</div>
-					{currentFilterColumn && currentFilterValue && (
+					{hasActiveFilters && (
 						<button
 							onClick={clearFilter}
 							className="mt-6 w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors">
-							Clear Filter
+							Clear All Filters
 						</button>
 					)}
 				</div>

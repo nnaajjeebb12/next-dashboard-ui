@@ -179,8 +179,7 @@ const LessonListpage = async ({
 		);
 	};
 
-	const { page, filterColumn, filterValue, search, ...queryParams } =
-		searchParams;
+	const { page, search, ...queryParams } = searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
@@ -200,20 +199,23 @@ const LessonListpage = async ({
 							select: { level: true },
 						},
 						students: {
-							include: {
-								Strand: true,
+							select: {
+								Strand: {
+									select: { name: true },
+								},
 							},
 						},
 					},
 				},
-				teacher: { select: { name: true, surname: true } },
+				teacher: true,
 			},
 		}),
-		prisma.lesson.count(
-			role === 'teacher' && currentUserId
-				? { where: { teacherId: currentUserId } }
-				: undefined
-		),
+		prisma.lesson.count({
+			where:
+				role === 'teacher' && currentUserId
+					? { teacherId: currentUserId }
+					: undefined,
+		}),
 	]);
 
 	// Filter data based on search term and filters
@@ -222,38 +224,55 @@ const LessonListpage = async ({
 	if (search) {
 		const searchTerm = search.toLowerCase();
 		filteredData = filteredData.filter((item) => {
+			const lessonName = item.name.toLowerCase();
+			const subjectName = (item.subject.name || '').toLowerCase();
+			const className = item.class.name.toLowerCase();
+			const teacherName =
+				`${item.teacher.name} ${item.teacher.surname}`.toLowerCase();
 			const majorityStrand = getMajorityStrand(item.class.students);
 
 			return (
-				item.name.toLowerCase().includes(searchTerm) ||
-				(item.subject.name || '').toLowerCase().includes(searchTerm) ||
-				item.class.name.toLowerCase().includes(searchTerm) ||
-				item.class.grade.level.toString() === searchTerm ||
+				lessonName.includes(searchTerm) ||
+				subjectName.includes(searchTerm) ||
+				className.includes(searchTerm) ||
+				teacherName.includes(searchTerm) ||
 				majorityStrand.toLowerCase().includes(searchTerm) ||
-				`${item.teacher.name} ${item.teacher.surname}`
-					.toLowerCase()
-					.includes(searchTerm)
+				item.day.toLowerCase().includes(searchTerm) ||
+				item.class.grade.level.toString() === searchTerm
 			);
 		});
 	}
 
-	if (filterColumn && filterValue) {
-		filteredData = filteredData.filter((item) => {
-			switch (filterColumn) {
-				case 'grade':
-					return item.class.grade.level === parseInt(filterValue);
-				case 'strand':
-					return getMajorityStrand(item.class.students) === filterValue;
-				case 'day':
-					return item.day === filterValue;
-				case 'time':
-					const hour = new Date(item.startTime).getHours();
-					return filterValue === 'morning' ? hour < 12 : hour >= 12;
-				default:
-					return true;
-			}
-		});
-	}
+	// Handle multiple filters
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (key.endsWith('Filter') && value) {
+			const column = key.replace('Filter', '');
+			const values = Array.isArray(value) ? value : [value];
+
+			filteredData = filteredData.filter((item) => {
+				return values.some((filterValue) => {
+					switch (column) {
+						case 'grade':
+							return item.class.grade.level === parseInt(filterValue);
+						case 'strand':
+							return getMajorityStrand(item.class.students) === filterValue;
+						case 'day':
+							return item.day === filterValue;
+						case 'time':
+							const startHour = new Date(item.startTime).getHours();
+							if (filterValue === 'morning') {
+								return startHour >= 7 && startHour < 12;
+							} else if (filterValue === 'afternoon') {
+								return startHour >= 12 && startHour < 17;
+							}
+							return false;
+						default:
+							return true;
+					}
+				});
+			});
+		}
+	});
 
 	// Apply pagination after filtering
 	const data = filteredData.slice(ITEM_PER_PAGE * (p - 1), ITEM_PER_PAGE * p);
@@ -268,14 +287,7 @@ const LessonListpage = async ({
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
 						<TableFilter
-							columns={columns.filter(
-								(col) =>
-									col.accessor !== 'action' &&
-									col.accessor !== 'subject' &&
-									col.accessor !== 'class' &&
-									col.accessor !== 'teacher' &&
-									col.filterOptions
-							)}
+							columns={columns.filter((col) => col.accessor !== 'action')}
 						/>
 
 						{role === 'teacher' && (

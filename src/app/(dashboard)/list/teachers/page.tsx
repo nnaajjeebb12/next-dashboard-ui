@@ -141,68 +141,13 @@ const TeacherListpage = async ({
 		</tr>
 	);
 
-	const { page, filterColumn, filterValue, search, ...queryParams } =
-		searchParams;
+	const { page, search, ...queryParams } = searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
-	// URL PARAMS CONDITION
-	const query: Prisma.TeacherWhereInput = {};
-
-	if (search) {
-		query.OR = [
-			{ name: { contains: search, mode: 'insensitive' } },
-			{ username: { contains: search, mode: 'insensitive' } },
-			{
-				classes: {
-					some: {
-						OR: [
-							{ name: { contains: search, mode: 'insensitive' } },
-							{ grade: { level: parseInt(search) || undefined } },
-						],
-					},
-				},
-			},
-		];
-	}
-
-	if (filterColumn && filterValue) {
-		switch (filterColumn) {
-			case 'subjects':
-				if (filterValue === 'with_subjects') {
-					query.subjects = { some: {} };
-				} else if (filterValue === 'no_subjects') {
-					query.subjects = { none: {} };
-				}
-				break;
-			case 'classes':
-				if (filterValue === 'with_class') {
-					query.classes = { some: {} };
-				} else if (filterValue === 'no_class') {
-					query.classes = { none: {} };
-				}
-				break;
-			case 'grade':
-				if (filterValue === 'none') {
-					query.classes = { none: {} };
-				} else {
-					query.classes = {
-						some: {
-							grade: {
-								level: parseInt(filterValue),
-							},
-						},
-					};
-				}
-				break;
-			default:
-				break;
-		}
-	}
-
-	const [data, count] = await prisma.$transaction([
+	// Get all data first
+	const [allData, totalCount] = await prisma.$transaction([
 		prisma.teacher.findMany({
-			where: query,
 			include: {
 				subjects: true,
 				classes: {
@@ -216,11 +161,73 @@ const TeacherListpage = async ({
 					},
 				},
 			},
-			take: ITEM_PER_PAGE,
-			skip: ITEM_PER_PAGE * (p - 1),
 		}),
-		prisma.teacher.count({ where: query }),
+		prisma.teacher.count(),
 	]);
+
+	// Filter data based on search term and filters
+	let filteredData = allData;
+
+	if (search) {
+		const searchTerm = search.toLowerCase();
+		filteredData = filteredData.filter((item) => {
+			const teacherName = item.name.toLowerCase();
+			const teacherId = item.username.toLowerCase();
+			const classNames = item.classes
+				.map((c) => c.name.toLowerCase())
+				.join(' ');
+			const gradeLevels = item.classes.map((c) => c.grade.level.toString());
+
+			return (
+				teacherName.includes(searchTerm) ||
+				teacherId.includes(searchTerm) ||
+				classNames.includes(searchTerm) ||
+				gradeLevels.includes(searchTerm)
+			);
+		});
+	}
+
+	// Handle multiple filters
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (key.endsWith('Filter') && value) {
+			const column = key.replace('Filter', '');
+			const values = Array.isArray(value) ? value : [value];
+
+			filteredData = filteredData.filter((item) => {
+				return values.some((filterValue) => {
+					switch (column) {
+						case 'subjects':
+							if (filterValue === 'with_subjects') {
+								return item.subjects.length > 0;
+							} else if (filterValue === 'no_subjects') {
+								return item.subjects.length === 0;
+							}
+							return true;
+						case 'classes':
+							if (filterValue === 'with_class') {
+								return item.classes.length > 0;
+							} else if (filterValue === 'no_class') {
+								return item.classes.length === 0;
+							}
+							return true;
+						case 'grade':
+							if (filterValue === 'none') {
+								return item.classes.length === 0;
+							} else {
+								const gradeLevel = parseInt(filterValue);
+								return item.classes.some((c) => c.grade.level === gradeLevel);
+							}
+						default:
+							return true;
+					}
+				});
+			});
+		}
+	});
+
+	// Apply pagination after filtering
+	const data = filteredData.slice(ITEM_PER_PAGE * (p - 1), ITEM_PER_PAGE * p);
+	const count = filteredData.length;
 
 	return (
 		<div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
@@ -231,9 +238,7 @@ const TeacherListpage = async ({
 					<TableSearch />
 					<div className="flex items-center gap-4 self-end">
 						<TableFilter
-							columns={columns.filter(
-								(col) => col.accessor !== 'action' && col.accessor !== 'info'
-							)}
+							columns={columns.filter((col) => col.accessor !== 'action')}
 						/>
 
 						{role === 'admin' && (

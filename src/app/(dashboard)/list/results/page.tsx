@@ -213,259 +213,124 @@ const ResultListpage = async ({
 		);
 	};
 
-	const { page, filterColumn, filterValue, search } = searchParams;
+	const { page, search, ...queryParams } = searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
-	// Initialize the base query
-	let query: Prisma.ResultWhereInput = {};
+	// URL PARAMS CONDITION
+	const query: Prisma.ResultWhereInput = {};
 
-	// Add search conditions
-	if (search) {
-		// Try to parse grade level
-		const gradeLevel = parseInt(search);
-
-		query = {
-			OR: [
-				// Student full name
-				{
-					OR: [
-						{ student: { name: { contains: search, mode: 'insensitive' } } },
-						{ student: { surname: { contains: search, mode: 'insensitive' } } },
-					],
-				},
-				// Grade level (if search is a number)
-				...(!isNaN(gradeLevel)
-					? [{ student: { grade: { level: gradeLevel } } }]
-					: []),
-				// Section/Class
-				{
-					student: {
-						class: { name: { contains: search, mode: 'insensitive' } },
+	// If teacher is logged in, only show their results
+	if (role === 'teacher' && currentUserId) {
+		query.OR = [
+			{
+				student: {
+					class: {
+						supervisorId: currentUserId,
 					},
 				},
-				// Subject/Lesson
-				{ Lesson: { name: { contains: search, mode: 'insensitive' } } },
-				// Strand
-				{
-					student: {
-						Strand: { name: { contains: search, mode: 'insensitive' } },
-					},
-				},
-			],
-		};
-	}
-
-	// Add filter conditions
-	if (filterColumn && filterValue) {
-		switch (filterColumn) {
-			case 'grade':
-				query.student = {
-					grade: { level: parseInt(filterValue) },
-				};
-				break;
-			case 'strand':
-				query.student = {
-					Strand: { name: filterValue },
-				};
-				break;
-			case 'student.class.name':
-				query.student = {
-					class: { name: filterValue },
-				};
-				break;
-			case 'assessment':
-				if (filterValue === 'passed') {
-					// All quarters must be present and average must be >= 75
-					query.AND = [
-						{ q1: { not: null } },
-						{ q2: { not: null } },
-						{ q3: { not: null } },
-						{ q4: { not: null } },
-						{
-							OR: [
-								{
-									AND: [
-										{ q1: { gte: 0 } },
-										{ q2: { gte: 0 } },
-										{ q3: { gte: 0 } },
-										{ q4: { gte: 0 } },
-									],
-								},
-							],
-						},
-					];
-					query.OR = undefined;
-				} else if (filterValue === 'failed') {
-					query.AND = [
-						{ q1: { not: null } },
-						{ q2: { not: null } },
-						{ q3: { not: null } },
-						{ q4: { not: null } },
-						{
-							OR: [
-								{
-									AND: [
-										{ q1: { gte: 0 } },
-										{ q2: { gte: 0 } },
-										{ q3: { gte: 0 } },
-										{ q4: { gte: 0 } },
-									],
-								},
-							],
-						},
-					];
-					query.OR = undefined;
-				} else if (filterValue === 'incomplete') {
-					query.OR = [{ q1: null }, { q2: null }, { q3: null }, { q4: null }];
-				}
-				break;
-			default:
-				break;
-		}
-	}
-
-	// ROLE CONDITIONS
-	switch (role) {
-		case 'teacher':
-			if (!currentUserId) break;
-
-			const teacherConditions: Prisma.ResultWhereInput = {
-				OR: [
-					{ Lesson: { teacherId: currentUserId } },
-					{ student: { class: { supervisorId: currentUserId } } },
-					{
-						student: {
-							class: { lessons: { some: { teacherId: currentUserId } } },
-						},
-					},
-				],
-			};
-
-			// Combine teacher conditions with existing query
-			if (query.OR) {
-				// If we have search conditions, we need both search AND teacher conditions to match
-				query = {
-					AND: [teacherConditions, { OR: query.OR }],
-				};
-			} else {
-				// If no search conditions, just use teacher conditions
-				query = teacherConditions;
-			}
-			break;
-		case 'student':
-			query = {
-				AND: [
-					{ studentId: currentUserId! },
-					...(query.OR ? [{ OR: query.OR }] : []),
-				],
-			};
-			break;
-		default:
-			break;
-	}
-
-	// Get the base query results
-	const [dataRes, count] = await prisma.$transaction([
-		prisma.result.findMany({
-			where: {
-				...query,
-				...(filterColumn === 'assessment' &&
-					filterValue === 'passed' && {
-						AND: [
-							{ q1: { not: null } },
-							{ q2: { not: null } },
-							{ q3: { not: null } },
-							{ q4: { not: null } },
-						],
-					}),
 			},
+			{
+				Lesson: {
+					teacherId: currentUserId,
+				},
+			},
+		];
+	}
+
+	// Get all data first to perform in-memory filtering
+	const [allData, totalCount] = await prisma.$transaction([
+		prisma.result.findMany({
+			where: query,
 			include: {
 				student: {
 					include: {
 						class: true,
-						Strand: true,
 						grade: true,
+						Strand: true,
 					},
 				},
 				Lesson: true,
 			},
-			orderBy: [
-				// Sort by class name first
-				{
-					student: {
-						class: {
-							name: 'asc',
-						},
-					},
-				},
-				// Then by student name
-				{
-					student: {
-						name: 'asc',
-					},
-				},
-			],
 		}),
 		prisma.result.count({ where: query }),
 	]);
 
-	// Post-process sorting to put supervising class at top if teacher role
-	let sortedData = dataRes;
-	if (role === 'teacher') {
-		sortedData = [...dataRes].sort((a, b) => {
-			const aIsSupervised = a.student.class.supervisorId === currentUserId;
-			const bIsSupervised = b.student.class.supervisorId === currentUserId;
+	// Filter data based on search term and filters
+	let filteredData = allData;
 
-			// First sort by supervised status
-			if (aIsSupervised !== bIsSupervised) {
-				return aIsSupervised ? -1 : 1;
-			}
+	if (search) {
+		const searchTerm = search.toLowerCase();
+		filteredData = filteredData.filter((item) => {
+			const studentName =
+				`${item.student.name} ${item.student.surname}`.toLowerCase();
+			const className = item.student.class.name.toLowerCase();
+			const strandName = item.student.Strand.name.toLowerCase();
+			const lessonName = item.Lesson?.name?.toLowerCase() || '';
 
-			// Then by class name
-			const aClassName = a.student.class.name || '';
-			const bClassName = b.student.class.name || '';
-			const classCompare = aClassName.localeCompare(bClassName);
-			if (classCompare !== 0) {
-				return classCompare;
-			}
-
-			// Finally by student name
-			const aStudentName = a.student.name || '';
-			const bStudentName = b.student.name || '';
-			return aStudentName.localeCompare(bStudentName);
+			return (
+				studentName.includes(searchTerm) ||
+				className.includes(searchTerm) ||
+				strandName.includes(searchTerm) ||
+				lessonName.includes(searchTerm) ||
+				item.student.grade.level.toString() === searchTerm
+			);
 		});
 	}
 
-	// Post-process the results for assessment filtering
-	let filteredData = sortedData;
-	if (filterColumn === 'assessment') {
-		filteredData = sortedData.filter((result) => {
-			// Calculate average only if all quarters have values
-			if (
-				result.q1 !== null &&
-				result.q2 !== null &&
-				result.q3 !== null &&
-				result.q4 !== null
-			) {
-				const average = (result.q1 + result.q2 + result.q3 + result.q4) / 4;
+	// Handle multiple filters
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (key.endsWith('Filter') && value) {
+			const column = key.replace('Filter', '');
+			const values = Array.isArray(value) ? value : [value];
 
-				if (filterValue === 'passed') {
-					return average >= 75;
-				} else if (filterValue === 'failed') {
-					return average < 75;
-				}
-			} else if (filterValue === 'incomplete') {
-				return (
-					result.q1 === null ||
-					result.q2 === null ||
-					result.q3 === null ||
-					result.q4 === null
-				);
-			}
-			return true;
-		});
-	}
+			filteredData = filteredData.filter((item) => {
+				return values.some((filterValue) => {
+					switch (column) {
+						case 'grade':
+							return item.student.grade.level === parseInt(filterValue);
+						case 'student.class.name':
+							return item.student.class.name === filterValue;
+						case 'strand':
+							return item.student.Strand.name === filterValue;
+						case 'assessment':
+							const scores = [item.q1, item.q2, item.q3, item.q4].filter(
+								(score) => score !== null
+							) as number[];
+							const totalScore =
+								scores.length > 0
+									? scores.reduce((sum, score) => sum + score, 0) /
+									  scores.length
+									: 0;
+							const allQuartersComplete =
+								item.q1 !== null &&
+								item.q2 !== null &&
+								item.q3 !== null &&
+								item.q4 !== null;
+
+							if (!allQuartersComplete && filterValue === 'incomplete') {
+								return true;
+							}
+
+							if (allQuartersComplete) {
+								if (filterValue === 'passed') {
+									return totalScore >= 75;
+								} else if (filterValue === 'failed') {
+									return totalScore < 75;
+								}
+							}
+							return false;
+						default:
+							return true;
+					}
+				});
+			});
+		}
+	});
+
+	// Apply pagination after filtering
+	const data = filteredData.slice(ITEM_PER_PAGE * (p - 1), ITEM_PER_PAGE * p);
+	const count = filteredData.length;
 
 	return (
 		<div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
@@ -494,7 +359,7 @@ const ResultListpage = async ({
 			</div>
 
 			{/* LIST */}
-			<Table columns={columns} renderRow={renderRow} data={filteredData} />
+			<Table columns={columns} renderRow={renderRow} data={data} />
 			{/* PAGINATION */}
 			{/* <Pagination page={p} count={count} /> */}
 		</div>

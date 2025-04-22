@@ -123,8 +123,7 @@ const StudentListpage = async ({
 		</tr>
 	);
 
-	const { page, filterColumn, filterValue, search, ...queryParams } =
-		searchParams;
+	const { page, search, ...queryParams } = searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
@@ -150,23 +149,52 @@ const StudentListpage = async ({
 		}
 	}
 
-	if (filterColumn && filterValue) {
-		switch (filterColumn) {
-			case 'Strand':
-				query.Strand = {
-					name: filterValue,
-				};
-				break;
-			case 'grade':
-				query.grade = {
-					level: parseInt(filterValue),
-				};
-				break;
-			case 'classId':
-				query.classId = parseInt(filterValue);
-				break;
-			default:
-				break;
+	// Handle multiple filters for each column
+	const filterConditions: Prisma.StudentWhereInput[] = [];
+
+	// Get all filter values for each column
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (key.endsWith('Filter') && value) {
+			const column = key.replace('Filter', '');
+			const values = Array.isArray(value) ? value : [value];
+
+			switch (column) {
+				case 'Strand':
+					filterConditions.push({
+						OR: values.map((filterValue) => ({
+							Strand: {
+								name: filterValue,
+							},
+						})),
+					});
+					break;
+				case 'grade':
+					filterConditions.push({
+						OR: values.map((filterValue) => ({
+							grade: {
+								level: parseInt(filterValue),
+							},
+						})),
+					});
+					break;
+				case 'classId':
+					filterConditions.push({
+						OR: values.map((filterValue) => ({
+							classId: parseInt(filterValue),
+						})),
+					});
+					break;
+			}
+		}
+	});
+
+	// If there are filter conditions, add them to the query
+	if (filterConditions.length > 0) {
+		if (query.OR) {
+			query.AND = [{ OR: query.OR }, ...filterConditions];
+			delete query.OR;
+		} else {
+			query.AND = filterConditions;
 		}
 	}
 

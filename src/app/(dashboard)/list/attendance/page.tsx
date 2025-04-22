@@ -119,6 +119,102 @@ const AttendanceListPage = async ({
 			: []),
 	];
 
+	const { page, search, ...queryParams } = searchParams;
+
+	const p = page ? parseInt(page) : 1;
+
+	// URL PARAMS CONDITION
+	const query: Prisma.AttendanceWhereInput = {};
+
+	// If teacher is logged in, only show their students' attendance
+	if (role === 'teacher' && currentUserId) {
+		query.student = {
+			class: {
+				OR: [
+					{ supervisorId: currentUserId },
+					{
+						lessons: {
+							some: {
+								teacherId: currentUserId,
+							},
+						},
+					},
+				],
+			},
+		};
+	}
+
+	// Get all data first to perform in-memory filtering
+	const [allData, totalCount] = await prisma.$transaction([
+		prisma.attendance.findMany({
+			where: query,
+			include: {
+				student: {
+					include: {
+						class: true,
+						grade: true,
+						Strand: true,
+					},
+				},
+			},
+		}),
+		prisma.attendance.count({ where: query }),
+	]);
+
+	// Filter data based on search term and filters
+	let filteredData = allData;
+
+	if (search) {
+		const searchTerm = search.toLowerCase();
+		filteredData = filteredData.filter((item) => {
+			const studentName =
+				`${item.student.name} ${item.student.surname}`.toLowerCase();
+			const className = item.student.class.name.toLowerCase();
+			const strandName = item.student.Strand.name.toLowerCase();
+			const date = new Date(item.date).toLocaleDateString().toLowerCase();
+
+			return (
+				studentName.includes(searchTerm) ||
+				className.includes(searchTerm) ||
+				strandName.includes(searchTerm) ||
+				date.includes(searchTerm) ||
+				item.student.grade.level.toString() === searchTerm ||
+				item.semester?.toLowerCase().includes(searchTerm)
+			);
+		});
+	}
+
+	// Handle multiple filters
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (key.endsWith('Filter') && value) {
+			const column = key.replace('Filter', '');
+			const values = Array.isArray(value) ? value : [value];
+
+			filteredData = filteredData.filter((item) => {
+				return values.some((filterValue) => {
+					switch (column) {
+						case 'grade':
+							return item.student.grade.level === parseInt(filterValue);
+						case 'strand':
+							return item.student.Strand.name === filterValue;
+						case 'section':
+							return item.student.class.name === filterValue;
+						case 'semester':
+							return item.semester === filterValue;
+						case 'status':
+							return item.status === filterValue;
+						default:
+							return true;
+					}
+				});
+			});
+		}
+	});
+
+	// Apply pagination after filtering
+	const data = filteredData.slice(ITEM_PER_PAGE * (p - 1), ITEM_PER_PAGE * p);
+	const count = filteredData.length;
+
 	const renderRow = (item: AttendanceList) => (
 		<tr
 			key={item.id}
@@ -200,96 +296,6 @@ const AttendanceListPage = async ({
 		</tr>
 	);
 
-	const { page, filterColumn, filterValue, search } = searchParams;
-	const p = page ? parseInt(page) : 1;
-
-	// Initialize the query object
-	let query: Prisma.AttendanceWhereInput = {};
-
-	if (search) {
-		query.OR = [
-			{ student: { name: { contains: search, mode: 'insensitive' } } },
-			{ student: { surname: { contains: search, mode: 'insensitive' } } },
-			{
-				student: { class: { name: { contains: search, mode: 'insensitive' } } },
-			},
-			{
-				student: {
-					Strand: { name: { contains: search, mode: 'insensitive' } },
-				},
-			},
-			{ semester: { contains: search, mode: 'insensitive' } },
-		];
-		// Add grade level search if applicable
-		const gradeLevel = parseInt(search);
-		if (!isNaN(gradeLevel)) {
-			query.OR.push({
-				student: { grade: { level: gradeLevel } },
-			});
-		}
-	}
-
-	if (filterColumn && filterValue) {
-		switch (filterColumn) {
-			case 'grade':
-				query.student = {
-					grade: { level: parseInt(filterValue) },
-				};
-				break;
-			case 'strand':
-				query.student = {
-					Strand: { name: filterValue },
-				};
-				break;
-			case 'section':
-				query.student = {
-					class: { name: filterValue },
-				};
-				break;
-			case 'semester':
-				query.semester = filterValue;
-				break;
-			case 'status':
-				query.status = filterValue;
-				break;
-			default:
-				break;
-		}
-	}
-
-	// Build query conditions based on user role
-	if (role === 'student') {
-		query = {
-			...query,
-			studentId: currentUserId!,
-		};
-	}
-	// Admin gets all records; no additional conditions needed
-
-	// Execute the database queries
-	const [data, count] = await prisma.$transaction([
-		prisma.attendance.findMany({
-			where: query,
-			include: {
-				student: {
-					include: {
-						class: true,
-						Strand: true,
-						grade: true,
-					},
-				},
-			},
-			orderBy: {
-				date: 'desc',
-			},
-			// take: ITEM_PER_PAGE,
-			// skip: ITEM_PER_PAGE * (p - 1),
-		}),
-		prisma.attendance.count({
-			where: query,
-		}),
-	]);
-
 	return (
 		<div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
 			{/* TOP */}
@@ -319,7 +325,7 @@ const AttendanceListPage = async ({
 			{/* LIST */}
 			<Table columns={columns} renderRow={renderRow} data={data} />
 			{/* PAGINATION */}
-			{/* <Pagination page={p} count={count} /> */}
+			<Pagination page={p} count={count} />
 		</div>
 	);
 };

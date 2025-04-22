@@ -81,8 +81,7 @@ const SubjectListpage = async ({
 		</tr>
 	);
 
-	const { page, filterColumn, filterValue, search, ...queryParams } =
-		searchParams;
+	const { page, search, ...queryParams } = searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
@@ -107,23 +106,52 @@ const SubjectListpage = async ({
 		];
 	}
 
-	if (filterColumn && filterValue) {
-		switch (filterColumn) {
-			case 'semester':
-				query.semester = { equals: filterValue };
-				break;
-			case 'subjectType':
-				query.subjectType = { equals: filterValue };
-				break;
-			case 'teachers':
-				if (filterValue === 'assigned') {
-					query.teachers = { some: {} };
-				} else if (filterValue === 'unassigned') {
-					query.teachers = { none: {} };
-				}
-				break;
-			default:
-				break;
+	// Handle multiple filters for each column
+	const filterConditions: Prisma.SubjectWhereInput[] = [];
+
+	// Get all filter values for each column
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (key.endsWith('Filter') && value) {
+			const column = key.replace('Filter', '');
+			const values = Array.isArray(value) ? value : [value];
+
+			switch (column) {
+				case 'semester':
+					filterConditions.push({
+						OR: values.map((filterValue) => ({
+							semester: { equals: filterValue },
+						})),
+					});
+					break;
+				case 'subjectType':
+					filterConditions.push({
+						OR: values.map((filterValue) => ({
+							subjectType: { equals: filterValue },
+						})),
+					});
+					break;
+				case 'teachers':
+					const teacherConditions = values.map((filterValue) => {
+						if (filterValue === 'assigned') {
+							return { teachers: { some: {} } };
+						} else if (filterValue === 'unassigned') {
+							return { teachers: { none: {} } };
+						}
+						return {};
+					});
+					filterConditions.push({ OR: teacherConditions });
+					break;
+			}
+		}
+	});
+
+	// If there are filter conditions, add them to the query
+	if (filterConditions.length > 0) {
+		if (query.OR) {
+			query.AND = [{ OR: query.OR }, ...filterConditions];
+			delete query.OR;
+		} else {
+			query.AND = filterConditions;
 		}
 	}
 
