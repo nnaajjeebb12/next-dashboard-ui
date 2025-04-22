@@ -175,9 +175,7 @@ const SingleStudentPage = async ({
 								className="w-6 h-6"
 							/>
 							<div className="">
-								<h1 className="text-xl font-semibold">
-									{student.class.gradeId + '-' + student.class.name}
-								</h1>
+								<h1 className="text-xl font-semibold">{student.class.name}</h1>
 								<span className="text-sm text-gray-400">Section</span>
 							</div>
 						</div>
@@ -204,16 +202,6 @@ const SingleStudentPage = async ({
 							href={`/list/teachers?classId=${student.classId}`}>
 							Student&apos;s Teachers
 						</Link>
-						{/* <Link
-							className="p-3 rounded-md bg-pink-50"
-							href={`/list/exams?classId=${2}`}>
-							Student&apos;s Exams
-						</Link>
-						<Link
-							className="p-3 rounded-md bg-najSkyLight"
-							href={`/list/assignments?classId=${2}`}>
-							Student&apos;s Assignments
-						</Link> */}
 						<Link
 							className="p-3 rounded-md bg-najYellowLight"
 							href={`/list/results?studentId=${student.id}`}>

@@ -1,6 +1,13 @@
 import prisma from '@/lib/prisma';
 import Image from 'next/image';
 
+const getCurrentAcademicYear = () => {
+	const now = new Date();
+	const year = now.getFullYear();
+	const shortNextYear = (year + 1).toString();
+	return `${year} - ${shortNextYear}`;
+};
+
 const UserCard = async ({
 	type,
 }: {
@@ -19,7 +26,7 @@ const UserCard = async ({
 		<div className="rounded-2xl odd:bg-najDepEdCoolGray even:bg-najDepEdEcruBrown p-4 flex-1 min-[130px]">
 			<div className="flex justify-between items-center">
 				<span className="text-[10px] bg-white px-2 py-1 rounded-full text-green-600">
-					2024/25
+					{getCurrentAcademicYear()}
 				</span>
 				<Image src="/more.png" alt="" width={20} height={20} />
 			</div>

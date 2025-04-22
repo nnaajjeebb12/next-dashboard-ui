@@ -44,6 +44,22 @@ const ResultListpage = async ({
 		orderBy: { name: 'asc' },
 	});
 
+	// Get classes based on role
+	const classes =
+		role === 'teacher'
+			? await prisma.$queryRaw<{ name: string }[]>`
+			SELECT DISTINCT c.name 
+			FROM "Class" c
+			LEFT JOIN "Lesson" l ON l."classId" = c.id
+			WHERE c."supervisorId" = ${currentUserId}
+			OR l."teacherId" = ${currentUserId}
+			ORDER BY c.name ASC
+		`
+			: await prisma.class.findMany({
+					select: { name: true },
+					orderBy: { name: 'asc' },
+			  });
+
 	const columns = [
 		{
 			header: 'Student',
@@ -59,7 +75,11 @@ const ResultListpage = async ({
 		},
 		{
 			header: 'Section',
-			accessor: 'section',
+			accessor: 'student.class.name',
+			filterOptions: classes.map((cls) => ({
+				value: cls.name,
+				label: cls.name,
+			})),
 		},
 		{
 			header: 'Subject',
@@ -193,143 +213,41 @@ const ResultListpage = async ({
 		);
 	};
 
-	const { page, filterColumn, filterValue, search } = searchParams;
+	const { page, search, ...queryParams } = searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
-	// Initialize the query object
+	// URL PARAMS CONDITION
 	const query: Prisma.ResultWhereInput = {};
 
-	if (search) {
+	// If teacher is logged in, only show their results
+	if (role === 'teacher' && currentUserId) {
 		query.OR = [
-			{ student: { name: { contains: search, mode: 'insensitive' } } },
-			{ student: { surname: { contains: search, mode: 'insensitive' } } },
-			{ Lesson: { name: { contains: search, mode: 'insensitive' } } },
-			{
-				student: { class: { name: { contains: search, mode: 'insensitive' } } },
-			},
 			{
 				student: {
-					Strand: { name: { contains: search, mode: 'insensitive' } },
+					class: {
+						supervisorId: currentUserId,
+					},
+				},
+			},
+			{
+				Lesson: {
+					teacherId: currentUserId,
 				},
 			},
 		];
-		// Add grade level search if applicable
-		const gradeLevel = parseInt(search);
-		if (!isNaN(gradeLevel)) {
-			query.OR.push({
-				student: { grade: { level: gradeLevel } },
-			});
-		}
 	}
 
-	if (filterColumn && filterValue) {
-		switch (filterColumn) {
-			case 'grade':
-				query.student = {
-					grade: { level: parseInt(filterValue) },
-				};
-				break;
-			case 'strand':
-				query.student = {
-					Strand: { name: filterValue },
-				};
-				break;
-			case 'assessment':
-				if (filterValue === 'passed') {
-					// All quarters must be present and average must be >= 75
-					query.AND = [
-						{ q1: { not: null } },
-						{ q2: { not: null } },
-						{ q3: { not: null } },
-						{ q4: { not: null } },
-						{
-							OR: [
-								{
-									AND: [
-										{ q1: { gte: 0 } },
-										{ q2: { gte: 0 } },
-										{ q3: { gte: 0 } },
-										{ q4: { gte: 0 } },
-									],
-								},
-							],
-						},
-					];
-					// Using a raw query to calculate average
-					query.OR = undefined; // Clear any previous OR conditions
-				} else if (filterValue === 'failed') {
-					// All quarters must be present and average must be < 75
-					query.AND = [
-						{ q1: { not: null } },
-						{ q2: { not: null } },
-						{ q3: { not: null } },
-						{ q4: { not: null } },
-						{
-							OR: [
-								{
-									AND: [
-										{ q1: { gte: 0 } },
-										{ q2: { gte: 0 } },
-										{ q3: { gte: 0 } },
-										{ q4: { gte: 0 } },
-									],
-								},
-							],
-						},
-					];
-					// Using a raw query to calculate average
-					query.OR = undefined; // Clear any previous OR conditions
-				} else if (filterValue === 'incomplete') {
-					query.OR = [{ q1: null }, { q2: null }, { q3: null }, { q4: null }];
-				}
-				break;
-			default:
-				break;
-		}
-	}
-
-	// ROLE CONDITIONS
-	switch (role) {
-		case 'teacher':
-			// For teachers, only show results for their students
-			query.student = {
-				OR: [
-					// Students in classes where the teacher is the supervisor
-					{ class: { supervisorId: currentUserId! } },
-					// Students in classes where the teacher teaches at least one lesson
-					{ class: { lessons: { some: { teacherId: currentUserId! } } } },
-				],
-			};
-			break;
-		case 'student':
-			query.studentId = currentUserId!;
-			break;
-		default:
-			break;
-	}
-
-	// Get the base query results
-	const [dataRes, count] = await prisma.$transaction([
+	// Get all data first to perform in-memory filtering
+	const [allData, totalCount] = await prisma.$transaction([
 		prisma.result.findMany({
-			where: {
-				...query,
-				...(filterColumn === 'assessment' &&
-					filterValue === 'passed' && {
-						AND: [
-							{ q1: { not: null } },
-							{ q2: { not: null } },
-							{ q3: { not: null } },
-							{ q4: { not: null } },
-						],
-					}),
-			},
+			where: query,
 			include: {
 				student: {
 					include: {
 						class: true,
-						Strand: true,
 						grade: true,
+						Strand: true,
 					},
 				},
 				Lesson: true,
@@ -338,35 +256,81 @@ const ResultListpage = async ({
 		prisma.result.count({ where: query }),
 	]);
 
-	// Post-process the results for assessment filtering
-	let filteredData = dataRes;
-	if (filterColumn === 'assessment') {
-		filteredData = dataRes.filter((result) => {
-			// Calculate average only if all quarters have values
-			if (
-				result.q1 !== null &&
-				result.q2 !== null &&
-				result.q3 !== null &&
-				result.q4 !== null
-			) {
-				const average = (result.q1 + result.q2 + result.q3 + result.q4) / 4;
+	// Filter data based on search term and filters
+	let filteredData = allData;
 
-				if (filterValue === 'passed') {
-					return average >= 75;
-				} else if (filterValue === 'failed') {
-					return average < 75;
-				}
-			} else if (filterValue === 'incomplete') {
-				return (
-					result.q1 === null ||
-					result.q2 === null ||
-					result.q3 === null ||
-					result.q4 === null
-				);
-			}
-			return true;
+	if (search) {
+		const searchTerm = search.toLowerCase();
+		filteredData = filteredData.filter((item) => {
+			const studentName =
+				`${item.student.name} ${item.student.surname}`.toLowerCase();
+			const className = item.student.class.name.toLowerCase();
+			const strandName = item.student.Strand.name.toLowerCase();
+			const lessonName = item.Lesson?.name?.toLowerCase() || '';
+
+			return (
+				studentName.includes(searchTerm) ||
+				className.includes(searchTerm) ||
+				strandName.includes(searchTerm) ||
+				lessonName.includes(searchTerm) ||
+				item.student.grade.level.toString() === searchTerm
+			);
 		});
 	}
+
+	// Handle multiple filters
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (key.endsWith('Filter') && value) {
+			const column = key.replace('Filter', '');
+			const values = Array.isArray(value) ? value : [value];
+
+			filteredData = filteredData.filter((item) => {
+				return values.some((filterValue) => {
+					switch (column) {
+						case 'grade':
+							return item.student.grade.level === parseInt(filterValue);
+						case 'student.class.name':
+							return item.student.class.name === filterValue;
+						case 'strand':
+							return item.student.Strand.name === filterValue;
+						case 'assessment':
+							const scores = [item.q1, item.q2, item.q3, item.q4].filter(
+								(score) => score !== null
+							) as number[];
+							const totalScore =
+								scores.length > 0
+									? scores.reduce((sum, score) => sum + score, 0) /
+									  scores.length
+									: 0;
+							const allQuartersComplete =
+								item.q1 !== null &&
+								item.q2 !== null &&
+								item.q3 !== null &&
+								item.q4 !== null;
+
+							if (!allQuartersComplete && filterValue === 'incomplete') {
+								return true;
+							}
+
+							if (allQuartersComplete) {
+								if (filterValue === 'passed') {
+									return totalScore >= 75;
+								} else if (filterValue === 'failed') {
+									return totalScore < 75;
+								}
+							}
+							return false;
+						default:
+							return true;
+					}
+				});
+			});
+		}
+	});
+
+	// Apply pagination after filtering
+	const data = filteredData.slice(ITEM_PER_PAGE * (p - 1), ITEM_PER_PAGE * p);
+	const count = filteredData.length;
 
 	return (
 		<div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
@@ -395,7 +359,7 @@ const ResultListpage = async ({
 			</div>
 
 			{/* LIST */}
-			<Table columns={columns} renderRow={renderRow} data={filteredData} />
+			<Table columns={columns} renderRow={renderRow} data={data} />
 			{/* PAGINATION */}
 			{/* <Pagination page={p} count={count} /> */}
 		</div>

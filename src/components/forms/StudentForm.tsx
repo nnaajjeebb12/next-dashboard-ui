@@ -118,95 +118,6 @@ const StudentForm = ({
 				School Information
 			</span>
 
-			<div className="flex items-center gap-4">
-				{/* Display the uploaded image as a circle */}
-				{/* {img ? (
-					<div className="flex items-center">
-						<div className="w-16 h-16 rounded-full overflow-hidden border border-gray-200">
-							<Image
-								src={img.secure_url}
-								defaultValue={data?.img}
-								alt="Uploaded profile"
-								width={28}
-								height={28}
-								quality={90}
-								priority={true}
-								className="w-16 h-16 rounded-full object-cover"
-								unoptimized={true}
-							/>
-						</div>
-					</div>
-				) : (
-					<div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200">
-						<span className="text-xs text-gray-400">No image</span>
-					</div>
-				)} */}
-				{/* {data?.img ? (
-					<div className="flex items-center">
-						<div className="w-16 h-16 rounded-full overflow-hidden border border-gray-200">
-							<Image
-								src={img ? img.secure_url : data.img}
-								alt="Profile image"
-								width={64}
-								height={64}
-								quality={90}
-								priority={true}
-								className="w-full h-full object-cover"
-								unoptimized={true}
-							/>
-						</div>
-					</div>
-				) : img ? (
-					<div className="flex items-center">
-						<div className="w-16 h-16 rounded-full overflow-hidden border border-gray-200">
-							<Image
-								src={img.secure_url}
-								alt="Uploaded profile"
-								width={64}
-								height={64}
-								quality={90}
-								priority={true}
-								className="w-full h-full object-cover"
-								unoptimized={true}
-							/>
-						</div>
-					</div>
-				) : (
-					<div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200">
-						<span className="text-xs text-gray-400">No image</span>
-					</div>
-				)}
-				<CldUploadWidget
-					uploadPreset="school"
-					options={{
-						sources: ['local', 'camera'],
-						multiple: false,
-						maxFiles: 1,
-						clientAllowedFormats: ['jpg', 'jpeg', 'png'],
-					}}
-					onSuccess={(result, { widget }) => {
-						setImg(result.info);
-						widget.close();
-					}}>
-					{({ open }) => {
-						return (
-							<div
-								className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
-								onClick={() => open()}>
-								<Image
-									src="/upload.png"
-									alt=""
-									width={28}
-									height={28}
-									className=""
-								/>
-								<span className="">Upload a profile photo</span>
-							</div>
-						);
-					}}
-				</CldUploadWidget> */}
-			</div>
-
 			<div className="flex justify-between flex-wrap gap-4">
 				<InputField
 					label="First Name"
@@ -239,7 +150,13 @@ const StudentForm = ({
 				<InputField
 					label="House Number"
 					name="address"
-					defaultValue=""
+					defaultValue={
+						data?.address
+							? !isNaN(Number(data.address.split(',')[0]))
+								? data.address.split(',')[0]
+								: '0000'
+							: ''
+					}
 					register={register}
 					error={errors.address}
 				/>
@@ -286,14 +203,7 @@ const StudentForm = ({
 					error={errors.birthday}
 					type="date"
 				/>
-				{/* <InputField
-					label="Parent"
-					name="parentId"
-					defaultValue={data?.parentId}
-					register={register}
-					error={errors.parentId}
-					type="string"
-				/> */}
+
 				{data && (
 					<InputField
 						label="Id"
@@ -311,14 +221,22 @@ const StudentForm = ({
 						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
 						{...register('gradeId')}
 						defaultValue={data?.gradeId}>
-						{grades.map((grade: { id: number; level: number }) => (
-							<option value={grade.id} key={grade.id}>
-								{grade.level}
-							</option>
-						))}
+						{grades
+							.filter(
+								(grade: { level: number }) =>
+									grade.level >= 11 && grade.level <= 12
+							)
+							.map((grade: { id: number; level: number }) => (
+								<option
+									value={grade.id}
+									key={grade.id}
+									selected={data && grade.id === data.gradeId}>
+									{grade.level}
+								</option>
+							))}
 					</select>
 					{errors.gradeId?.message && (
-						<p className=" text-xs text-red-400">
+						<p className="text-xs text-red-400">
 							{errors.gradeId.message.toString()}
 						</p>
 					)}

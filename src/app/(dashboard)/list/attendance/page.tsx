@@ -1,4 +1,7 @@
+import AttendanceRadio from '@/components/AttendanceRadio';
+import DatePicker from '@/components/DatePicker';
 import FormContainer from '@/components/FormContainer';
+import { updateAttendanceStatus } from '@/components/forms/AttendanceForm';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
 import TableFilter from '@/components/TableFilter';
@@ -49,6 +52,15 @@ const AttendanceListPage = async ({
 		orderBy: { name: 'asc' },
 	});
 
+	// Get all classes/sections
+	const classes = await prisma.class.findMany({
+		select: { name: true },
+		orderBy: { name: 'asc' },
+	});
+
+	// Get today's date in YYYY-MM-DD format
+	const today = new Date().toISOString().split('T')[0];
+
 	const columns = [
 		{
 			header: 'Student',
@@ -76,237 +88,174 @@ const AttendanceListPage = async ({
 			header: 'Section',
 			accessor: 'section',
 			className: 'hidden md:table-cell',
+			filterOptions: classes.map((cls) => ({
+				value: cls.name,
+				label: cls.name,
+			})),
 		},
 		{
-			header: 'Date',
-			accessor: 'date',
+			header: 'Attendance',
+			accessor: 'attendance',
 		},
-		{
-			header: 'Semester',
-			accessor: 'semester',
-			filterOptions: [
-				{ value: '1st Semester', label: '1st Semester' },
-				{ value: '2nd Semester', label: '2nd Semester' },
-			],
-		},
-		{
-			header: 'Status',
-			accessor: 'status',
-			filterOptions: [
-				{ value: '1', label: 'Present' },
-				{ value: '0', label: 'Absent' },
-				{ value: 'E', label: 'Excused' },
-				{ value: 'H', label: 'Holiday' },
-			],
-		},
-		...(role === 'teacher'
-			? [
-					{
-						header: 'Actions',
-						accessor: 'action',
-					},
-			  ]
-			: []),
 	];
 
-	const renderRow = (item: AttendanceList) => (
-		<tr
-			key={item.id}
-			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
-			<td className="flex items-center gap-4 p-4">
-				<Image
-					src={item.student.img || '/noAvatar.png'}
-					alt=""
-					width={40}
-					height={40}
-					className="md:hidden xl:block  w-10 h-10 rounded-full object-cover"
-				/>
-				<div className="flex flex-col">
-					{item.student.name + ' ' + item.student.surname}
-				</div>
-			</td>
-			<td>
-				<div className="flex flex-col">{item.student.grade.level}</div>
-			</td>
-			<td>
-				<div className="flex flex-col">{item.student.Strand.name}</div>
-			</td>
-			<td>
-				<div className="flex flex-col">{item.student.class.name}</div>
-			</td>
+	const { page, search, date = today, ...queryParams } = searchParams;
 
-			<td>
-				{new Intl.DateTimeFormat('en-US', {
-					year: 'numeric',
-					month: 'long',
-					day: 'numeric',
-				}).format(new Date(item.date))}
-			</td>
-
-			<td>
-				<div className="flex flex-col">{item.semester}</div>
-			</td>
-
-			<td>
-				<span
-					className={`px-2 py-1 rounded-full text-xs ${
-						item.status === '1'
-							? 'bg-green-100 text-green-800'
-							: item.status === '0'
-							? 'bg-red-100 text-red-800'
-							: item.status === 'E'
-							? 'bg-yellow-100 text-yellow-800'
-							: item.status === 'H'
-							? 'bg-blue-100 text-blue-800'
-							: 'bg-gray-100 text-gray-800'
-					}`}>
-					{item.status === '1'
-						? 'Present'
-						: item.status === '0'
-						? 'Absent'
-						: item.status === 'E'
-						? 'Excused'
-						: item.status === 'H'
-						? 'Holiday'
-						: 'Unknown'}
-				</span>
-			</td>
-			<td>
-				<div className="flex items-center gap-2">
-					{role === 'teacher' && (
-						<>
-							<FormContainer
-								table="attendance"
-								type="update"
-								data={item}
-								id={item.id}
-								userRole={role}
-							/>
-							<FormContainer table="attendance" type="delete" id={item.id} />
-						</>
-					)}
-				</div>
-			</td>
-		</tr>
-	);
-
-	const { page, filterColumn, filterValue, search } = searchParams;
 	const p = page ? parseInt(page) : 1;
 
-	// Initialize the query object
-	let query: Prisma.AttendanceWhereInput = {};
+	// URL PARAMS CONDITION
+	const query: Prisma.StudentWhereInput = {};
 
-	if (search) {
-		query.OR = [
-			{ student: { name: { contains: search, mode: 'insensitive' } } },
-			{ student: { surname: { contains: search, mode: 'insensitive' } } },
-			{
-				student: { class: { name: { contains: search, mode: 'insensitive' } } },
-			},
-			{
-				student: {
-					Strand: { name: { contains: search, mode: 'insensitive' } },
+	// If teacher is logged in, only show their students
+	if (role === 'teacher' && currentUserId) {
+		query.class = {
+			OR: [
+				{ supervisorId: currentUserId },
+				{
+					lessons: {
+						some: {
+							teacherId: currentUserId,
+						},
+					},
 				},
-			},
-			{ semester: { contains: search, mode: 'insensitive' } },
-		];
-		// Add grade level search if applicable
-		const gradeLevel = parseInt(search);
-		if (!isNaN(gradeLevel)) {
-			query.OR.push({
-				student: { grade: { level: gradeLevel } },
-			});
-		}
-	}
-
-	if (filterColumn && filterValue) {
-		switch (filterColumn) {
-			case 'grade':
-				query.student = {
-					grade: { level: parseInt(filterValue) },
-				};
-				break;
-			case 'strand':
-				query.student = {
-					Strand: { name: filterValue },
-				};
-				break;
-			case 'semester':
-				query.semester = filterValue;
-				break;
-			case 'status':
-				query.status = filterValue;
-				break;
-			default:
-				break;
-		}
-	}
-
-	// Build query conditions based on user role
-	if (role === 'student') {
-		query = {
-			...query,
-			studentId: currentUserId!,
+			],
 		};
 	}
-	// Admin gets all records; no additional conditions needed
 
-	// Execute the database queries
-	const [data, count] = await prisma.$transaction([
-		prisma.attendance.findMany({
+	// Get all students first
+	const [students, totalCount] = await prisma.$transaction([
+		prisma.student.findMany({
 			where: query,
 			include: {
-				student: {
-					include: {
-						class: true,
-						Strand: true,
-						grade: true,
+				class: true,
+				grade: true,
+				Strand: true,
+				attendances: {
+					where: {
+						date: new Date(date),
 					},
 				},
 			},
-			orderBy: {
-				date: 'desc',
-			},
-			// take: ITEM_PER_PAGE,
-			// skip: ITEM_PER_PAGE * (p - 1),
+			orderBy: [
+				{ class: { name: 'asc' } },
+				{ surname: 'asc' },
+				{ name: 'asc' },
+			],
 		}),
-		prisma.attendance.count({
-			where: query,
-		}),
+		prisma.student.count({ where: query }),
 	]);
+
+	// Filter students based on search term and filters
+	let filteredData = students;
+
+	if (search) {
+		const searchTerm = search.toLowerCase();
+		filteredData = filteredData.filter((item) => {
+			const studentName = `${item.name} ${item.surname}`.toLowerCase();
+			const className = item.class.name.toLowerCase();
+			const strandName = item.Strand.name.toLowerCase();
+
+			return (
+				studentName.includes(searchTerm) ||
+				className.includes(searchTerm) ||
+				strandName.includes(searchTerm) ||
+				item.grade.level.toString() === searchTerm
+			);
+		});
+	}
+
+	// Handle multiple filters
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (key.endsWith('Filter') && value) {
+			const column = key.replace('Filter', '');
+			const values = Array.isArray(value) ? value : [value];
+
+			filteredData = filteredData.filter((item) => {
+				return values.some((filterValue) => {
+					switch (column) {
+						case 'grade':
+							return item.grade.level === parseInt(filterValue);
+						case 'strand':
+							return item.Strand.name === filterValue;
+						case 'section':
+							return item.class.name === filterValue;
+						default:
+							return true;
+					}
+				});
+			});
+		}
+	});
+
+	// Apply pagination after filtering
+	const data = filteredData.slice(ITEM_PER_PAGE * (p - 1), ITEM_PER_PAGE * p);
+	const count = filteredData.length;
+
+	const renderRow = (item: (typeof students)[0]) => {
+		const attendance = item.attendances[0];
+
+		return (
+			<tr
+				key={item.id}
+				className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
+				<td className="flex items-center gap-4 p-4">
+					<Image
+						src={item.img || '/noAvatar.png'}
+						alt=""
+						width={40}
+						height={40}
+						className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
+					/>
+					<div className="flex flex-col">{item.name + ' ' + item.surname}</div>
+				</td>
+				<td>
+					<div className="flex flex-col">{item.grade.level}</div>
+				</td>
+				<td>
+					<div className="flex flex-col">{item.Strand.name}</div>
+				</td>
+				<td>
+					<div className="flex flex-col">{item.class.name}</div>
+				</td>
+				<td>
+					<AttendanceRadio
+						studentId={item.id}
+						currentStatus={attendance?.status}
+						date={date}
+					/>
+				</td>
+			</tr>
+		);
+	};
 
 	return (
 		<div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
 			{/* TOP */}
-			<div className="flex justify-between items-center">
-				<h1 className="hidden md:block text-lg font-semibold">
-					Attendance Records
-				</h1>
-				<div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-					<TableSearch />
-					<div className="flex items-center gap-4 self-end">
-						<TableFilter
-							columns={columns.filter(
-								(col) =>
-									col.accessor !== 'action' &&
-									col.accessor !== 'student' &&
-									col.accessor !== 'section' &&
-									col.accessor !== 'date' &&
-									col.filterOptions
-							)}
-						/>
+			<div className="flex justify-between items-center mb-4">
+				<h1 className="text-lg font-semibold">Attendance Records</h1>
+				<div className="flex items-center gap-4">
+					<DatePicker defaultValue={date} />
+				</div>
+			</div>
 
-						{role === 'teacher' && (
-							<FormContainer table="attendance" type="create" />
+			<div className="flex flex-col md:flex-row items-center gap-4 mb-4">
+				<TableSearch />
+				<div className="flex items-center gap-4 self-end">
+					<TableFilter
+						columns={columns.filter(
+							(col) =>
+								col.accessor !== 'attendance' &&
+								col.accessor !== 'student' &&
+								col.filterOptions
 						)}
-					</div>
+					/>
 				</div>
 			</div>
 
 			{/* LIST */}
 			<Table columns={columns} renderRow={renderRow} data={data} />
 			{/* PAGINATION */}
-			{/* <Pagination page={p} count={count} /> */}
+			<Pagination page={p} count={count} />
 		</div>
 	);
 };

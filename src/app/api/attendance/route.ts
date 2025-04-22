@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { getRole } from '@/lib/utils';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -99,6 +100,56 @@ export async function GET(request: Request) {
 		console.error('Error fetching attendance data:', error);
 		return NextResponse.json(
 			{ error: 'Failed to fetch attendance data' },
+			{ status: 500 }
+		);
+	}
+}
+
+export async function POST(req: Request) {
+	try {
+		const role = await getRole();
+		if (role !== 'teacher') {
+			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+		}
+
+		const { studentId, status, date, semester } = await req.json();
+
+		// Check if attendance record exists for this student and date
+		const existingAttendance = await prisma.attendance.findFirst({
+			where: {
+				studentId,
+				date: new Date(date),
+			},
+		});
+
+		if (existingAttendance) {
+			// Update existing attendance
+			const updatedAttendance = await prisma.attendance.update({
+				where: {
+					id: existingAttendance.id,
+				},
+				data: {
+					status,
+					semester,
+				},
+			});
+			return NextResponse.json(updatedAttendance);
+		} else {
+			// Create new attendance record
+			const newAttendance = await prisma.attendance.create({
+				data: {
+					studentId,
+					status,
+					date: new Date(date),
+					semester,
+				},
+			});
+			return NextResponse.json(newAttendance);
+		}
+	} catch (error) {
+		console.error('Error handling attendance:', error);
+		return NextResponse.json(
+			{ error: 'Failed to update attendance' },
 			{ status: 500 }
 		);
 	}

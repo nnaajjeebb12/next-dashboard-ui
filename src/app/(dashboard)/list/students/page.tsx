@@ -28,6 +28,12 @@ const StudentListpage = async ({
 		orderBy: { name: 'asc' },
 	});
 
+	// Get all sections
+	const sections = await prisma.class.findMany({
+		select: { id: true, name: true },
+		orderBy: { name: 'asc' },
+	});
+
 	const columns = [
 		{
 			header: 'LRN',
@@ -53,8 +59,11 @@ const StudentListpage = async ({
 		},
 		{
 			header: 'Section',
-			accessor: 'section',
-			className: 'hidden md:table-cell',
+			accessor: 'classId',
+			filterOptions: sections.map((section) => ({
+				value: section.id.toString(),
+				label: section.name,
+			})),
 		},
 		{
 			header: 'Grade',
@@ -75,7 +84,7 @@ const StudentListpage = async ({
 			accessor: 'address',
 			className: 'hidden lg:table-cell',
 		},
-		...(role === 'admin'
+		...(role === 'teacher'
 			? [
 					{
 						header: 'Actions',
@@ -106,7 +115,7 @@ const StudentListpage = async ({
 							<Image src="/view.png" alt="" width={16} height={16} />
 						</button>
 					</Link>
-					{role === 'admin' && (
+					{role === 'teacher' && (
 						<FormContainer table="student" type="delete" id={item.id} />
 					)}
 				</div>
@@ -114,8 +123,7 @@ const StudentListpage = async ({
 		</tr>
 	);
 
-	const { page, filterColumn, filterValue, search, ...queryParams } =
-		searchParams;
+	const { page, search, ...queryParams } = searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
@@ -141,20 +149,52 @@ const StudentListpage = async ({
 		}
 	}
 
-	if (filterColumn && filterValue) {
-		switch (filterColumn) {
-			case 'Strand':
-				query.Strand = {
-					name: filterValue,
-				};
-				break;
-			case 'grade':
-				query.grade = {
-					level: parseInt(filterValue),
-				};
-				break;
-			default:
-				break;
+	// Handle multiple filters for each column
+	const filterConditions: Prisma.StudentWhereInput[] = [];
+
+	// Get all filter values for each column
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (key.endsWith('Filter') && value) {
+			const column = key.replace('Filter', '');
+			const values = Array.isArray(value) ? value : [value];
+
+			switch (column) {
+				case 'Strand':
+					filterConditions.push({
+						OR: values.map((filterValue) => ({
+							Strand: {
+								name: filterValue,
+							},
+						})),
+					});
+					break;
+				case 'grade':
+					filterConditions.push({
+						OR: values.map((filterValue) => ({
+							grade: {
+								level: parseInt(filterValue),
+							},
+						})),
+					});
+					break;
+				case 'classId':
+					filterConditions.push({
+						OR: values.map((filterValue) => ({
+							classId: parseInt(filterValue),
+						})),
+					});
+					break;
+			}
+		}
+	});
+
+	// If there are filter conditions, add them to the query
+	if (filterConditions.length > 0) {
+		if (query.OR) {
+			query.AND = [{ OR: query.OR }, ...filterConditions];
+			delete query.OR;
+		} else {
+			query.AND = filterConditions;
 		}
 	}
 
@@ -162,7 +202,9 @@ const StudentListpage = async ({
 	if (role === 'teacher' && currentUserId) {
 		query.class = {
 			OR: [
+				// Students in classes where teacher is supervisor
 				{ supervisorId: currentUserId },
+				// Students in classes where teacher has lessons
 				{
 					lessons: {
 						some: {
@@ -174,6 +216,8 @@ const StudentListpage = async ({
 		};
 	}
 
+	console.log('Query:', JSON.stringify(query, null, 2)); // Debug log
+
 	const [data, count] = await prisma.$transaction([
 		prisma.student.findMany({
 			where: query,
@@ -182,11 +226,21 @@ const StudentListpage = async ({
 				class: true,
 				grade: true,
 			},
-			take: 10,
-			skip: 10 * (p - 1),
+			orderBy: [{ name: 'asc' }],
+			take: ITEM_PER_PAGE,
+			skip: ITEM_PER_PAGE * (p - 1),
 		}),
 		prisma.student.count({ where: query }),
 	]);
+
+	// If teacher is logged in, sort their supervised class to the top
+	if (role === 'teacher' && currentUserId) {
+		(data as StudentList[]).sort((a, b) => {
+			if (a.class.supervisorId === currentUserId) return -1;
+			if (b.class.supervisorId === currentUserId) return 1;
+			return 0;
+		});
+	}
 
 	return (
 		<div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
@@ -202,7 +256,7 @@ const StudentListpage = async ({
 							)}
 						/>
 
-						{role === 'admin' && (
+						{role === 'teacher' && (
 							<FormContainer table="student" type="create" />
 						)}
 					</div>

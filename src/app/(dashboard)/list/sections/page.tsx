@@ -125,13 +125,17 @@ const ClassListpage = async ({
 		</tr>
 	);
 
-	const { page, filterColumn, filterValue, search, ...queryParams } =
-		searchParams;
+	const { page, search, ...queryParams } = searchParams;
 
 	const p = page ? parseInt(page) : 1;
 
 	// URL PARAMS CONDITION
 	const query: Prisma.ClassWhereInput = {};
+
+	// Add supervisor filter for teachers
+	if (role === 'teacher') {
+		query.supervisorId = currentUserId;
+	}
 
 	// Get all data first
 	const [allData, totalCount] = await prisma.$transaction([
@@ -170,24 +174,34 @@ const ClassListpage = async ({
 		});
 	}
 
-	if (filterColumn && filterValue) {
-		filteredData = filteredData.filter((item) => {
-			switch (filterColumn) {
-				case 'capacity':
-					const isFull = item.students.length >= item.capacity;
-					return filterValue === 'full' ? isFull : !isFull;
-				case 'grade':
-					return item.grade.level === parseInt(filterValue);
-				case 'strand':
-					return getMajorityStrand(item.students) === filterValue;
-				case 'supervisor':
-					const hasSupervisor = !!item.supervisor;
-					return filterValue === 'assigned' ? hasSupervisor : !hasSupervisor;
-				default:
-					return true;
-			}
-		});
-	}
+	// Handle multiple filters
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (key.endsWith('Filter') && value) {
+			const column = key.replace('Filter', '');
+			const values = Array.isArray(value) ? value : [value];
+
+			filteredData = filteredData.filter((item) => {
+				return values.some((filterValue) => {
+					switch (column) {
+						case 'capacity':
+							const isFull = item.students.length >= item.capacity;
+							return filterValue === 'full' ? isFull : !isFull;
+						case 'grade':
+							return item.grade.level === parseInt(filterValue);
+						case 'strand':
+							return getMajorityStrand(item.students) === filterValue;
+						case 'supervisor':
+							const hasSupervisor = !!item.supervisor;
+							return filterValue === 'assigned'
+								? hasSupervisor
+								: !hasSupervisor;
+						default:
+							return true;
+					}
+				});
+			});
+		}
+	});
 
 	// Apply pagination after filtering
 	const data = filteredData.slice(ITEM_PER_PAGE * (p - 1), ITEM_PER_PAGE * p);
