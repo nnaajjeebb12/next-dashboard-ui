@@ -14,6 +14,38 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import InputField from '../InputField';
 
+// Function to update attendance status
+export async function updateAttendanceStatus(
+	studentId: string,
+	status: string,
+	date: string
+) {
+	try {
+		const response = await fetch('/api/attendance', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				studentId,
+				status,
+				date,
+				semester:
+					new Date(date).getMonth() < 6 ? '2nd Semester' : '1st Semester',
+			}),
+		});
+
+		if (!response.ok) {
+			throw new Error('Failed to update attendance');
+		}
+
+		toast.success('Attendance updated successfully');
+	} catch (error) {
+		toast.error('Failed to update attendance');
+		console.error('Error updating attendance:', error);
+	}
+}
+
 const AttendanceForm = ({
 	type,
 	data,

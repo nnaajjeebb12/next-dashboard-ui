@@ -63,12 +63,12 @@
 
 ## =Attendance Tab=
 
-- [ ] If possible - make the attendance for each day simpler.
+- [x] If possible - make the attendance for each day simpler.
   - Selecting a section reveals all students in a column.
   - To take their attendance, checkbox for present, absent, excused, or holiday.
 
 ## =ALL TABS=
 
 - [x] Delete strand function not working.
-- [ ] Allow to multi-select filters.
+- [x] Allow to multi-select filters.
 - [x] Filter by Strand not working.
