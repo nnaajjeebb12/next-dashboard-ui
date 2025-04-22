@@ -436,7 +436,9 @@ export const updateStudent = async (
 			publicMetadata: { role: 'student' },
 		});
 
-		const combinedAddress = `${data.purok}, ${data.brgy}, ${data.city}, ${data.province}`;
+		const firstPart = data.address.split(',')[0];
+		const houseNumber = !isNaN(Number(firstPart)) ? firstPart : '0000';
+		const combinedAddress = `${houseNumber}, ${data.purok}, ${data.brgy}, ${data.city}, ${data.province}`;
 		await prisma.student.update({
 			where: {
 				id: data.id,

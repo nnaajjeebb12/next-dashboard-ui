@@ -145,9 +145,7 @@ const LessonListpage = async ({
 				className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
 				<td className="flex items-center gap-4 p-4">{item.name}</td>
 				<td>{item.subject.name}</td>
-				<td>
-					{item.class.grade.level}-{item.class.name}
-				</td>
+				<td>{item.class.name}</td>
 				<td className="hidden">{item.class.grade.level}</td>
 				<td className="hidden md:table-cell">{majorityStrand}</td>
 				<td className="hidden md:table-cell">

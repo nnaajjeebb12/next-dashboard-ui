@@ -150,7 +150,13 @@ const StudentForm = ({
 				<InputField
 					label="House Number"
 					name="address"
-					defaultValue=""
+					defaultValue={
+						data?.address
+							? !isNaN(Number(data.address.split(',')[0]))
+								? data.address.split(',')[0]
+								: '0000'
+							: ''
+					}
 					register={register}
 					error={errors.address}
 				/>

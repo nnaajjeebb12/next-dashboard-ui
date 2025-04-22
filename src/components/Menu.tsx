@@ -46,7 +46,7 @@ const menuItems = [
 				icon: '/lesson.png',
 				label: 'Lessons',
 				href: '/list/lessons',
-				visible: ['teacher'],
+				visible: ['admin', 'teacher'],
 			},
 			// {
 			// 	icon: '/exam.png',
@@ -64,7 +64,7 @@ const menuItems = [
 				icon: '/result-edited.png',
 				label: 'Results',
 				href: '/list/results',
-				visible: ['admin', 'teacher', 'student', 'parent'],
+				visible: ['admin', 'teacher'],
 			},
 			{
 				icon: '/attendance.png',

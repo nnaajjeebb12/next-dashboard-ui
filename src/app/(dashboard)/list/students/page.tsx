@@ -182,8 +182,8 @@ const StudentListpage = async ({
 				class: true,
 				grade: true,
 			},
-			take: 10,
-			skip: 10 * (p - 1),
+			take: ITEM_PER_PAGE,
+			skip: ITEM_PER_PAGE * (p - 1),
 		}),
 		prisma.student.count({ where: query }),
 	]);

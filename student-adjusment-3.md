@@ -17,7 +17,7 @@
 
 ## =Sections Tab=
 
-- [ ] The strand category in filter does not work.
+- [x] The strand category in filter does not work.
 
 ## =Results Tab=
 
