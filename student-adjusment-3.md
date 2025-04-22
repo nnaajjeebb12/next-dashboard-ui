@@ -37,9 +37,11 @@
 
 ## =Students Tab=
 
-- [ ] Able to See, Add, and Edit students ONLY in the subjects/lessons that they are handling.
-  - (for example, Teacher A = Teacher A lang makakakita at edit ng handled niyang students sa bawat section and priority ang supervising class niya sa taas ng result.)
-  - (Transfer permissions of adding/editing students from admin dashboard)
+- [x] Able to:
+  - [x] See, and Edit students ONLY in the subjects/lessons that they are handling.
+    - [x] (for example, Teacher A = Teacher A lang makakakita at edit ng handled niyang students sa bawat section and priority ang supervising class niya sa taas ng result.)
+    - [x] (Transfer permissions of adding/editing students from admin dashboard)
+  - [ ] Add - di to possible na ang maiiadd lang eh yung student nya, since adding is new
 
 ## =Sections Tab=
 
