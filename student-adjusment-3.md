@@ -12,7 +12,7 @@
 
 ## =Students Tab=
 
-- [ ] Transfer permissions - Can only be seen/edited by teachers in their dashboard.
+- [x] Transfer permissions - Can only be seen/edited by teachers in their dashboard.
 - [x] When adding and editing students, the grade dropdown should be for Grade 11 and 12 only.
 
 ## =Sections Tab=
@@ -21,11 +21,11 @@
 
 ## =Results Tab=
 
-- [ ] Transfer permissions - Can only be seen/edited by teachers in their dashboard. (Teacher’s Dashboard results show the home page might be a bug.)
+- [x] Transfer permissions - Can only be seen/edited by teachers in their dashboard. (Teacher’s Dashboard results show the home page might be a bug.)
 
 ## =Attendance Tab=
 
-- [ ] Transfer permissions - Can only be seen/edited by teachers in their dashboard.
+- [x] Transfer permissions - Can only be seen/edited by teachers in their dashboard.
 
 ---
 
@@ -33,7 +33,7 @@
 
 ## =Home Tab=
 
-- [ ] Remove Announcement column.
+- [x] Remove Announcement column.
 
 ## =Students Tab=
 

@@ -22,7 +22,7 @@ const menuItems = [
 				icon: '/student.png',
 				label: 'Students',
 				href: '/list/students',
-				visible: ['admin', 'teacher'],
+				visible: ['teacher'],
 			},
 			// {
 			// 	icon: '/parent.png',
@@ -46,7 +46,7 @@ const menuItems = [
 				icon: '/lesson.png',
 				label: 'Lessons',
 				href: '/list/lessons',
-				visible: ['admin', 'teacher'],
+				visible: ['teacher'],
 			},
 			// {
 			// 	icon: '/exam.png',
@@ -64,13 +64,13 @@ const menuItems = [
 				icon: '/result-edited.png',
 				label: 'Results',
 				href: '/list/results',
-				visible: ['admin', 'teacher'],
+				visible: ['teacher'],
 			},
 			{
 				icon: '/attendance.png',
 				label: 'Attendance',
 				href: '/list/attendance',
-				visible: ['admin', 'teacher', 'student', 'parent'],
+				visible: ['teacher'],
 			},
 			// {
 			// 	icon: '/calendar.png',
