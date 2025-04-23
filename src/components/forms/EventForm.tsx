@@ -32,9 +32,7 @@ const EventForm = ({
 		resolver: zodResolver(schema),
 	});
 
-	const onSubmit = handleSubmit((data) => {
-		// console.log({ data });
-	});
+	const onSubmit = handleSubmit((data) => {});
 	return (
 		<form className="flex flex-col gap-8" onSubmit={onSubmit}>
 			<h1 className="text-xl font-semibold">Add a new Event</h1>

@@ -763,10 +763,6 @@ const PDFDocument = ({
 	);
 
 	const renderRegisterAndSignature = () => {
-		// Add // console.log for debugging
-		// console.log('SchoolInfo:', data.schoolInfo);
-		// console.log('Supervisor Name:', data.schoolInfo.supervisorName);
-
 		return (
 			<>
 				<View style={styles.registerContainer}>
@@ -1044,13 +1040,6 @@ const PdfExportPage = () => {
 	) => {
 		try {
 			setLoading(true);
-			console.log('Fetching data with params:', {
-				strandId,
-				classId,
-				studentId,
-				selectedForm,
-				selectedSchoolYear,
-			});
 
 			const params = new URLSearchParams();
 			params.append('schoolYear', selectedSchoolYear);
@@ -1072,7 +1061,6 @@ const PdfExportPage = () => {
 						throw new Error(`Failed to fetch data from ${apiUrl}`);
 					}
 					const studentData = await response.json();
-					console.log('Received student data:', studentData);
 
 					setData((prevData) => {
 						if (!prevData) return studentData;
@@ -1092,16 +1080,12 @@ const PdfExportPage = () => {
 				if (classId) params.append('classId', classId);
 				if (studentId) {
 					params.append('studentId', studentId);
-					console.log(
-						'Fetching SF10 data with URL:',
-						`${apiUrl}?${params.toString()}`
-					);
+
 					const response = await fetch(`${apiUrl}?${params.toString()}`);
 					if (!response.ok) {
 						throw new Error(`Failed to fetch data from ${apiUrl}`);
 					}
 					const studentData = await response.json();
-					console.log('Received SF10 student data:', studentData);
 
 					setData((prevData) => {
 						if (!prevData) return studentData;
@@ -1137,7 +1121,6 @@ const PdfExportPage = () => {
 			}
 
 			const responseData = await response.json();
-			console.log('Received general data:', responseData);
 
 			setData((prevData) => {
 				const newData = {
@@ -1154,7 +1137,6 @@ const PdfExportPage = () => {
 						eligibilityData: prevData?.eligibilityData,
 					}),
 				};
-				console.log('Updated general data state:', newData);
 				return newData;
 			});
 		} catch (err) {
@@ -1184,42 +1166,22 @@ const PdfExportPage = () => {
 		e: React.ChangeEvent<HTMLSelectElement>
 	) => {
 		const newStrandId = e.target.value;
-		console.log('Strand change - Previous values:', {
-			strand: selectedStrand,
-			class: selectedClass,
-			student: selectedStudent,
-		});
+
 		setSelectedStrand(newStrandId);
 		// Don't reset class and student selections
 		if (newStrandId) {
-			console.log('Fetching data for new strand:', newStrandId);
 			await fetchData(newStrandId, selectedClass, selectedStudent);
 		}
-		console.log('Strand change - New values:', {
-			strand: newStrandId,
-			class: selectedClass,
-			student: selectedStudent,
-		});
 	};
 
 	const handleClassChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const newClassId = e.target.value;
-		console.log('Class change - Previous values:', {
-			strand: selectedStrand,
-			class: selectedClass,
-			student: selectedStudent,
-		});
+
 		setSelectedClass(newClassId);
 		// Don't reset student selection
 		if (newClassId && selectedStrand) {
-			console.log('Fetching data for new class:', newClassId);
 			await fetchData(selectedStrand, newClassId, selectedStudent);
 		}
-		console.log('Class change - New values:', {
-			strand: selectedStrand,
-			class: newClassId,
-			student: selectedStudent,
-		});
 	};
 
 	const handleSchoolYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -1238,11 +1200,7 @@ const PdfExportPage = () => {
 		e: React.ChangeEvent<HTMLSelectElement>
 	) => {
 		const newStudentId = e.target.value;
-		console.log('Student change - Previous values:', {
-			strand: selectedStrand,
-			class: selectedClass,
-			student: selectedStudent,
-		});
+
 		setSelectedStudent(newStudentId);
 
 		// Clear previous student data when selection changes
@@ -1267,15 +1225,8 @@ const PdfExportPage = () => {
 			newStudentId &&
 			selectedStrand
 		) {
-			console.log('Fetching data for new student:', newStudentId);
 			await fetchData(selectedStrand, selectedClass, newStudentId);
 		}
-
-		console.log('Student change - New values:', {
-			strand: selectedStrand,
-			class: selectedClass,
-			student: newStudentId,
-		});
 	};
 
 	// Update validation for form completion
@@ -1304,16 +1255,6 @@ const PdfExportPage = () => {
 	}
 
 	const renderForm = () => {
-		// Add console logs for debugging
-		// console.log('Rendering form:', {
-		// 	selectedForm,
-		// 	data,
-		// 	selectedSchoolYear,
-		// 	selectedMonth,
-		// 	selectedSemester,
-		// 	isFormComplete,
-		// });
-
 		// Return an empty document if data is not ready
 		if (!data || !isFormComplete) {
 			return (
@@ -1356,13 +1297,6 @@ const PdfExportPage = () => {
 					/>
 				);
 			case FormType.SF10:
-				console.log('Rendering SF10 Document with data:', {
-					fullData: data,
-					student: data.student,
-					class: data.class,
-					supervisor: data.class?.supervisor,
-					schoolInfo: data.schoolInfo,
-				});
 				return <SF10Document data={data} eligibilityData={eligibilityData} />;
 			default:
 				return (

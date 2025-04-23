@@ -58,7 +58,6 @@ const StudentForm = ({
 	const router = useRouter();
 
 	useEffect(() => {
-		// console.log(data);
 		if (state.success) {
 			toast.success(
 				`Student has been ${type === 'create' ? 'created' : 'updated'}!`

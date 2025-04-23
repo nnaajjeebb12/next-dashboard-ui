@@ -20,7 +20,7 @@ model Admin {
 
 model Student {
   id                 String       @id
-  username           String       @unique
+  username           String?
   name               String
   middleName         String?
   surname            String

@@ -28,14 +28,6 @@ const TeacherForm = ({
 	userRole?: string;
 	currentUserId?: number | string;
 }) => {
-	console.log('TeacherForm - Component Props:', {
-		type,
-		data,
-		relatedData,
-		userRole,
-		currentUserId,
-	});
-
 	const {
 		register,
 		handleSubmit,
@@ -59,7 +51,6 @@ const TeacherForm = ({
 	);
 
 	const onSubmit = handleSubmit((data) => {
-		console.log('TeacherForm - Form Submit Data:', data);
 		formAction({ ...data, img: img?.secure_url });
 	});
 
@@ -77,8 +68,6 @@ const TeacherForm = ({
 		}
 	}, [state, type, setOpen, router]);
 	const { subjects } = relatedData;
-	console.log('TeacherForm - Available Subjects:', subjects);
-	console.log('TeacherForm - Teacher Current Subjects:', data?.subjects);
 
 	return (
 		<form className="flex flex-col gap-8" onSubmit={onSubmit}>

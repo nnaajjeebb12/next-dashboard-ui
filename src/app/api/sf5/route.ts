@@ -187,16 +187,6 @@ export async function GET(req: NextRequest) {
 			}),
 		};
 
-		console.log(
-			'Sample student results:',
-			students.slice(0, 1).map((student) => ({
-				name: `${student.surname}, ${student.name}`,
-				backSubjects: student.backSubjects,
-				semesterStatus: student.semesterStatus,
-				yearStatus: student.yearStatus,
-			}))
-		);
-
 		return NextResponse.json(response);
 	} catch (error) {
 		console.error('Error in SF5 API:', error);
