@@ -84,7 +84,7 @@ const StudentListpage = async ({
 			accessor: 'address',
 			className: 'hidden lg:table-cell',
 		},
-		...(role === 'teacher'
+		...(role === 'admin'
 			? [
 					{
 						header: 'Actions',
@@ -115,7 +115,7 @@ const StudentListpage = async ({
 							<Image src="/view.png" alt="" width={16} height={16} />
 						</button>
 					</Link>
-					{role === 'teacher' && (
+					{role === 'admin' && (
 						<FormContainer table="student" type="delete" id={item.id} />
 					)}
 				</div>

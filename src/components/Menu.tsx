@@ -22,7 +22,7 @@ const menuItems = [
 				icon: '/student.png',
 				label: 'Students',
 				href: '/list/students',
-				visible: ['teacher'],
+				visible: ['admin', 'teacher'],
 			},
 			// {
 			// 	icon: '/parent.png',

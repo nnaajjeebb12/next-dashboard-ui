@@ -19,7 +19,7 @@
 - [ ] When creating student it does not appear as added.
   - (Sometimes it does not create student even if all boxes have data; it shows "error creating student".)
   - (Also the guardian’s name, middle name, and surname, relationship to guardian, should be **optional** to be filled up.)
-- [ ] Move students edit privileges to admin. Only shows handled student information for teacher dashboard.
+- [x] Move students edit privileges to admin. Only shows handled student information for teacher dashboard.
 
 ## =Results Tab=
 
