@@ -42,6 +42,9 @@ const TeacherForm = ({
 		formState: { errors },
 	} = useForm<TeacherSchema>({
 		resolver: zodResolver(teacherSchema),
+		defaultValues: {
+			subjects: data?.subjects?.map((s: any) => s.id.toString()) || [],
+		},
 	});
 
 	const [img, setImg] = useState<any>();
@@ -221,7 +224,7 @@ const TeacherForm = ({
 									<input
 										type="checkbox"
 										id={`subject-${subject.id}`}
-										value={subject.id}
+										value={subject.id.toString()}
 										{...register('subjects')}
 										defaultChecked={isSelected}
 										className="w-4 h-4 accent-najSky cursor-pointer"
@@ -244,7 +247,9 @@ const TeacherForm = ({
 			</div>
 
 			{state.error && (
-				<span className="text-red-500">Something went wrong!</span>
+				<span className="text-red-500">
+					{state.message || 'Something went wrong!'}
+				</span>
 			)}
 
 			<button className="bg-blue-400 text-white p-2 rounded-md">

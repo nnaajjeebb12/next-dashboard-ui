@@ -2,11 +2,11 @@
 
 ## =Strand Tab=
 
-- [ ] Remove students column
+- [x] Remove students column
 
 ## =Teachers Tab=
 
-- [ ] Shows error when editing/updating Teacher information.
+- [x] Shows error when editing/updating Teacher information.
   - (The dialogue shows "Error" **pero nagp**u-push through po **yung** page. Example: I changed my password to 123123123, it will show "Error changing password" but when I tried using it to log in, **gumagana po siya**.)
 
 ---
@@ -24,3 +24,4 @@
 ## =Results Tab=
 
 - [ ] Newly added student/s does not appear on results tab.
+  - [ ] This must be added manually by the teacher

@@ -1,6 +1,6 @@
 'use server';
 
-import { clerkClient } from '@clerk/nextjs/server';
+import { clerkClient, type User } from '@clerk/nextjs/server';
 import { Admin, Lesson, Strand } from '@prisma/client';
 import { error } from 'console';
 import { revalidatePath } from 'next/cache';
@@ -188,58 +188,131 @@ export const createTeacher = async (
 	currentState: CurrentState,
 	data: TeacherSchema
 ) => {
-	let clerkUser;
+	let clerkUser: User | undefined;
 	const client = await clerkClient();
 	try {
-		clerkUser = await client.users.createUser({
-			username: data.username,
-			password: data.password,
-			firstName: data.name,
-			lastName: data.surname,
-			publicMetadata: { role: 'teacher' },
-		});
+		// Check for empty password during creation
+		if (!data.password) {
+			return {
+				success: false,
+				error: true,
+				message: 'Password is required when creating a new teacher account.',
+			};
+		}
 
-		// Create the teacher in the database with the image URL from Cloudinary
-		await prisma.teacher.create({
-			data: {
-				id: clerkUser.id,
-				username: data.username,
-				name: data.name,
-				surname: data.surname,
-				email: data.email || null,
-				phone: data.phone || null,
-				address: data.address,
-				img: data.img || null,
-				bloodType: data.bloodType,
-				sex: data.sex,
-				birthday: data.birthday,
-				subjects: {
-					connect: data.subjects?.map((subjectId: string) => ({
-						id: parseInt(subjectId),
-					})),
-				},
+		// Check for existing username/email/phone in database first
+		const existingTeacher = await prisma.teacher.findFirst({
+			where: {
+				OR: [
+					{ username: data.username },
+					...(data.email ? [{ email: data.email }] : []),
+					...(data.phone ? [{ phone: data.phone }] : []),
+				],
 			},
 		});
 
-		// revalidatePath("/list/teacher");
-		return { success: true, error: false, message: '' };
-	} catch (err) {
-		// console.log(err);
-		// console.log('clerkid = ' + clerkUser?.id);
-		if (clerkUser) {
-			try {
-				await client.users.deleteUser(clerkUser.id);
-			} catch (deleteErr) {
-				// console.log(
-				// 	'Failed to delete Clerk user after teacher creation failure:',
-				// 	deleteErr
-				// );
+		if (existingTeacher) {
+			if (existingTeacher.username === data.username) {
+				return {
+					success: false,
+					error: true,
+					message:
+						'Username is already taken. Please choose a different username.',
+				};
 			}
+			if (data.email && existingTeacher.email === data.email) {
+				return {
+					success: false,
+					error: true,
+					message: 'Email is already registered to another teacher.',
+				};
+			}
+			if (data.phone && existingTeacher.phone === data.phone) {
+				return {
+					success: false,
+					error: true,
+					message: 'Phone number is already registered to another teacher.',
+				};
+			}
+		}
+
+		try {
+			clerkUser = await client.users.createUser({
+				username: data.username,
+				password: data.password,
+				firstName: data.name,
+				lastName: data.surname,
+				publicMetadata: { role: 'teacher' },
+			});
+		} catch (clerkError: any) {
+			if (clerkError.message?.includes('already exists')) {
+				return {
+					success: false,
+					error: true,
+					message: 'Username is already taken in the authentication system.',
+				};
+			}
+			return {
+				success: false,
+				error: true,
+				message:
+					'Failed to create authentication account: ' + clerkError.message,
+			};
+		}
+
+		try {
+			await prisma.teacher.create({
+				data: {
+					id: clerkUser.id,
+					username: data.username,
+					name: data.name,
+					surname: data.surname,
+					email: data.email || null,
+					phone: data.phone || null,
+					address: data.address,
+					img: data.img || null,
+					bloodType: data.bloodType,
+					sex: data.sex,
+					birthday: data.birthday,
+					subjects: {
+						connect: data.subjects?.map((subjectId: string) => ({
+							id: parseInt(subjectId),
+						})),
+					},
+				},
+			});
+		} catch (dbError: any) {
+			// Clean up Clerk user if database operation fails
+			if (clerkUser) {
+				await client.users.deleteUser(clerkUser.id).catch(() => {});
+			}
+
+			if (dbError.code === 'P2002') {
+				const field = dbError.meta?.target?.[0];
+				return {
+					success: false,
+					error: true,
+					message: `The ${field} is already taken. Please choose a different ${field}.`,
+				};
+			}
+
+			return {
+				success: false,
+				error: true,
+				message:
+					'Failed to create teacher record in database: ' + dbError.message,
+			};
+		}
+
+		return { success: true, error: false, message: '' };
+	} catch (err: any) {
+		if (clerkUser) {
+			await client.users.deleteUser(clerkUser.id).catch(() => {});
 		}
 		return {
 			success: false,
 			error: true,
-			message: 'Error creating the teacher',
+			message: 'An unexpected error occurred: ' + err.message,
 		};
 	}
 };
@@ -249,52 +322,129 @@ export const updateTeacher = async (
 	data: TeacherSchema
 ) => {
 	if (!data.id) {
-		return { success: false, error: true, message: 'Error fetching data' };
-	}
-	try {
-		const client = await clerkClient();
-
-		const user = await client.users.updateUser(data.id, {
-			username: data.username,
-			...(data.password !== '' && { password: data.password }),
-			firstName: data.name,
-			lastName: data.surname,
-			publicMetadata: { role: 'teacher' },
-		});
-
-		await prisma.teacher.update({
-			where: {
-				id: data.id,
-			},
-			data: {
-				...(data.password !== '' && { password: data.password }),
-				username: data.username,
-				name: data.name,
-				surname: data.surname,
-				email: data.email || null,
-				phone: data.phone || null,
-				address: data.address,
-				// img: data.img !== undefined ? data.img : null,
-				...(data.img !== '' && { img: data.img }),
-				bloodType: data.bloodType,
-				sex: data.sex,
-				birthday: data.birthday,
-				subjects: {
-					connect: data.subjects?.map((subjectId: string) => ({
-						id: parseInt(subjectId),
-					})),
-				},
-			},
-		});
-
-		// revalidatePath('/list/teacher');
-		return { success: true, error: false, message: '' };
-	} catch (err) {
-		// console.log(err);
 		return {
 			success: false,
 			error: true,
-			message: 'Error updating the Teacher',
+			message: 'Teacher ID is required for update',
+		};
+	}
+
+	try {
+		// Check for existing username/email/phone but exclude current teacher
+		const existingTeacher = await prisma.teacher.findFirst({
+			where: {
+				AND: [
+					{ id: { not: data.id } },
+					{
+						OR: [
+							{ username: data.username },
+							...(data.email ? [{ email: data.email }] : []),
+							...(data.phone ? [{ phone: data.phone }] : []),
+						],
+					},
+				],
+			},
+		});
+
+		if (existingTeacher) {
+			if (existingTeacher.username === data.username) {
+				return {
+					success: false,
+					error: true,
+					message:
+						'Username is already taken. Please choose a different username.',
+				};
+			}
+			if (data.email && existingTeacher.email === data.email) {
+				return {
+					success: false,
+					error: true,
+					message: 'Email is already registered to another teacher.',
+				};
+			}
+			if (data.phone && existingTeacher.phone === data.phone) {
+				return {
+					success: false,
+					error: true,
+					message: 'Phone number is already registered to another teacher.',
+				};
+			}
+		}
+
+		const client = await clerkClient();
+
+		try {
+			await client.users.updateUser(data.id, {
+				username: data.username,
+				...(data.password !== '' && { password: data.password }),
+				firstName: data.name,
+				lastName: data.surname,
+				publicMetadata: { role: 'teacher' },
+			});
+		} catch (clerkError: any) {
+			if (clerkError.message?.includes('already exists')) {
+				return {
+					success: false,
+					error: true,
+					message: 'Username is already taken in the authentication system.',
+				};
+			}
+			return {
+				success: false,
+				error: true,
+				message:
+					'Failed to update authentication account: ' + clerkError.message,
+			};
+		}
+
+		try {
+			await prisma.teacher.update({
+				where: {
+					id: data.id,
+				},
+				data: {
+					...(data.password !== '' && { password: data.password }),
+					username: data.username,
+					name: data.name,
+					surname: data.surname,
+					email: data.email || null,
+					phone: data.phone || null,
+					address: data.address,
+					...(data.img !== '' && { img: data.img }),
+					bloodType: data.bloodType,
+					sex: data.sex,
+					birthday: data.birthday,
+					subjects: {
+						set: (data.subjects || []).map((subjectId: string) => ({
+							id: parseInt(subjectId),
+						})),
+					},
+				},
+			});
+		} catch (dbError: any) {
+			if (dbError.code === 'P2002') {
+				const field = dbError.meta?.target?.[0];
+				return {
+					success: false,
+					error: true,
+					message: `The ${field} is already taken. Please choose a different ${field}.`,
+				};
+			}
+
+			return {
+				success: false,
+				error: true,
+				message:
+					'Failed to update teacher record in database: ' + dbError.message,
+			};
+		}
+
+		return { success: true, error: false, message: '' };
+	} catch (err: any) {
+		return {
+			success: false,
+			error: true,
+			message: 'An unexpected error occurred: ' + err.message,
 		};
 	}
 };
