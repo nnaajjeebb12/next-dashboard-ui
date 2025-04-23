@@ -22,11 +22,7 @@ const StrandListpage = async ({
 			header: 'Strand',
 			accessor: 'name',
 		},
-		{
-			header: 'Students',
-			accessor: 'students',
-			className: 'hidden md:table-cell',
-		},
+
 		...(role == 'admin'
 			? [
 					{
@@ -41,9 +37,7 @@ const StrandListpage = async ({
 			key={item.id}
 			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-najPurpleLight">
 			<td className="flex items-center gap-4 p-4">{item.name}</td>
-			<td className="hidden md:table-cell">
-				{item.students.map((student) => student.name).join(', ')}
-			</td>
+
 			<td>
 				<div className="flex items-center gap-2">
 					{role === 'admin' && (
