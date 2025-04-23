@@ -700,8 +700,6 @@ const SF9Document = ({ data, selectedSchoolYear }: Props) => {
 	};
 
 	const renderAttendanceTable = () => {
-		console.log('Attendance Data:', data.attendance);
-
 		// Use actual attendance data from the API if available
 		return (
 			<View style={styles.attendanceTable}>
@@ -736,11 +734,6 @@ const SF9Document = ({ data, selectedSchoolYear }: Props) => {
 							// Find the month data in the attendance data by month index
 							const monthData = data.attendance?.monthly?.find(
 								(m) => m.month === monthIndex
-							);
-
-							console.log(
-								`Checking ${month} (index ${monthIndex}):`,
-								monthData
 							);
 
 							// If we have actual data, use it; otherwise use defaults
@@ -1024,17 +1017,6 @@ const SF9Document = ({ data, selectedSchoolYear }: Props) => {
 	};
 
 	const renderReportCard = () => {
-		// Add debugging logs
-		console.log('Grades data in SF9:', data.grades);
-		console.log(
-			'First semester subjects:',
-			data.grades?.firstSemester?.subjects
-		);
-		console.log(
-			'Second semester subjects:',
-			data.grades?.secondSemester?.subjects
-		);
-
 		return (
 			<>
 				<Text style={page2Styles.reportCardHeader}>

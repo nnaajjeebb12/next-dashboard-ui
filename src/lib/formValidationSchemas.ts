@@ -63,7 +63,7 @@ export const teacherSchema = z.object({
 	bloodType: z.string().min(1, { message: 'Blood Type is required!' }),
 	birthday: z.coerce.date({ message: 'Birthday is required!' }),
 	sex: z.enum(['MALE', 'FEMALE'], { message: 'Sex is required!' }),
-	subjects: z.array(z.string()).optional(), // subject ids
+	subjects: z.array(z.string()).default([]), // This ensures we always have an array
 });
 
 export type TeacherSchema = z.infer<typeof teacherSchema>;
@@ -71,16 +71,11 @@ export type TeacherSchema = z.infer<typeof teacherSchema>;
 // STUDENT
 export const studentSchema = z.object({
 	id: z.string().optional(),
-	lrn: z.string().min(12, { message: 'LRN must be atleast 12 characters' }),
-	username: z
+	lrn: z
 		.string()
-		.min(3, { message: 'Username must be at least 3 characters' })
-		.max(20, { message: 'Username must be at least 3 characters' }),
-	password: z
-		.string()
-		.min(8, { message: 'Password must be at least 8 characters long!' })
-		.optional()
-		.or(z.literal('')),
+		.length(12, { message: 'LRN must be exactly 12 digits' })
+		.regex(/^\d+$/, { message: 'LRN must contain only numbers' }),
+	username: z.string().optional(),
 	name: z.string().min(1, { message: 'First name is required!' }),
 	middleName: z.string().min(1, { message: 'Middle name is required!' }),
 	surname: z.string().min(1, { message: 'Last name is required!' }),
@@ -101,8 +96,7 @@ export const studentSchema = z.object({
 	sex: z.enum(['MALE', 'FEMALE'], { message: 'Sex is required!' }),
 	gradeId: z.coerce.number().min(1, { message: 'Grade is required' }),
 	classId: z.coerce.number().min(1, { message: 'Class is required' }),
-	// parentId: z.string().min(1, { message: 'Parent is required' }).optional(), // maybe remove this
-	strandId: z.coerce.number().min(1, { message: 'Class is required' }), // strand names
+	strandId: z.coerce.number().min(1, { message: 'Class is required' }),
 	religion: z.string().optional(),
 	fatherName: z.string().optional(),
 	fatherMiddleName: z.string().optional(),

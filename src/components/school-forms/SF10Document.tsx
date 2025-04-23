@@ -18,21 +18,7 @@ interface SF10DocumentProps {
 }
 
 const SF10Document = ({ data, eligibilityData }: SF10DocumentProps) => {
-	useEffect(() => {
-		console.log('============ SF10 Document Debug Logs ============');
-		console.log('Full SF10 Data:', data);
-		console.log('Student Info:', data.student);
-		console.log('School Info:', data.schoolInfo);
-		console.log('Class Info:', data.class);
-		console.log('Supervisor Info:', data.class?.supervisor);
-		console.log('===============================================');
-	}, [data]);
-
-	// Add debug logs
-	console.log('Full SF10 Data:', data);
-	console.log('Student Data:', data.student);
-	console.log('Class Data:', data.class);
-	console.log('Supervisor Data:', data.class?.supervisor);
+	useEffect(() => {}, [data]);
 
 	// Increase the width while keeping the height the same
 	const PAGE_HEIGHT = 620;

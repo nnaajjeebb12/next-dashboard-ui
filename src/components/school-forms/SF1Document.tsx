@@ -576,7 +576,6 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 	);
 
 	// Add console logs for debugging
-	console.log('SF1Document props:', { data, selectedSchoolYear });
 
 	return (
 		<Document>

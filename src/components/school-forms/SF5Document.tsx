@@ -338,9 +338,6 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 			total: femaleStatuses.length,
 		};
 
-		// console.log('Male totals:', maleTotals);
-		// console.log('Female totals:', femaleTotals);
-
 		return {
 			male: maleTotals,
 			female: femaleTotals,
@@ -380,19 +377,12 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 	};
 
 	const calculateSummaryData = () => {
-		// console.log('Calculating summary data');
-		// console.log('Male students:', data.maleStudents);
-		// console.log('Female students:', data.femaleStudents);
-
 		const maleStatuses = (data.maleStudents ?? []).map((student) =>
 			calculateStudentStatus(student)
 		);
 		const femaleStatuses = (data.femaleStudents ?? []).map((student) =>
 			calculateStudentStatus(student)
 		);
-
-		// console.log('Male statuses:', maleStatuses);
-		// console.log('Female statuses:', femaleStatuses);
 
 		const countByStatus = (
 			statuses: any[],
@@ -402,7 +392,6 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 			const count = statuses.filter(
 				(status) => status[statusType] === value
 			).length;
-			// console.log(`Count for ${statusType} ${value}:`, count);
 			return count;
 		};
 
@@ -427,9 +416,6 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 				female: countByStatus(femaleStatuses, 'yearStatus', 'Irregular'),
 			},
 		};
-
-		// console.log('Semester Summary:', semesterSummary);
-		// console.log('Year Summary:', yearSummary);
 
 		return {
 			semesterSummary,

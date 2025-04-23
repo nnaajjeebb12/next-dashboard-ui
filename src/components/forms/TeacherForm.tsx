@@ -28,20 +28,15 @@ const TeacherForm = ({
 	userRole?: string;
 	currentUserId?: number | string;
 }) => {
-	console.log('TeacherForm - Component Props:', {
-		type,
-		data,
-		relatedData,
-		userRole,
-		currentUserId,
-	});
-
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
 	} = useForm<TeacherSchema>({
 		resolver: zodResolver(teacherSchema),
+		defaultValues: {
+			subjects: data?.subjects?.map((s: any) => s.id.toString()) || [],
+		},
 	});
 
 	const [img, setImg] = useState<any>();
@@ -56,7 +51,6 @@ const TeacherForm = ({
 	);
 
 	const onSubmit = handleSubmit((data) => {
-		console.log('TeacherForm - Form Submit Data:', data);
 		formAction({ ...data, img: img?.secure_url });
 	});
 
@@ -74,8 +68,6 @@ const TeacherForm = ({
 		}
 	}, [state, type, setOpen, router]);
 	const { subjects } = relatedData;
-	console.log('TeacherForm - Available Subjects:', subjects);
-	console.log('TeacherForm - Teacher Current Subjects:', data?.subjects);
 
 	return (
 		<form className="flex flex-col gap-8" onSubmit={onSubmit}>
@@ -221,7 +213,7 @@ const TeacherForm = ({
 									<input
 										type="checkbox"
 										id={`subject-${subject.id}`}
-										value={subject.id}
+										value={subject.id.toString()}
 										{...register('subjects')}
 										defaultChecked={isSelected}
 										className="w-4 h-4 accent-najSky cursor-pointer"
@@ -244,7 +236,9 @@ const TeacherForm = ({
 			</div>
 
 			{state.error && (
-				<span className="text-red-500">Something went wrong!</span>
+				<span className="text-red-500">
+					{state.message || 'Something went wrong!'}
+				</span>
 			)}
 
 			<button className="bg-blue-400 text-white p-2 rounded-md">

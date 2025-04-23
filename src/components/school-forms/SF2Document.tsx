@@ -74,16 +74,6 @@ const SF2Document = ({
 				const startDate = new Date(Date.UTC(yearToUse, monthIndex, 1));
 				const endDate = new Date(Date.UTC(yearToUse, monthIndex + 1, 0));
 
-				console.log('Date Range:', {
-					selectedMonth,
-					monthIndex,
-					startYear,
-					endYear,
-					yearToUse,
-					startDate: startDate.toISOString(),
-					endDate: endDate.toISOString(),
-				});
-
 				// Format dates for API query (YYYY-MM-DD format)
 				const start = startDate.toISOString().split('T')[0];
 				const end = endDate.toISOString().split('T')[0];
@@ -94,24 +84,12 @@ const SF2Document = ({
 				const allStudents = [...maleStudents, ...femaleStudents];
 
 				if (allStudents.length === 0) {
-					console.log('No students found in the data');
 					setAttendanceMap({});
 					return;
 				}
 
 				// Create student IDs string for the API
 				const studentIds = allStudents.map((student) => student.id).join(',');
-
-				// Log request details
-				console.log('Fetching attendance for:', {
-					dateRange: { start, end },
-					students: allStudents.map((student) => ({
-						id: student.id,
-						name: `${student.surname}, ${student.name} ${
-							student.middleName || ''
-						}`,
-					})),
-				});
 
 				// Fetch attendance data from API
 				const response = await fetch(
@@ -128,12 +106,8 @@ const SF2Document = ({
 
 				const attendanceData = await response.json();
 
-				// Log detailed attendance information
-				console.log('Attendance Records Details:', attendanceData);
-
 				// Check if attendanceData is an array and has items
 				if (!Array.isArray(attendanceData) || attendanceData.length === 0) {
-					console.log('No attendance records found for the period');
 					setAttendanceMap({});
 					return;
 				}
@@ -170,7 +144,6 @@ const SF2Document = ({
 					map[record.studentId][day] = statusCode;
 				});
 
-				console.log('Processed attendance map:', map);
 				setAttendanceMap(map);
 			} catch (error) {
 				console.error('Error fetching attendance data:', error);

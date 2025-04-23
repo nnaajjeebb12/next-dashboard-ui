@@ -58,7 +58,6 @@ const StudentForm = ({
 	const router = useRouter();
 
 	useEffect(() => {
-		// console.log(data);
 		if (state.success) {
 			toast.success(
 				`Student has been ${type === 'create' ? 'created' : 'updated'}!`
@@ -83,9 +82,22 @@ const StudentForm = ({
 					defaultValue={data?.lrn}
 					register={register}
 					error={errors.lrn}
+					inputProps={{
+						maxLength: 12,
+						pattern: '\\d*',
+						inputMode: 'numeric',
+					}}
+				/>
+				<InputField
+					label="Email Address"
+					name="email"
+					type="email"
+					defaultValue={data?.email}
+					register={register}
+					error={errors.email}
 				/>
 			</div>
-			<span className="text-xs text-gray-400 font-medium">
+			{/* <span className="text-xs text-gray-400 font-medium">
 				Authentication Information
 			</span>
 
@@ -97,14 +109,7 @@ const StudentForm = ({
 					register={register}
 					error={errors.username}
 				/>
-				<InputField
-					label="Email"
-					name="email"
-					type="email"
-					defaultValue={data?.email}
-					register={register}
-					error={errors.email}
-				/>
+
 				<InputField
 					label="Password"
 					name="password"
@@ -113,7 +118,7 @@ const StudentForm = ({
 					register={register}
 					error={errors.password}
 				/>
-			</div>
+			</div> */}
 			<span className="text-xs text-gray-400 font-medium">
 				School Information
 			</span>

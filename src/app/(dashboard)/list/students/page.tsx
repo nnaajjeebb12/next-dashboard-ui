@@ -44,11 +44,11 @@ const StudentListpage = async ({
 			header: 'Name',
 			accessor: 'name',
 		},
-		{
-			header: 'Student ID',
-			accessor: 'studentId',
-			className: 'hidden md:table-cell',
-		},
+		// {
+		// 	header: 'Student ID',
+		// 	accessor: 'studentId',
+		// 	className: 'hidden md:table-cell',
+		// },
 		{
 			header: 'Strand',
 			accessor: 'Strand',
@@ -84,7 +84,7 @@ const StudentListpage = async ({
 			accessor: 'address',
 			className: 'hidden lg:table-cell',
 		},
-		...(role === 'teacher'
+		...(role === 'admin'
 			? [
 					{
 						header: 'Actions',
@@ -102,7 +102,7 @@ const StudentListpage = async ({
 			<td className="flex items-center gap-1 p-1">
 				<h3 className="font-semibold">{item.name}</h3>
 			</td>
-			<td className="hidden md:table-cell">{item.username}</td>
+			{/* <td className="hidden md:table-cell">{item.username}</td> */}
 			<td className="hidden md:table-cell">{item.Strand.name}</td>
 			<td className="hidden md:table-cell">{item.class.name}</td>
 			<td className="hidden md:table-cell">{item.grade.level}</td>
@@ -115,7 +115,7 @@ const StudentListpage = async ({
 							<Image src="/view.png" alt="" width={16} height={16} />
 						</button>
 					</Link>
-					{role === 'teacher' && (
+					{role === 'admin' && (
 						<FormContainer table="student" type="delete" id={item.id} />
 					)}
 				</div>
@@ -215,8 +215,6 @@ const StudentListpage = async ({
 			],
 		};
 	}
-
-	console.log('Query:', JSON.stringify(query, null, 2)); // Debug log
 
 	const [data, count] = await prisma.$transaction([
 		prisma.student.findMany({

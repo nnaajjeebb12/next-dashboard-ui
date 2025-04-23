@@ -4,19 +4,11 @@ import { NextRequest, NextResponse } from 'next/server';
 const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
-	console.log('--- SF10 API Request Received ---');
 	const { searchParams } = new URL(req.nextUrl.toString());
 	const schoolYear = searchParams.get('schoolYear');
 	const strandId = searchParams.get('strandId');
 	const classId = searchParams.get('classId');
 	const studentId = searchParams.get('studentId');
-
-	console.log('Request Params:', {
-		schoolYear,
-		strandId,
-		classId,
-		studentId,
-	});
 
 	if (!schoolYear) {
 		return NextResponse.json(
@@ -28,17 +20,14 @@ export async function GET(req: NextRequest) {
 	try {
 		// If only schoolYear is provided, return strands
 		if (!strandId) {
-			console.log('Fetching strands for school year:', schoolYear);
 			const strands = await prisma.strand.findMany({
 				// Add filtering by school year if necessary in your schema
 			});
-			console.log('Returning strands:', strands.length);
 			return NextResponse.json({ strands });
 		}
 
 		// If strandId is provided but not classId, return classes for that strand
 		if (!classId) {
-			console.log('Fetching classes for strand:', strandId);
 			const classes = await prisma.class.findMany({
 				where: {
 					// Assuming classes are linked to strands indirectly via students or need another relation
@@ -51,13 +40,11 @@ export async function GET(req: NextRequest) {
 					// Add filtering by school year if necessary
 				},
 			});
-			console.log('Returning classes:', classes.length);
 			return NextResponse.json({ classes });
 		}
 
 		// If classId is provided but not studentId, return students in that class
 		if (!studentId) {
-			console.log('Fetching students for class:', classId);
 			const students = await prisma.student.findMany({
 				where: {
 					classId: parseInt(classId),
@@ -65,12 +52,10 @@ export async function GET(req: NextRequest) {
 					// Add filtering by school year if necessary
 				},
 			});
-			console.log('Returning students:', students.length);
 			return NextResponse.json({ students });
 		}
 
 		// If studentId is provided, fetch detailed student data including grades based on subject semester
-		console.log('Fetching detailed data for student:', studentId);
 		const studentData = await prisma.student.findUnique({
 			where: { id: studentId },
 			include: {
@@ -92,14 +77,6 @@ export async function GET(req: NextRequest) {
 		if (!studentData) {
 			return NextResponse.json({ error: 'Student not found' }, { status: 404 });
 		}
-
-		console.log('Student Basic Info:', {
-			id: studentData.id,
-			name: studentData.name,
-			surname: studentData.surname,
-		});
-		console.log('Class Info:', studentData.class);
-		console.log('Strand Info:', studentData.Strand);
 
 		// Process grades, separating by semester based on Subject.semester
 		const firstSemesterSubjects: any[] = [];
@@ -171,16 +148,6 @@ export async function GET(req: NextRequest) {
 		const secondSemAverage =
 			secondSemCount > 0 ? Math.round(secondSemTotal / secondSemCount) : null;
 
-		console.log(
-			'Processed First Semester Subjects:',
-			firstSemesterSubjects.length
-		);
-		console.log(
-			'Processed Second Semester Subjects:',
-			secondSemesterSubjects.length
-		);
-		console.log('Averages:', { firstSemAverage, secondSemAverage });
-
 		const response = {
 			student: {
 				id: studentData.id,
@@ -229,20 +196,6 @@ export async function GET(req: NextRequest) {
 				},
 			},
 		};
-
-		console.log('--- Final Response Structure ---');
-		console.log('Student:', !!response.student);
-		console.log('SchoolInfo:', !!response.schoolInfo);
-		console.log('Class:', !!response.class);
-		console.log('Grades:', !!response.grades);
-		console.log(
-			'First Sem Subjects:',
-			response.grades.firstSemester.subjects.length
-		);
-		console.log(
-			'Second Sem Subjects:',
-			response.grades.secondSemester.subjects.length
-		);
 
 		return NextResponse.json(response);
 	} catch (error) {

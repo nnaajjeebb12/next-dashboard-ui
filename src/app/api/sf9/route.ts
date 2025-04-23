@@ -44,13 +44,10 @@ const getSchoolYearMonths = (
 
 export async function GET(req: NextRequest) {
 	try {
-		console.log('SF9 API called with params:', req.url);
 		const { searchParams } = new URL(req.url);
 		const studentId = searchParams.get('studentId');
 		const schoolYear = searchParams.get('schoolYear');
 		const strandId = searchParams.get('strandId');
-
-		console.log('Parameters:', { studentId, schoolYear, strandId });
 
 		if (!schoolYear) {
 			return NextResponse.json(
@@ -63,8 +60,6 @@ export async function GET(req: NextRequest) {
 		const [startYearStr, endYearStr] = schoolYear.split('-');
 		const startYear = parseInt(startYearStr);
 		const endYear = parseInt(endYearStr);
-
-		console.log('School year parsed:', { startYear, endYear });
 
 		// Always fetch strands based on schoolYear
 		const strands = await prisma.strand.findMany({});
@@ -102,8 +97,6 @@ export async function GET(req: NextRequest) {
 
 		// If studentId is provided, fetch detailed info for that student
 		if (studentId) {
-			console.log('Fetching data for student:', studentId);
-
 			// First get all attendance records for this student
 			const allAttendanceRecords = await prisma.attendance.findMany({
 				where: {
@@ -114,39 +107,18 @@ export async function GET(req: NextRequest) {
 				},
 			});
 
-			console.log(
-				`Found ${allAttendanceRecords.length} total attendance records for student ${studentId}`
-			);
-
 			// Filter attendance for the current school year (June of startYear to April of endYear)
 			const schoolYearStart = new Date(`${startYear}-06-01`);
 			const schoolYearEnd = new Date(`${endYear}-04-30`);
-
-			console.log('Filtering attendance between:', {
-				start: schoolYearStart.toISOString(),
-				end: schoolYearEnd.toISOString(),
-			});
 
 			const filteredAttendance = allAttendanceRecords.filter((record) => {
 				const recordDate = new Date(record.date);
 				return recordDate >= schoolYearStart && recordDate <= schoolYearEnd;
 			});
 
-			console.log(
-				`After filtering: ${filteredAttendance.length} attendance records within school year range`
-			);
-
 			// Debug first 5 attendance records
 			if (filteredAttendance.length > 0) {
-				console.log('Sample attendance records:');
-				filteredAttendance.slice(0, 5).forEach((record) => {
-					console.log({
-						date: new Date(record.date).toISOString(),
-						status: record.status,
-						month: new Date(record.date).getMonth(),
-						year: new Date(record.date).getFullYear(),
-					});
-				});
+				filteredAttendance.slice(0, 5).forEach((record) => {});
 			}
 
 			const student = await prisma.student.findUnique({
@@ -200,30 +172,10 @@ export async function GET(req: NextRequest) {
 			);
 
 			// Log all lessons and their grades
-			console.log('\n=== All Class Lessons for Student ===');
-			console.log(`Student ID: ${studentId}`);
-			console.log(`Class: ${student.class?.name}`);
-			console.log('Lessons:');
+
 			classLessons.forEach((lesson, index) => {
 				const result = resultsByLesson.get(lesson.id);
-				console.log(`\nLesson ${index + 1}:`);
-				console.log(`Lesson Name: ${lesson.name}`);
-				console.log(`Subject Name: ${lesson.subject.name}`);
-				console.log(`Subject Type: ${lesson.subject.subjectType}`);
-				console.log(`Semester: ${lesson.subject.semester}`);
-				console.log(
-					'Grades:',
-					result
-						? {
-								Q1: result.q1,
-								Q2: result.q2,
-								Q3: result.q3,
-								Q4: result.q4,
-						  }
-						: 'No grades recorded yet'
-				);
 			});
-			console.log('\n=== End of Lessons ===\n');
 
 			// Process lessons and results into first and second semester subjects
 			classLessons.forEach((lesson) => {
@@ -350,9 +302,6 @@ export async function GET(req: NextRequest) {
 				const yearForMonth = month.index >= 5 ? startYear : endYear;
 				const key = `${yearForMonth}-${month.index}`;
 				attendanceByMonth.set(key, { present: 0, absent: 0 });
-				console.log(
-					`Initialized month: ${month.name} ${yearForMonth} (key: ${key})`
-				);
 			});
 
 			// Process each attendance record
@@ -397,14 +346,6 @@ export async function GET(req: NextRequest) {
 				totalDaysPresent += daysPresent;
 				totalDaysAbsent += daysAbsent;
 
-				// Log month data for debugging
-				console.log(
-					`Month summary: ${name} ${year} (index: ${index}, key: ${key})`
-				);
-				console.log(
-					`School Days: ${schoolDays}, Present: ${daysPresent}, Absent: ${daysAbsent}`
-				);
-
 				return {
 					month: index,
 					name,
@@ -420,11 +361,6 @@ export async function GET(req: NextRequest) {
 				daysPresent: totalDaysPresent,
 				daysAbsent: totalDaysAbsent,
 			};
-
-			console.log(
-				'Final attendance data:',
-				JSON.stringify(attendanceData, null, 2)
-			);
 		}
 
 		// Construct the response
@@ -451,23 +387,6 @@ export async function GET(req: NextRequest) {
 				},
 			},
 		};
-
-		console.log(
-			'Final response structure for SF9:',
-			JSON.stringify(
-				{
-					firstSemesterSubjectsCount:
-						gradesData.firstSemester.coreSubjects.length +
-						gradesData.firstSemester.appliedSubjects.length,
-					secondSemesterSubjectsCount:
-						gradesData.secondSemester.coreSubjects.length +
-						gradesData.secondSemester.appliedSubjects.length,
-					sampleFirstSemester: gradesData.firstSemester.coreSubjects[0],
-				},
-				null,
-				2
-			)
-		);
 
 		return NextResponse.json(responsePayload);
 	} catch (error) {
