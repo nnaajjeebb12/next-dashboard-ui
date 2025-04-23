@@ -15,8 +15,8 @@
 
 ## =Students Tab=
 
-- [ ] In creating students remove input of username and password because they do not use the system.
-- [ ] When creating student it does not appear as added.
+- [x] In creating students remove input of username and password because they do not use the system.
+- [x] When creating student it does not appear as added.
   - (Sometimes it does not create student even if all boxes have data; it shows "error creating student".)
   - (Also the guardian’s name, middle name, and surname, relationship to guardian, should be **optional** to be filled up.)
 - [x] Move students edit privileges to admin. Only shows handled student information for teacher dashboard.
