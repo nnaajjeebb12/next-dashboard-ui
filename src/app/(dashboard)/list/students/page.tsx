@@ -254,7 +254,7 @@ const StudentListpage = async ({
 							)}
 						/>
 
-						{role === 'teacher' && (
+						{role === 'admin' && (
 							<FormContainer table="student" type="create" />
 						)}
 					</div>
