@@ -45,7 +45,7 @@ const SingleTeacherPage = async ({
 				{/* TOP */}
 				<div className="flex flex-col lg:flex-row gap-4">
 					{/* USER INFO CARD */}
-					<div className="bg-najDepEdCoolGray py-6 px-4 rounded-md flex-1 flex gap-4">
+					<div className="bg-najDepEdCoolGray py-6 px-4 rounded-md w-full lg:w-3/5 flex gap-4">
 						<div className="w-1/3">
 							<Image
 								src={teacher.img || '/noAvatar.png'}
@@ -121,7 +121,7 @@ const SingleTeacherPage = async ({
 						</div>
 					</div>
 					{/* SMALL CARD */}
-					<div className="flex-1 flex g-4 justify-between flex-wrap">
+					<div className="flex-1 lg:w-2/5 flex g-4 justify-between flex-wrap">
 						{/* ATTENDANCE CARD
 						<div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
 							<Image
