@@ -25,14 +25,14 @@ const CountChartContainer = async () => {
 				<div className="flex flex-col gap-1">
 					<div className="w-5 h-5 bg-najDepEdLavander rounded-full" />
 					<h1 className="font-bold">{boys}</h1>
-					<h2 className="text-xs text-gray-300">
+					<h2 className="text-xs text-gray-800 font-bold">
 						BOYS ({Math.round((boys / total) * 100)}%)
 					</h2>
 				</div>
 				<div className="flex flex-col gap-1">
 					<div className="w-5 h-5 bg-najDepEdPearl rounded-full" />
 					<h1 className="font-bold">{girls}</h1>
-					<h2 className="text-xs text-gray-300">
+					<h2 className="text-xs text-gray-800 font-bold">
 						GIRLS ({Math.round((girls / total) * 100)}%)
 					</h2>
 				</div>
