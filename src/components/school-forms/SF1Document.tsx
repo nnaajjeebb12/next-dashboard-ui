@@ -15,6 +15,8 @@ import { calculateAge, getSexDisplay } from './utils';
 interface SF1DocumentProps {
 	data: StudentResponse;
 	selectedSchoolYear: string;
+	beginningDate?: string; // New prop for beginning of semester date
+	endDate?: string; // New prop for end of semester date
 }
 
 // Define StudentData locally based on usage in renderTableRow
@@ -39,7 +41,12 @@ interface StudentData extends ApiStudent {
 }
 
 // PDF Document Component
-const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
+const SF1Document = ({
+	data,
+	selectedSchoolYear,
+	beginningDate,
+	endDate,
+}: SF1DocumentProps) => {
 	// Define dimensions for landscape orientation
 	const PAGE_HEIGHT = 1684.8; // 16.5 inches
 	const PAGE_WIDTH = 1188; // 23.4 inches
@@ -212,6 +219,7 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 			borderWidth: 1,
 			borderColor: '#000',
 			width: '30%',
+			height: '55%',
 		},
 		registerRow: {
 			flexDirection: 'row',
@@ -247,6 +255,31 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 			marginTop: 10,
 			textAlign: 'right',
 			color: '#666',
+		},
+		dateSection: {
+			marginTop: 10,
+			borderWidth: 1,
+			borderColor: '#000',
+			padding: 10,
+		},
+		dateSectionRow: {
+			flexDirection: 'row',
+			marginBottom: 5,
+		},
+		dateSectionColumn: {
+			flexDirection: 'column',
+			marginRight: 15,
+		},
+		dateLabel: {
+			fontSize: 8,
+			marginBottom: 2,
+		},
+		dateValue: {
+			fontSize: 8,
+			borderBottomWidth: 1,
+			borderBottomColor: '#000000',
+			paddingBottom: 1,
+			paddingTop: 1,
 		},
 	});
 
@@ -564,7 +597,7 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 			<View style={styles.registerContainer}>
 				<View style={styles.registerRow}>
 					<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
-						REGISTER ED
+						REGISTERED
 					</Text>
 					<Text style={[styles.registerCell, { borderRightWidth: 1 }]}>
 						Beginning of the Semester
@@ -608,6 +641,23 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 				<Text style={styles.signatureCaption}>
 					(Signature of Adviser over Printed Name)
 				</Text>
+
+				<View style={styles.dateSection}>
+					<View style={styles.dateSectionRow}>
+						<View style={styles.dateSectionColumn}>
+							<Text style={styles.dateLabel}>
+								Beginning of the Semester Date:
+							</Text>
+							<Text style={styles.dateValue}>
+								{beginningDate || '_____________'}
+							</Text>
+						</View>
+						<View style={styles.dateSectionColumn}>
+							<Text style={styles.dateLabel}>End of the Semester Date:</Text>
+							<Text style={styles.dateValue}>{endDate || '_____________'}</Text>
+						</View>
+					</View>
+				</View>
 			</View>
 		</>
 	);
