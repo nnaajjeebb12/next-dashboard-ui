@@ -41,7 +41,7 @@ const OBSERVED_VALUES = [
 		],
 	},
 	{
-		core: '3. Makakalikasen',
+		core: '3. Makakalikasan',
 		behaviors: [
 			'Cares for the environment and utilizes resources wisely, judiciously and economically',
 		],

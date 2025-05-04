@@ -113,14 +113,14 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 			display: 'flex',
 			borderStyle: 'solid',
 			borderWidth: 1,
-			borderRightWidth: 0,
-			borderBottomWidth: 0,
+			borderColor: '#000000',
 			marginTop: 10,
 		},
 		tableRow: {
 			flexDirection: 'row',
 			borderBottomWidth: 1,
 			borderBottomColor: '#000000',
+			borderBottomStyle: 'solid',
 			minHeight: 25,
 			alignItems: 'center',
 		},
@@ -129,7 +129,10 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 			fontSize: 10,
 			borderRightWidth: 1,
 			borderRightColor: '#000000',
+			borderRightStyle: 'solid',
 			textAlign: 'left',
+			minHeight: 25,
+			justifyContent: 'center',
 		},
 		tableHeaderCell: {
 			padding: 4,
@@ -138,16 +141,35 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 			backgroundColor: '#f0f0f0',
 			borderRightWidth: 1,
 			borderRightColor: '#000000',
+			borderRightStyle: 'solid',
 			textAlign: 'center',
+			minHeight: 25,
+			justifyContent: 'center',
 		},
 		tableHeaderRow: {
 			flexDirection: 'row',
 			borderBottomWidth: 1,
 			borderBottomColor: '#000000',
+			borderBottomStyle: 'solid',
 			backgroundColor: '#f0f0f0',
 		},
 		genderHeaderRow: {
 			backgroundColor: '#e0e0e0',
+		},
+		genderRow: {
+			flexDirection: 'row',
+			borderBottomWidth: 1,
+			borderBottomColor: '#000000',
+			borderBottomStyle: 'solid',
+		},
+		genderCell: {
+			padding: 4,
+			fontSize: 10,
+			borderRightWidth: 1,
+			borderRightColor: '#000000',
+			borderRightStyle: 'solid',
+			minHeight: 25,
+			justifyContent: 'center',
 		},
 		legendContainer: {
 			marginTop: 20,
@@ -231,25 +253,26 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 	const columnWidths = {
 		lrn: '5%',
 		name: '14%',
-		sex: '3%',
-		birthDate: '6%',
-		age: '3%',
+		sex: '2%',
+		birthDate: '5%',
+		age: '2%',
 		religion: '4%',
 		purok: '4%',
-		brgy: '4%',
+		brgy: '5%',
 		city: '4%',
 		province: '4%',
-		fatherSurname: '5%',
+		fatherSurname: '4%',
 		fatherFirstName: '5%',
-		fatherMiddleName: '5%',
+		fatherMiddleName: '6%',
 		motherSurname: '5%',
 		motherFirstName: '5%',
-		motherMiddleName: '5%',
+		motherMiddleName: '6%',
 		guardianSurname: '5%',
 		guardianFirstName: '5%',
 		guardianMiddleName: '5%',
+		guardianRelationship: '5%',
 		guardianContact: '4%',
-		learningModal: '5%',
+		learningModal: '4%',
 		remarks: '4%',
 	};
 
@@ -345,6 +368,13 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 			<Text
 				style={[
 					styles.tableHeaderCell,
+					{ width: columnWidths.guardianRelationship },
+				]}>
+				Relationship
+			</Text>
+			<Text
+				style={[
+					styles.tableHeaderCell,
 					{ width: columnWidths.guardianContact },
 				]}>
 				Guardian Contact
@@ -435,6 +465,13 @@ const SF1Document = ({ data, selectedSchoolYear }: SF1DocumentProps) => {
 			<Text
 				style={[styles.tableCell, { width: columnWidths.guardianMiddleName }]}>
 				{student.guardianMiddleName || ''}
+			</Text>
+			<Text
+				style={[
+					styles.tableCell,
+					{ width: columnWidths.guardianRelationship },
+				]}>
+				{''}
 			</Text>
 			<Text style={[styles.tableCell, { width: columnWidths.guardianContact }]}>
 				{student.guardianContact || ''}
