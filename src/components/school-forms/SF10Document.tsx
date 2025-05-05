@@ -313,7 +313,7 @@ const SF10Document = ({ data, eligibilityData }: SF10DocumentProps) => {
 			minHeight: 16,
 		},
 		averageLabel: {
-			width: '60%',
+			width: '80%',
 			padding: 4,
 			borderRightWidth: 0.5,
 			borderRightColor: '#000000',
@@ -641,6 +641,7 @@ const SF10Document = ({ data, eligibilityData }: SF10DocumentProps) => {
 								</View>
 							))}
 
+							{/* First Semester Average Row */}
 							<View style={styles.averageRow}>
 								<Text style={styles.averageLabel}>
 									General Ave. for the Semester:
@@ -1132,46 +1133,13 @@ const SF10Document = ({ data, eligibilityData }: SF10DocumentProps) => {
 								</View>
 							))}
 
-							{/* Add empty rows if needed to fill space, e.g., if fewer subjects */}
-							{Array.from({
-								length: Math.max(
-									0,
-									10 - (data.grades?.secondSemester?.subjects?.length || 0)
-								),
-							}).map((_, index) => (
-								<View
-									key={`empty-${index}`}
-									style={[
-										styles.tableRow,
-										{
-											borderBottomWidth:
-												index ===
-												Math.max(
-													0,
-													10 -
-														(data.grades?.secondSemester?.subjects?.length || 0)
-												) -
-													1
-													? 0
-													: 0.5,
-										},
-									]}>
-									<Text style={styles.subjectTypeCell}>{'\u00A0'}</Text>
-									<Text style={styles.subjectCell}>{'\u00A0'}</Text>
-									<Text style={styles.quarterCell}>{'\u00A0'}</Text>
-									<Text style={styles.quarterCell}>{'\u00A0'}</Text>
-									<Text style={styles.finalGradeCell}>{'\u00A0'}</Text>
-									<Text style={styles.actionCell}>{'\u00A0'}</Text>
-								</View>
-							))}
-
+							{/* Second Semester Average Row */}
 							<View style={styles.averageRow}>
 								<Text style={styles.averageLabel}>
 									General Ave. for the Semester:
 								</Text>
 								<Text style={styles.averageGrade}>
-									{data.grades?.secondSemester?.averages?.final || ''}{' '}
-									{/* Use Sem 2 Avg */}
+									{data.grades?.secondSemester?.averages?.final || ''}
 								</Text>
 								<Text style={styles.averageAction}>
 									{(data.grades?.secondSemester?.averages?.final || 0) >= 75

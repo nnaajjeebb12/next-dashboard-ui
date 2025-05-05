@@ -41,7 +41,7 @@ const OBSERVED_VALUES = [
 		],
 	},
 	{
-		core: '3. Makakalikasen',
+		core: '3. Makakalikasan',
 		behaviors: [
 			'Cares for the environment and utilizes resources wisely, judiciously and economically',
 		],
@@ -995,6 +995,8 @@ const PdfExportPage = () => {
 	const [eligibilityData, setEligibilityData] = useState<EligibilityFormData>(
 		defaultEligibilityData
 	);
+	const [beginningDate, setBeginningDate] = useState<string>('');
+	const [endDate, setEndDate] = useState<string>('');
 
 	// Handle eligibility form changes
 	const handleEligibilityChange = (updates: Partial<EligibilityFormData>) => {
@@ -1278,7 +1280,12 @@ const PdfExportPage = () => {
 		switch (selectedForm) {
 			case FormType.SF1:
 				return (
-					<SF1Document data={data} selectedSchoolYear={selectedSchoolYear} />
+					<SF1Document
+						data={data}
+						selectedSchoolYear={selectedSchoolYear}
+						beginningDate={beginningDate}
+						endDate={endDate}
+					/>
 				);
 			case FormType.SF2:
 				return <SF2Document {...props} />;
@@ -1323,6 +1330,8 @@ const PdfExportPage = () => {
 				return 'SF9-SHS.pdf';
 			case FormType.SF10:
 				return 'SF10-SHS.pdf';
+			default:
+				return 'school-form.pdf';
 		}
 	};
 
@@ -1361,6 +1370,43 @@ const PdfExportPage = () => {
 					selectedForm === FormType.SF2 ||
 					selectedForm === FormType.SF5) && (
 					<>
+						{selectedForm === FormType.SF1 && (
+							<>
+								<div className="flex-1">
+									<label className="block text-sm font-medium text-gray-700 mb-2">
+										Beginning of the Semester Date
+									</label>
+									<input
+										type="date"
+										className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer"
+										value={beginningDate}
+										onChange={(e) => setBeginningDate(e.target.value)}
+										onKeyDown={(e) => e.preventDefault()}
+										onClick={(e) => {
+											const input = e.target as HTMLInputElement;
+											input.showPicker();
+										}}
+									/>
+								</div>
+								<div className="flex-1">
+									<label className="block text-sm font-medium text-gray-700 mb-2">
+										End of the Semester Date
+									</label>
+									<input
+										type="date"
+										className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer"
+										value={endDate}
+										onChange={(e) => setEndDate(e.target.value)}
+										onKeyDown={(e) => e.preventDefault()}
+										onClick={(e) => {
+											const input = e.target as HTMLInputElement;
+											input.showPicker();
+										}}
+									/>
+								</div>
+							</>
+						)}
+
 						<div className="flex-1">
 							<label className="block text-sm font-medium text-gray-700 mb-2">
 								School Year
