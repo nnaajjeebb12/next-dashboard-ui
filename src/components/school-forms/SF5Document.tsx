@@ -149,13 +149,13 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 		},
 		// Summary table styles
 		summaryContainer: {
-			marginBottom: 20,
+			marginBottom: 10,
 		},
 		summaryTable: {
 			width: '100%',
 			borderWidth: 1,
 			borderColor: '#000000',
-			marginBottom: 20,
+			marginBottom: 10,
 			backgroundColor: '#FFFFFF',
 		},
 		summaryTitle: {
@@ -202,7 +202,7 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 			width: '33%',
 		},
 		guidelinesContainer: {
-			marginTop: 20,
+			marginTop: 10,
 			fontSize: 8,
 		},
 		guidelineTitle: {
@@ -244,6 +244,35 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 			textAlign: 'center',
 			fontSize: 7,
 			fontStyle: 'italic',
+		},
+		// New styles for certification section
+		certificationContainer: {
+			marginTop: 20,
+			fontSize: 8,
+		},
+		certificationLabel: {
+			marginBottom: 10,
+			fontWeight: 'bold',
+		},
+		signatureBlock: {
+			marginTop: 15,
+			marginBottom: 15,
+		},
+		reviewSection: {
+			marginTop: 20,
+		},
+		reviewLabel: {
+			fontWeight: 'bold',
+			marginBottom: 10,
+		},
+		memberSignature: {
+			marginTop: 15,
+			marginBottom: 15,
+		},
+		generatedNote: {
+			fontSize: 7,
+			fontStyle: 'italic',
+			marginTop: 5,
 		},
 	});
 
@@ -659,6 +688,53 @@ const SF5Document = ({ data, selectedSchoolYear }: SF5DocumentProps) => {
 								{data.schoolInfo.supervisorName}
 							</Text>
 							<Text style={styles.signatureTitle}>(Class Adviser)</Text>
+						</View>
+
+						{/* Certification Section */}
+						<View style={styles.certificationContainer}>
+							<Text style={styles.certificationLabel}>
+								CERTIFIED CORRECT & SUBMITTED BY:
+							</Text>
+							<View style={styles.signatureBlock}>
+								<View style={styles.signatureLine} />
+								<Text style={styles.signatureTitle}>
+									(School Head & SCC Chair)
+								</Text>
+								<Text style={styles.signatureTitle}>(Name and Signature)</Text>
+							</View>
+
+							<View style={styles.reviewSection}>
+								<Text style={styles.reviewLabel}>REVIEWED BY: SCC Members</Text>
+
+								<View style={styles.memberSignature}>
+									<View style={styles.signatureLine} />
+									<Text style={styles.signatureTitle}>
+										Signature over Printed Name
+									</Text>
+								</View>
+
+								<View style={styles.memberSignature}>
+									<View style={styles.signatureLine} />
+									<Text style={styles.signatureTitle}>
+										Signature over Printed Name
+									</Text>
+								</View>
+
+								<View style={styles.memberSignature}>
+									<View style={styles.signatureLine} />
+									<Text style={styles.signatureTitle}>
+										Signature over Printed Name
+									</Text>
+								</View>
+
+								<View style={styles.memberSignature}>
+									<View style={styles.signatureLine} />
+									<Text style={styles.signatureTitle}>
+										Signature over Printed Name
+									</Text>
+									<Text style={styles.generatedNote}>(SCC CO-Chair)</Text>
+								</View>
+							</View>
 						</View>
 					</View>
 				</View>
