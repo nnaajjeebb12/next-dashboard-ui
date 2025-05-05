@@ -648,7 +648,13 @@ const SF2Document = ({
 					<View style={styles.row}>
 						<View style={[styles.fieldContainer, styles.regularField]}>
 							<Text style={styles.label}>Semester</Text>
-							<Text style={styles.value}>{data.schoolInfo.semester}</Text>
+							<Text style={styles.value}>
+								{data.schoolInfo.semester === '1st Semester'
+									? 'First Semester'
+									: data.schoolInfo.semester === '2nd Semester'
+									? 'Second Semester'
+									: data.schoolInfo.semester}
+							</Text>
 						</View>
 						<View style={[styles.fieldContainer, styles.regularField]}>
 							<Text style={styles.label}>School Year</Text>
